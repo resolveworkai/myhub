@@ -1,0 +1,86 @@
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Sparkles, Building2, Users } from "lucide-react";
+
+export function CTASection() {
+  return (
+    <section className="py-24 bg-muted/50">
+      <div className="container mx-auto px-4 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* For Users */}
+          <div className="relative group">
+            <div className="absolute inset-0 gradient-primary rounded-3xl opacity-10 group-hover:opacity-20 transition-opacity" />
+            <div className="relative rounded-3xl border border-primary/20 p-8 lg:p-12 bg-card">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                <Users className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
+                Ready to Start Your Journey?
+              </h3>
+              <p className="text-lg text-muted-foreground mb-8">
+                Join thousands of members who are already achieving their goals.
+                Find your perfect gym, library, or coaching center today.
+              </p>
+              <Link to="/signup">
+                <Button variant="gradient" size="lg">
+                  Create Free Account
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </Button>
+              </Link>
+              <div className="flex items-center gap-4 mt-6">
+                <div className="flex -space-x-2">
+                  {[
+                    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&crop=face",
+                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+                    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
+                  ].map((src, i) => (
+                    <img
+                      key={i}
+                      src={src}
+                      alt=""
+                      className="w-8 h-8 rounded-full border-2 border-card"
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  <span className="font-semibold text-foreground">50,000+</span> happy members
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* For Businesses */}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent to-warning rounded-3xl opacity-10 group-hover:opacity-20 transition-opacity" />
+            <div className="relative rounded-3xl border border-accent/20 p-8 lg:p-12 bg-card">
+              <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6">
+                <Building2 className="h-7 w-7 text-accent" />
+              </div>
+              <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
+                Grow Your Business
+              </h3>
+              <p className="text-lg text-muted-foreground mb-8">
+                List your gym, library, or coaching center on MyHub. Reach thousands
+                of potential customers and streamline your operations.
+              </p>
+              <Link to="/business">
+                <Button variant="accent" size="lg">
+                  List Your Business
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </Button>
+              </Link>
+              <div className="flex items-center gap-4 mt-6">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-accent" />
+                  <span className="text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">Free</span> to get started
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
