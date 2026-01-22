@@ -1,0 +1,484 @@
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import {
+  LayoutDashboard,
+  Users,
+  Calendar,
+  CreditCard,
+  BarChart3,
+  MessageSquare,
+  Settings,
+  Bell,
+  Menu,
+  X,
+  Search,
+  Plus,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  UserPlus,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  MoreHorizontal,
+  Download,
+  Send,
+  ChevronRight,
+  Building2,
+  LogOut,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const navigation = [
+  { name: "Dashboard", href: "/business-dashboard", icon: LayoutDashboard },
+  { name: "Members", href: "/business-dashboard/members", icon: Users },
+  { name: "Appointments", href: "/business-dashboard/appointments", icon: Calendar },
+  { name: "Fees & Payments", href: "/business-dashboard/fees", icon: CreditCard },
+  { name: "Analytics", href: "/business-dashboard/analytics", icon: BarChart3 },
+  { name: "Messages", href: "/business-dashboard/messages", icon: MessageSquare },
+  { name: "Settings", href: "/business-dashboard/settings", icon: Settings },
+];
+
+const stats = [
+  {
+    name: "Total Members",
+    value: "256",
+    change: "+12%",
+    trend: "up",
+    icon: Users,
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+  },
+  {
+    name: "Revenue This Month",
+    value: "₹4,52,500",
+    change: "+8%",
+    trend: "up",
+    icon: DollarSign,
+    color: "text-success",
+    bgColor: "bg-success/10",
+  },
+  {
+    name: "Appointments Today",
+    value: "42",
+    change: "+5",
+    trend: "up",
+    icon: Calendar,
+    color: "text-info",
+    bgColor: "bg-info/10",
+  },
+  {
+    name: "Pending Payments",
+    value: "₹78,500",
+    change: "-15%",
+    trend: "down",
+    icon: AlertCircle,
+    color: "text-warning",
+    bgColor: "bg-warning/10",
+  },
+];
+
+const recentMembers = [
+  {
+    id: 1,
+    name: "John Smith",
+    email: "john@example.com",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
+    membership: "Premium",
+    joinDate: "Jan 20, 2026",
+    status: "active",
+  },
+  {
+    id: 2,
+    name: "Emily Johnson",
+    email: "emily@example.com",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
+    membership: "Basic",
+    joinDate: "Jan 19, 2026",
+    status: "active",
+  },
+  {
+    id: 3,
+    name: "Michael Brown",
+    email: "michael@example.com",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+    membership: "VIP",
+    joinDate: "Jan 18, 2026",
+    status: "active",
+  },
+];
+
+const todayAppointments = [
+  { id: 1, member: "Sarah Chen", time: "9:00 AM", type: "Personal Training", status: "completed" },
+  { id: 2, member: "Mike Rodriguez", time: "10:30 AM", type: "Yoga Class", status: "completed" },
+  { id: 3, member: "Emily Watson", time: "2:00 PM", type: "Gym Session", status: "upcoming" },
+  { id: 4, member: "David Park", time: "4:00 PM", type: "Personal Training", status: "upcoming" },
+  { id: 5, member: "Lisa Thompson", time: "6:00 PM", type: "Gym Session", status: "upcoming" },
+];
+
+const pendingPayments = [
+  { id: 1, member: "Alex Wilson", amount: "₹2,500", dueDate: "Jan 25", daysOverdue: 0 },
+  { id: 2, member: "James Lee", amount: "₹5,000", dueDate: "Jan 20", daysOverdue: 2 },
+  { id: 3, member: "Anna Kim", amount: "₹1,500", dueDate: "Jan 18", daysOverdue: 4 },
+];
+
+export default function BusinessDashboard() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  return (
+    <div className="min-h-screen bg-muted/30">
+      {/* Mobile Header */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-card border-b border-border flex items-center justify-between px-4 z-50">
+        <button onClick={() => setSidebarOpen(true)} className="p-2">
+          <Menu className="h-6 w-6" />
+        </button>
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-display font-bold">M</span>
+          </div>
+          <span className="font-display font-bold">MyHub</span>
+        </Link>
+        <button className="p-2 relative">
+          <Bell className="h-6 w-6" />
+          <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+        </button>
+      </header>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed top-0 left-0 h-full w-72 bg-card border-r border-border z-50 transform transition-transform duration-300 lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="h-16 flex items-center justify-between px-4 border-b border-border">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
+                <span className="text-primary-foreground font-display font-bold text-xl">M</span>
+              </div>
+              <span className="font-display font-bold text-xl">MyHub</span>
+            </Link>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Business Info */}
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold truncate">FitZone Premium</h3>
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-success" />
+                  <span className="text-xs text-muted-foreground">Open Now</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  location.pathname === item.href
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <item.icon className="h-5 w-5" />
+                {item.name}
+                {item.name === "Messages" && (
+                  <Badge className="ml-auto" variant="accent">3</Badge>
+                )}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Logout */}
+          <div className="p-4 border-t border-border">
+            <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 w-full transition-colors">
+              <LogOut className="h-5 w-5" />
+              Logout
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="lg:ml-72 pt-16 lg:pt-0 min-h-screen">
+        {/* Desktop Header */}
+        <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-border bg-card">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="relative max-w-md flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search members, appointments..." className="pl-10" />
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button variant="gradient">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Member
+            </Button>
+            <button className="p-2 rounded-lg hover:bg-muted relative">
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+            </button>
+            <img
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
+              alt="User"
+              className="w-10 h-10 rounded-full object-cover cursor-pointer"
+            />
+          </div>
+        </header>
+
+        {/* Dashboard Content */}
+        <div className="p-4 lg:p-8">
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground">Overview of your business performance</p>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {stats.map((stat) => (
+              <div key={stat.name} className="p-6 rounded-2xl bg-card border border-border">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", stat.bgColor)}>
+                    <stat.icon className={cn("h-6 w-6", stat.color)} />
+                  </div>
+                  <div className={cn(
+                    "flex items-center gap-1 text-sm font-medium",
+                    stat.trend === "up" ? "text-success" : "text-destructive"
+                  )}>
+                    {stat.trend === "up" ? (
+                      <TrendingUp className="h-4 w-4" />
+                    ) : (
+                      <TrendingDown className="h-4 w-4" />
+                    )}
+                    {stat.change}
+                  </div>
+                </div>
+                <div className="text-2xl font-bold mb-1">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.name}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Main Column */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Today's Appointments */}
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-display text-lg font-semibold">Today's Appointments</h2>
+                  <Button variant="outline" size="sm">
+                    View All
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {todayAppointments.map((apt) => (
+                    <div
+                      key={apt.id}
+                      className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="text-center min-w-[60px]">
+                          <div className="text-sm font-semibold">{apt.time}</div>
+                        </div>
+                        <div>
+                          <div className="font-medium">{apt.member}</div>
+                          <div className="text-sm text-muted-foreground">{apt.type}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {apt.status === "completed" ? (
+                          <Badge variant="success">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Completed
+                          </Badge>
+                        ) : (
+                          <Badge variant="info">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Upcoming
+                          </Badge>
+                        )}
+                        <Button variant="ghost" size="icon-sm">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Members */}
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-display text-lg font-semibold">Recent Members</h2>
+                  <Button variant="outline" size="sm">
+                    View All
+                  </Button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Member</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Membership</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Joined</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                        <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentMembers.map((member) => (
+                        <tr key={member.id} className="border-b border-border last:border-0 hover:bg-muted/50">
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={member.avatar}
+                                alt={member.name}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                              <div>
+                                <div className="font-medium">{member.name}</div>
+                                <div className="text-sm text-muted-foreground">{member.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <Badge variant="secondary">{member.membership}</Badge>
+                          </td>
+                          <td className="py-4 px-4 text-sm text-muted-foreground">{member.joinDate}</td>
+                          <td className="py-4 px-4">
+                            <Badge variant="success">Active</Badge>
+                          </td>
+                          <td className="py-4 px-4 text-right">
+                            <Button variant="ghost" size="sm">
+                              View
+                              <ChevronRight className="h-4 w-4 ml-1" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Sidebar */}
+            <div className="space-y-8">
+              {/* Pending Payments */}
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-display text-lg font-semibold">Pending Payments</h2>
+                  <Button variant="outline" size="sm">
+                    <Send className="h-4 w-4 mr-2" />
+                    Send Reminders
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  {pendingPayments.map((payment) => (
+                    <div
+                      key={payment.id}
+                      className="flex items-center justify-between p-3 rounded-xl bg-muted/50"
+                    >
+                      <div>
+                        <div className="font-medium">{payment.member}</div>
+                        <div className="text-sm text-muted-foreground">Due: {payment.dueDate}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">{payment.amount}</div>
+                        {payment.daysOverdue > 0 && (
+                          <Badge variant="destructive" className="text-xs">
+                            {payment.daysOverdue}d overdue
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <h2 className="font-display text-lg font-semibold mb-4">Quick Actions</h2>
+                <div className="space-y-2">
+                  <Button variant="outline" className="w-full justify-start">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add New Member
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Create Appointment
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Reports
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Send Announcement
+                  </Button>
+                </div>
+              </div>
+
+              {/* Live Occupancy */}
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <h2 className="font-display text-lg font-semibold mb-4 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                  Live Occupancy
+                </h2>
+                <div className="text-center mb-4">
+                  <div className="text-4xl font-bold text-primary">45</div>
+                  <div className="text-muted-foreground">of 100 capacity</div>
+                </div>
+                <div className="h-4 bg-muted rounded-full overflow-hidden mb-4">
+                  <div className="h-full bg-success rounded-full" style={{ width: "45%" }} />
+                </div>
+                <div className="grid grid-cols-3 text-center text-sm">
+                  <div>
+                    <div className="font-semibold">Peak</div>
+                    <div className="text-muted-foreground">6-8 PM</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold">Avg Today</div>
+                    <div className="text-muted-foreground">52</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold">Low</div>
+                    <div className="text-muted-foreground">2-4 PM</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
