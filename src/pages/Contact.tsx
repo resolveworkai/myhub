@@ -4,6 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -15,7 +16,11 @@ import {
   MessageSquare,
   Building2,
   HelpCircle,
+  Copy,
+  ExternalLink,
+  CheckCircle2,
 } from "lucide-react";
+import { openSupportEmail, generateTicketId, SUPPORT_EMAIL } from "@/lib/support";
 
 const contactInfo = [
   {
@@ -31,7 +36,7 @@ const contactInfo = [
   {
     icon: Mail,
     title: "Email Us",
-    details: ["hello@portal.com", "support@portal.com"],
+    details: ["hello@portal.com", SUPPORT_EMAIL],
   },
   {
     icon: Clock,
@@ -56,24 +61,44 @@ export default function Contact() {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ticketId, setTicketId] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+    
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success("Message sent successfully! We'll get back to you soon.");
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      inquiryType: "general",
-      subject: "",
-      message: "",
+    // Generate ticket and open email client
+    const result = openSupportEmail({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      inquiryType: inquiryTypes.find(t => t.id === formData.inquiryType)?.label || formData.inquiryType,
+      subject: formData.subject,
+      message: formData.message,
     });
+    
+    setTicketId(result.ticketId);
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    toast.success("Support request prepared!", {
+      description: `Ticket ID: ${result.ticketId}. Please send the email from your email client.`,
+    });
+    
     setIsSubmitting(false);
+  };
+
+  const copyTicketId = () => {
+    if (ticketId) {
+      navigator.clipboard.writeText(ticketId);
+      toast.success("Ticket ID copied to clipboard!");
+    }
   };
 
   return (
@@ -136,17 +161,25 @@ export default function Contact() {
                   </div>
                 </motion.div>
 
-                {/* Map */}
+                {/* Direct Support Link */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="aspect-square bg-muted rounded-2xl flex items-center justify-center"
+                  className="p-6 rounded-2xl bg-primary/5 border border-primary/20"
                 >
-                  <div className="text-center">
-                    <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">Interactive Map</p>
-                  </div>
+                  <h3 className="font-semibold text-foreground mb-2">Quick Support</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Email us directly for faster response
+                  </p>
+                  <a
+                    href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`PORTAL | ${generateTicketId()} | Support Request`)}`}
+                    className="inline-flex items-center gap-2 text-primary hover:underline font-medium"
+                  >
+                    <Mail className="h-4 w-4" />
+                    {SUPPORT_EMAIL}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
                 </motion.div>
               </div>
 
@@ -158,6 +191,21 @@ export default function Contact() {
                 className="lg:col-span-2"
               >
                 <div className="bg-card rounded-3xl border border-border p-8">
+                  {ticketId && (
+                    <div className="mb-6 p-4 rounded-xl bg-success/10 border border-success/20 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-success" />
+                        <div>
+                          <p className="text-sm font-medium text-success">Ticket Created</p>
+                          <p className="text-xs text-muted-foreground">Reference: {ticketId}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={copyTicketId}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+
                   <h2 className="font-display text-2xl font-bold text-foreground mb-6">
                     Send us a Message
                   </h2>
@@ -271,7 +319,7 @@ export default function Contact() {
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
-                        "Sending..."
+                        "Preparing..."
                       ) : (
                         <>
                           Send Message
@@ -279,6 +327,10 @@ export default function Contact() {
                         </>
                       )}
                     </Button>
+                    
+                    <p className="text-xs text-center text-muted-foreground">
+                      Your email client will open with pre-filled details. Subject includes: PORTAL | Ticket ID | Timestamp
+                    </p>
                   </form>
                 </div>
               </motion.div>

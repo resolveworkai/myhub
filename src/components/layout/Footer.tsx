@@ -8,6 +8,7 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
+import { SUPPORT_EMAIL } from "@/lib/support";
 
 const footerLinks = {
   discover: [
@@ -25,6 +26,7 @@ const footerLinks = {
   support: [
     { name: "Help Center", href: "/faq" },
     { name: "FAQ", href: "/faq" },
+    { name: "Email Support", href: `mailto:${SUPPORT_EMAIL}` },
     { name: "Privacy Policy", href: "/privacy-policy" },
     { name: "Terms & Conditions", href: "/terms-conditions" },
   ],
@@ -110,12 +112,21 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.support.map((link) => (
                 <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-background/70 hover:text-background transition-colors"
-                  >
-                    {link.name}
-                  </Link>
+                  {link.href.startsWith('mailto:') ? (
+                    <a
+                      href={link.href}
+                      className="text-background/70 hover:text-background transition-colors"
+                    >
+                      {link.name}
+                    </a>
+                  ) : (
+                    <Link
+                      to={link.href}
+                      className="text-background/70 hover:text-background transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

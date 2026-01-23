@@ -14,9 +14,11 @@ import {
   TrendingUp,
   ExternalLink,
   Wallet,
+  HelpCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
+import { SupportModal } from "@/components/support/SupportModal";
 
 const enrollments = [
   {
@@ -77,6 +79,7 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
   const navigate = useNavigate();
   const currentStreak = 12;
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
 
   const handleCheckIn = (appointmentId: string, businessName: string) => {
     toast.success(`Checked in at ${businessName}!`, {
@@ -318,13 +321,22 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
                 <TrendingUp className="h-4 w-4 mr-2" />
                 View Activity
               </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => setSupportOpen(true)}
+              >
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Get Support
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Payment Methods Modal */}
+      {/* Modals */}
       <PaymentMethodsModal open={paymentMethodsOpen} onOpenChange={setPaymentMethodsOpen} />
+      <SupportModal open={supportOpen} onOpenChange={setSupportOpen} />
     </div>
   );
 }
