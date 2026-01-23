@@ -96,7 +96,7 @@ export function FeaturesSection() {
           </h2>
           <p className="text-lg text-muted-foreground">
             Whether you're a fitness enthusiast, a bookworm, or a lifelong learner,
-            MyHub has the tools to help you achieve your goals.
+            Portal has the tools to help you achieve your goals.
           </p>
         </div>
 

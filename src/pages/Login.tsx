@@ -25,9 +25,9 @@ export default function Login() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 mb-8">
             <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
-              <span className="text-primary-foreground font-display font-bold text-xl">M</span>
+              <span className="text-primary-foreground font-display font-bold text-xl">P</span>
             </div>
-            <span className="font-display font-bold text-xl text-foreground">MyHub</span>
+            <span className="font-display font-bold text-xl text-foreground">Portal</span>
           </Link>
 
           <h1 className="font-display text-3xl font-bold text-foreground mb-2">
@@ -187,10 +187,10 @@ export default function Login() {
             <span className="text-6xl">🏋️</span>
           </div>
           <h2 className="font-display text-3xl font-bold text-primary-foreground mb-4">
-            Your Fitness Journey Awaits
+            Your Gateway to Fitness & Learning
           </h2>
           <p className="text-primary-foreground/80 text-lg">
-            Track progress, book appointments, and achieve your goals with MyHub.
+            Track progress, book venues, and achieve your goals with Portal.
           </p>
         </div>
       </div>

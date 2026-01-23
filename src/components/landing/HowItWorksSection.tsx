@@ -1,4 +1,4 @@
-import { Search, CalendarCheck, TrendingUp, ArrowRight } from "lucide-react";
+import { Search, Filter, CalendarCheck, Star, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -7,22 +7,33 @@ const steps = [
     number: "01",
     icon: Search,
     title: "Discover",
-    description: "Browse nearby gyms, libraries, and coaching centers. Filter by location, price, amenities, and ratings to find your perfect match.",
+    description: "Browse categories, view venues on an interactive map, and read real reviews from other users.",
     color: "from-info to-primary",
+    details: ["Search by location", "Filter by category", "Read reviews"],
   },
   {
     number: "02",
-    icon: CalendarCheck,
-    title: "Book",
-    description: "View real-time availability and book your appointments instantly. Get confirmation and reminders automatically.",
+    icon: Filter,
+    title: "Compare",
+    description: "Filter by price, amenities, location, and availability. Find the perfect match for your needs.",
     color: "from-primary to-accent",
+    details: ["Price range filter", "Amenity selection", "Rating comparison"],
   },
   {
     number: "03",
-    icon: TrendingUp,
-    title: "Track & Grow",
-    description: "Monitor your attendance streaks, unlock achievements, and track your progress over time. Stay motivated with challenges.",
+    icon: CalendarCheck,
+    title: "Book",
+    description: "Select your time slot, check real-time availability, and get instant confirmation.",
     color: "from-accent to-warning",
+    details: ["Real-time slots", "Instant booking", "Email confirmation"],
+  },
+  {
+    number: "04",
+    icon: Star,
+    title: "Experience",
+    description: "Check-in at the venue, enjoy your session, and leave a review to help others.",
+    color: "from-warning to-success",
+    details: ["Easy check-in", "Track progress", "Leave reviews"],
   },
 ];
 
@@ -37,51 +48,61 @@ export function HowItWorksSection() {
           </span>
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Get Started in
-            <span className="gradient-text"> 3 Simple Steps</span>
+            <span className="gradient-text"> 4 Simple Steps</span>
           </h2>
           <p className="text-lg text-muted-foreground">
             Whether you're looking to join a gym, find a quiet library, or get coaching,
-            we make it easy to find and book what you need.
+            Portal makes it easy to discover and book what you need.
           </p>
         </div>
 
         {/* Steps */}
         <div className="relative">
           {/* Connection Line - Desktop */}
-          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-info via-primary to-accent -translate-y-1/2 opacity-20" />
+          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-info via-primary via-accent to-success -translate-y-1/2 opacity-20" />
 
-          <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {steps.map((step, index) => (
               <div key={step.number} className="relative group">
                 {/* Card */}
-                <div className="relative bg-card rounded-2xl p-8 border border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300">
+                <div className="relative bg-card rounded-2xl p-6 lg:p-8 border border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300 h-full">
                   {/* Step Number */}
                   <div className={`absolute -top-4 -left-4 w-12 h-12 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center text-white font-display font-bold text-lg shadow-lg group-hover:scale-110 transition-transform`}>
                     {step.number}
                   </div>
 
                   {/* Icon */}
-                  <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors">
-                    <step.icon className="h-8 w-8 text-primary" />
+                  <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-6 mt-4 group-hover:bg-primary/10 transition-colors">
+                    <step.icon className="h-7 w-7 text-primary" />
                   </div>
 
                   {/* Content */}
-                  <h3 className="font-display text-2xl font-bold text-foreground mb-3">
+                  <h3 className="font-display text-xl font-bold text-foreground mb-3">
                     {step.title}
                   </h3>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed mb-4">
                     {step.description}
                   </p>
 
-                  {/* Arrow for Desktop */}
-                  {index < steps.length - 1 && (
-                    <div className="hidden lg:flex absolute -right-6 top-1/2 -translate-y-1/2 z-10">
-                      <div className="w-12 h-12 rounded-full bg-card border-2 border-border flex items-center justify-center">
-                        <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                    </div>
-                  )}
+                  {/* Details */}
+                  <ul className="space-y-2">
+                    {step.details.map((detail) => (
+                      <li key={detail} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        {detail}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
+
+                {/* Arrow for Desktop */}
+                {index < steps.length - 1 && (
+                  <div className="hidden lg:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10">
+                    <div className="w-8 h-8 rounded-full bg-card border-2 border-border flex items-center justify-center">
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

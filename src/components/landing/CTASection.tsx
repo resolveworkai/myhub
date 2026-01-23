@@ -43,7 +43,7 @@ export function CTASection() {
                   ))}
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">50,000+</span> happy members
+                  <span className="font-semibold text-foreground">50,000+</span> happy users
                 </span>
               </div>
             </div>
@@ -60,10 +60,10 @@ export function CTASection() {
                 Grow Your Business
               </h3>
               <p className="text-lg text-muted-foreground mb-8">
-                List your gym, library, or coaching center on MyHub. Reach thousands
+                List your gym, library, or coaching center on Portal. Reach thousands
                 of potential customers and streamline your operations.
               </p>
-              <Link to="/business">
+              <Link to="/for-business">
                 <Button variant="accent" size="lg">
                   List Your Business
                   <ArrowRight className="h-5 w-5 ml-2" />
