@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { format, addDays } from "date-fns";
+import { useState, useMemo } from "react";
+import { format, addDays, isToday, addHours, isBefore, parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,8 @@ import {
   MapPin,
   Star,
   Crown,
+  CreditCard,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSchedules } from "@/hooks/useSchedules";
@@ -85,31 +87,44 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
   const [showMonthlyBooking, setShowMonthlyBooking] = useState(false);
+  const [showPaymentStep, setShowPaymentStep] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
   // Check if current user is a monthly paid member FOR THIS SPECIFIC VENUE
   const userEmail = user?.email || "";
-  const isMonthlyPaidUserForVenue = userEmail
-    ? members.some(
-        (m) =>
-          m.email === userEmail &&
-          m.venueId === venue.id &&
-          m.isMonthlyPaid &&
-          m.status === "active" &&
-          (!m.monthlyPaidUntil || new Date(m.monthlyPaidUntil) >= new Date())
-      )
-    : false;
+  const memberForVenue = useMemo(() => {
+    if (!userEmail) return null;
+    return members.find(
+      (m) =>
+        m.email === userEmail &&
+        m.venueId === venue.id &&
+        m.isMonthlyPaid &&
+        m.status === "active" &&
+        (!m.monthlyPaidUntil || new Date(m.monthlyPaidUntil) >= new Date())
+    );
+  }, [members, userEmail, venue.id]);
   
-  // Check if user has ANY subscription (for paywall check)
-  const hasAnySubscription = userEmail
-    ? members.some(
-        (m) =>
-          m.email === userEmail &&
-          m.isMonthlyPaid &&
-          m.status === "active"
-      )
-    : false;
-  
-  const [showPaywall, setShowPaywall] = useState(false);
+  const isMonthlyPaidUserForVenue = !!memberForVenue;
+
+  // Calculate price for single session
+  const sessionPrice = useMemo(() => {
+    const pricePerHour = parseInt(venue.price.replace(/[^\d]/g, '')) || 100;
+    return Math.round((pricePerHour * selectedDuration) / 60);
+  }, [venue.price, selectedDuration]);
+
+  // Check if slot time is valid (at least 2 hours from now for same-day)
+  const isSlotTimeValid = (slotTime: string, date: Date | undefined) => {
+    if (!date) return true;
+    if (!isToday(date)) return true;
+    
+    const now = new Date();
+    const [hours, minutes] = slotTime.split(':').map(Number);
+    const slotDateTime = new Date(date);
+    slotDateTime.setHours(hours, minutes, 0, 0);
+    
+    const minBookingTime = addHours(now, 2);
+    return isBefore(minBookingTime, slotDateTime);
+  };
 
   const userId = user?.id || "guest";
   const userName = user 
@@ -141,9 +156,18 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
       return;
     }
     
-    // Check if user has subscription for THIS venue
-    if (!isMonthlyPaidUserForVenue) {
-      setShowPaywall(true);
+    // For non-subscribers, show payment step
+    if (!isMonthlyPaidUserForVenue && !showPaymentStep) {
+      setShowPaymentStep(true);
+      return;
+    }
+    
+    // For paid bookings, validate payment method
+    if (!isMonthlyPaidUserForVenue && !selectedPaymentMethod) {
+      toast({
+        title: "Please select a payment method",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -183,11 +207,6 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
       setShowGuestPrompt(true);
       return;
     }
-    // Check if user has subscription for THIS venue
-    if (!isMonthlyPaidUserForVenue) {
-      setShowPaywall(true);
-      return;
-    }
     setStep(2);
   };
 
@@ -197,6 +216,8 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
     setSelectedTime(undefined);
     setSelectedDuration(60);
     setNotes("");
+    setShowPaymentStep(false);
+    setSelectedPaymentMethod("");
     onClose();
   };
 
@@ -223,42 +244,45 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Monthly Member Quick Book Option - Only for venue subscribers */}
+          {/* Monthly Subscription Active Badge */}
           {isMonthlyPaidUserForVenue && step === 1 && (
-            <div className="p-4 rounded-xl bg-warning/5 border border-warning/20 mb-4">
+            <div className="p-4 rounded-xl bg-success/5 border border-success/20 mb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Crown className="h-5 w-5 text-warning" />
+                  <Crown className="h-5 w-5 text-success" />
                   <div>
-                    <p className="font-medium text-sm">Monthly Member Benefit</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm">Monthly Subscription Active</p>
+                      <Badge variant="success" className="text-xs">Active</Badge>
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      Book all 30 days with one click
+                      Valid until {memberForVenue?.monthlyPaidUntil ? format(new Date(memberForVenue.monthlyPaidUntil), "MMM d, yyyy") : "N/A"}
                     </p>
                   </div>
                 </div>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-warning text-warning hover:bg-warning/10"
+                  className="border-success text-success hover:bg-success/10"
                   onClick={() => setShowMonthlyBooking(true)}
                 >
-                  Book Month
+                  Book 30 Days
                 </Button>
               </div>
             </div>
           )}
           
-          {/* Paywall for non-subscribers */}
+          {/* Pay Per Session Option for non-subscribers */}
           {isAuthenticated && !isMonthlyPaidUserForVenue && step === 1 && (
-            <div className="p-4 rounded-xl bg-muted/50 border border-border mb-4">
+            <div className="p-4 rounded-xl bg-info/5 border border-info/20 mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Crown className="h-5 w-5 text-primary" />
+                <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 text-info" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-sm">No Active Subscription</p>
+                  <p className="font-medium text-sm">Pay Per Session</p>
                   <p className="text-xs text-muted-foreground">
-                    Purchase a monthly subscription to book at {venue.name}
+                    Book individual slots starting at {venue.price}/hour
                   </p>
                 </div>
               </div>
@@ -359,10 +383,19 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
                 </div>
               </div>
 
+              {/* 2-hour notice for same-day bookings */}
+              {selectedDate && isToday(selectedDate) && (
+                <div className="p-2 rounded-lg bg-warning/10 text-warning text-xs">
+                  ⏰ Same-day slots must be at least 2 hours from now
+                </div>
+              )}
+
               <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
                 {timeSlots.map((slot) => {
                   const status = getSlotStatus(slot.available, slot.total);
-                  const isDisabled = status === "full";
+                  const isFull = status === "full";
+                  const isTooSoon = !isSlotTimeValid(slot.time, selectedDate);
+                  const isDisabled = isFull || isTooSoon;
                   const isSelected = selectedTime === slot.time;
 
                   return (
@@ -372,14 +405,17 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
                       onClick={() => setSelectedTime(slot.time)}
                       className={cn(
                         "p-3 rounded-lg border text-center transition-all",
+                        isDisabled && "opacity-50 cursor-not-allowed",
                         isSelected
                           ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary ring-offset-2"
+                          : isTooSoon
+                          ? "bg-muted text-muted-foreground border-muted"
                           : getSlotColor(status)
                       )}
                     >
                       <div className="font-medium">{slot.label}</div>
                       <div className="text-xs opacity-80">
-                        {slot.available}/{slot.total} left
+                        {isTooSoon ? "Too soon" : `${slot.available}/${slot.total} left`}
                       </div>
                     </button>
                   );
@@ -402,8 +438,8 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
             </div>
           )}
 
-          {/* Step 3: Duration & Notes */}
-          {step === 3 && (
+          {/* Step 3: Duration & Notes (or Payment for non-subscribers) */}
+          {step === 3 && !showPaymentStep && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-foreground">Booking Details</h3>
@@ -459,6 +495,19 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
                   rows={3}
                 />
               </div>
+              
+              {/* Price Preview for non-subscribers */}
+              {!isMonthlyPaidUserForVenue && (
+                <div className="p-4 rounded-xl bg-info/5 border border-info/20">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Session Cost</span>
+                    <span className="text-lg font-bold text-primary">₹{sessionPrice}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Pay per session • No monthly commitment
+                  </p>
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>
@@ -470,7 +519,83 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
                   onClick={handleBooking}
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Booking..." : "Confirm Booking"}
+                  {isMonthlyPaidUserForVenue 
+                    ? (isSubmitting ? "Booking..." : "Confirm Booking")
+                    : `Pay ₹${sessionPrice}`
+                  }
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {/* Step 3b: Payment Step for non-subscribers */}
+          {step === 3 && showPaymentStep && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground">Complete Payment</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowPaymentStep(false)}>
+                  Back
+                </Button>
+              </div>
+
+              {/* Booking Summary */}
+              <div className="p-4 rounded-xl bg-muted/50 space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <span className="font-medium">{venue.name}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                  {selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  {timeSlots.find(s => s.time === selectedTime)?.label} ({selectedDuration} min)
+                </div>
+              </div>
+              
+              {/* Amount */}
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
+                <p className="text-sm text-muted-foreground">Amount to Pay</p>
+                <p className="text-3xl font-bold text-primary">₹{sessionPrice}</p>
+              </div>
+
+              {/* Payment Methods */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Payment Method</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: "card", label: "Card", icon: CreditCard },
+                    { id: "upi", label: "UPI", icon: Wallet },
+                  ].map((method) => (
+                    <button
+                      key={method.id}
+                      onClick={() => setSelectedPaymentMethod(method.id)}
+                      className={cn(
+                        "p-3 rounded-lg border flex items-center gap-2 transition-all",
+                        selectedPaymentMethod === method.id
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card border-border hover:border-primary/50"
+                      )}
+                    >
+                      <method.icon className="h-4 w-4" />
+                      <span className="font-medium text-sm">{method.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setShowPaymentStep(false)}>
+                  Back
+                </Button>
+                <Button
+                  variant="gradient"
+                  className="flex-1"
+                  onClick={handleBooking}
+                  disabled={isSubmitting || !selectedPaymentMethod}
+                >
+                  {isSubmitting ? "Processing..." : `Pay ₹${sessionPrice}`}
                 </Button>
               </div>
             </div>
@@ -543,52 +668,6 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
         />
       )}
       
-      {/* Subscription Paywall */}
-      <Dialog open={showPaywall} onOpenChange={setShowPaywall}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Crown className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <div className="font-display text-lg">Subscription Required</div>
-              </div>
-            </DialogTitle>
-            <DialogDescription>
-              You need an active subscription to book at this venue
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="p-4 rounded-xl bg-muted/50">
-              <p className="font-medium">{venue.name}</p>
-              <p className="text-sm text-muted-foreground capitalize">{venue.type}</p>
-            </div>
-            
-            <div className="p-4 rounded-xl bg-warning/5 border border-warning/20">
-              <p className="text-sm">
-                Purchase a monthly subscription to unlock unlimited booking at this venue.
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setShowPaywall(false)}>
-              Cancel
-            </Button>
-            <Button variant="gradient" className="flex-1" onClick={() => {
-              setShowPaywall(false);
-              toast({
-                title: "Redirecting to subscription...",
-                description: "Contact the business to purchase a monthly subscription.",
-              });
-            }}>
-              Get Subscription
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
