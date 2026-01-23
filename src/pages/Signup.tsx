@@ -1,27 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  User,
-  Building2,
-  Users,
-  Check,
-} from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Check, Users, Building2 } from "lucide-react";
+import { NormalUserSignup } from "@/components/auth/signup/NormalUserSignup";
+import { BusinessSignup } from "@/components/auth/signup/BusinessSignup";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 
 type UserType = "member" | "business";
 
 export default function Signup() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [userType, setUserType] = useState<UserType>("member");
-  const [step, setStep] = useState(1);
+  const location = useLocation();
+  const isBusinessPath = location.pathname.includes('/business');
+  const [userType, setUserType] = useState<UserType>(isBusinessPath ? "business" : "member");
 
   return (
     <div className="min-h-screen flex">
@@ -85,137 +74,33 @@ export default function Signup() {
             </button>
           </div>
 
-          <form className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    id="firstName"
-                    placeholder="John"
-                    className="pl-10"
-                  />
+          {/* Social Auth (only for member signup) */}
+          {userType === "member" && (
+            <>
+              <SocialAuthButtons mode="signup" />
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-background px-4 text-muted-foreground">
+                    or continue with email
+                  </span>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" placeholder="Doe" />
-              </div>
-            </div>
+            </>
+          )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="john@example.com"
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create a strong password"
-                  className="pl-10 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-              <div className="flex gap-1 mt-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className={`h-1 flex-1 rounded-full ${
-                      i <= 2 ? "bg-warning" : "bg-muted"
-                    }`}
-                  />
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Use 8+ characters with a mix of letters, numbers & symbols
-              </p>
-            </div>
-
-            {userType === "business" && (
-              <div className="space-y-2">
-                <Label htmlFor="businessName">Business Name</Label>
-                <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    id="businessName"
-                    placeholder="Your Business Name"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-start gap-2">
-              <Checkbox id="terms" className="mt-1" />
-              <Label htmlFor="terms" className="text-sm font-normal cursor-pointer leading-relaxed">
-                I agree to the{" "}
-                <Link to="/terms" className="text-primary hover:underline">
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link to="/privacy" className="text-primary hover:underline">
-                  Privacy Policy
-                </Link>
-              </Label>
-            </div>
-
-            <Button variant="gradient" className="w-full" size="lg">
-              Create Account
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
-          </form>
-
-          {/* Divider */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-background px-4 text-muted-foreground">
-                or sign up with
-              </span>
-            </div>
-          </div>
-
-          {/* Social Signup */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { name: "Google", icon: "G" },
-              { name: "Apple", icon: "" },
-              { name: "Facebook", icon: "f" },
-            ].map((provider) => (
-              <Button key={provider.name} variant="outline" className="h-12">
-                <span className="font-bold">{provider.icon || provider.name[0]}</span>
-              </Button>
-            ))}
-          </div>
+          {/* Multi-step Forms */}
+          {userType === "member" ? (
+            <NormalUserSignup />
+          ) : (
+            <BusinessSignup />
+          )}
 
           <p className="text-center text-sm text-muted-foreground mt-8">
             Already have an account?{" "}
-            <Link to="/login" className="text-primary font-semibold hover:underline">
+            <Link to="/signin" className="text-primary font-semibold hover:underline">
               Sign in
             </Link>
           </p>
