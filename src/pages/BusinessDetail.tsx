@@ -34,6 +34,7 @@ import {
 import gymsData from "@/data/mock/gyms.json";
 import coachingData from "@/data/mock/coaching.json";
 import librariesData from "@/data/mock/libraries.json";
+import businessUsersData from "@/data/mock/businessUsers.json";
 
 // Combine all venue data
 const allVenues = [
@@ -41,6 +42,12 @@ const allVenues = [
   ...coachingData.map((c) => ({ ...c, type: "coaching" as const })),
   ...librariesData.map((l) => ({ ...l, type: "library" as const })),
 ];
+
+// Create a mapping from business user ID to their venue locations
+const businessUserVenueMap: Record<string, string[]> = {};
+businessUsersData.forEach((bu: any) => {
+  businessUserVenueMap[bu.id] = bu.locations || [];
+});
 
 // Icon mapping for amenities
 const amenityIcons: Record<string, any> = {
@@ -174,8 +181,21 @@ export default function BusinessDetail() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   // Find the venue by ID from combined data
+  // First check if ID is a venue ID, then check if it's a business user ID
   const venue = useMemo(() => {
-    return allVenues.find((v) => v.id === id);
+    // Direct venue ID match
+    let foundVenue = allVenues.find((v) => v.id === id);
+    
+    // If not found, check if it's a business user ID
+    if (!foundVenue && id) {
+      const venueIds = businessUserVenueMap[id];
+      if (venueIds && venueIds.length > 0) {
+        // Get the first venue associated with this business user
+        foundVenue = allVenues.find((v) => venueIds.includes(v.id));
+      }
+    }
+    
+    return foundVenue;
   }, [id]);
 
   if (!venue) {
