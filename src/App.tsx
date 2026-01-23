@@ -93,27 +93,7 @@ const App = () => (
             <Route path="/business/:id" element={<BusinessDetail />} />
             
             {/* Protected: User Dashboard */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute requiredAccountType="normal">
-                <UserDashboard />
-              </ProtectedRoute>
-            } />
             <Route path="/dashboard/*" element={
-              <ProtectedRoute requiredAccountType="normal">
-                <UserDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute requiredAccountType="normal">
-                <UserDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/bookings" element={
-              <ProtectedRoute requiredAccountType="normal">
-                <UserDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/favorites" element={
               <ProtectedRoute requiredAccountType="normal">
                 <UserDashboard />
               </ProtectedRoute>
