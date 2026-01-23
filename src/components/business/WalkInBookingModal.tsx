@@ -20,6 +20,7 @@ import {
 import { Users, Clock, Loader2, CheckCircle, CreditCard, Smartphone, IndianRupee, ArrowLeft, Banknote } from "lucide-react";
 import { toast } from "sonner";
 import { useSchedules } from "@/hooks/useSchedules";
+import { useWalkInStore } from "@/store/walkInStore";
 import { cn } from "@/lib/utils";
 
 interface WalkInBookingModalProps {
@@ -66,6 +67,7 @@ export function WalkInBookingModal({
   const [paymentMethod, setPaymentMethod] = useState("");
   const [upiId, setUpiId] = useState("");
   const { addSchedule } = useSchedules();
+  const { addBooking } = useWalkInStore();
 
   const selectedDuration = durationOptions.find(d => d.value === duration);
   const numPersons = parseInt(persons) || 0;
@@ -100,6 +102,15 @@ export function WalkInBookingModal({
     const now = new Date();
     const currentTime = now.toTimeString().slice(0, 5);
     const currentDate = now.toISOString().split('T')[0];
+    
+    // Add to walk-in store (updates live occupancy)
+    addBooking({
+      persons: numPersons,
+      duration: parseInt(duration),
+      startTime: now,
+      paymentMethod,
+      amount: totalPrice,
+    });
     
     // Add to schedules for each person
     for (let i = 0; i < numPersons; i++) {
