@@ -17,6 +17,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuthStore } from "@/store/authStore";
+import { UserMenu } from "./UserMenu";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 
 const navigation = [
   { name: "Gyms", href: "/gyms", icon: Dumbbell },
@@ -39,6 +42,8 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  
+  const { isAuthenticated, accountType } = useAuthStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -141,24 +146,34 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Link to="/signin">
-                <Button
-                  variant={isHomePage ? "hero-outline" : "outline"}
-                  size="sm"
-                  className={isHomePage ? "!px-4 !py-2 !h-auto !text-sm" : ""}
-                >
-                  Sign In
-                </Button>
-              </Link>
-              <Link to="/signup">
-                <Button
-                  variant={isHomePage ? "hero" : "gradient"}
-                  size="sm"
-                  className={isHomePage ? "!px-4 !py-2 !h-auto !text-sm" : ""}
-                >
-                  Get Started
-                </Button>
-              </Link>
+              {/* Auth-dependent buttons */}
+              {isAuthenticated ? (
+                <>
+                  <NotificationDropdown />
+                  <UserMenu isHomePage={isHomePage} />
+                </>
+              ) : (
+                <>
+                  <Link to="/signin">
+                    <Button
+                      variant={isHomePage ? "hero-outline" : "outline"}
+                      size="sm"
+                      className={isHomePage ? "!px-4 !py-2 !h-auto !text-sm" : ""}
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link to="/signup">
+                    <Button
+                      variant={isHomePage ? "hero" : "gradient"}
+                      size="sm"
+                      className={isHomePage ? "!px-4 !py-2 !h-auto !text-sm" : ""}
+                    >
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -237,16 +252,36 @@ export function Header() {
           ))}
           
           <div className="pt-4 mt-4 border-t border-border space-y-2">
-            <Link to="/signin" onClick={closeMobileMenu}>
-              <Button variant="outline" className="w-full">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/signup" onClick={closeMobileMenu}>
-              <Button variant="gradient" className="w-full">
-                Get Started
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link 
+                  to={accountType === 'business' ? '/business-dashboard' : '/dashboard'} 
+                  onClick={closeMobileMenu}
+                >
+                  <Button variant="outline" className="w-full">
+                    Dashboard
+                  </Button>
+                </Link>
+                <Link to="/settings" onClick={closeMobileMenu}>
+                  <Button variant="ghost" className="w-full">
+                    Settings
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/signin" onClick={closeMobileMenu}>
+                  <Button variant="outline" className="w-full">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup" onClick={closeMobileMenu}>
+                  <Button variant="gradient" className="w-full">
+                    Get Started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="pt-4 border-t border-border">
