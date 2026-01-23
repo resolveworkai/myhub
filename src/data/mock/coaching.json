@@ -1,0 +1,119 @@
+[
+  {
+    "id": "c1",
+    "name": "MathsPro Academy",
+    "description": "Expert mathematics tutoring from primary to university level. Specialized in exam preparation for IGCSE, IB, and A-Levels. Small batch sizes ensure personalized attention.",
+    "category": "coaching",
+    "subjects": ["Mathematics", "Statistics", "Calculus", "Algebra"],
+    "images": [
+      "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?w=800&h=600&fit=crop"
+    ],
+    "location": {"lat": 25.2582, "lng": 55.3047, "address": "Deira, Al Rigga, Dubai, UAE"},
+    "rating": 4.9,
+    "reviewCount": 312,
+    "priceRange": "$$",
+    "instructors": [
+      {"name": "Prof. Alan Chen", "qualification": "PhD Mathematics, MIT", "experience": "15 years"},
+      {"name": "Dr. Sarah Kumar", "qualification": "MSc Applied Mathematics", "experience": "10 years"}
+    ],
+    "classTypes": ["Individual", "Small Group (2-4)", "Batch (5-10)"],
+    "levels": ["Primary", "Secondary", "High School", "University", "Competitive Exams"],
+    "amenities": ["AC Classrooms", "Smart Boards", "Study Materials", "Practice Tests", "Online Classes Available"],
+    "openingHours": {"monday": "3:00 PM - 9:00 PM", "tuesday": "3:00 PM - 9:00 PM", "wednesday": "3:00 PM - 9:00 PM", "thursday": "3:00 PM - 9:00 PM", "friday": "Closed", "saturday": "9:00 AM - 6:00 PM", "sunday": "9:00 AM - 6:00 PM"},
+    "contactInfo": {"phone": "+971-4-555-0301", "email": "enroll@mathspro.ae"}
+  },
+  {
+    "id": "c2",
+    "name": "LanguageLink Institute",
+    "description": "Master new languages with native speakers. Offering courses in Arabic, English, French, Spanish, Mandarin, and German. Conversation-focused methodology.",
+    "category": "coaching",
+    "subjects": ["Arabic", "English", "French", "Spanish", "Mandarin", "German"],
+    "images": [
+      "https://images.unsplash.com/photo-1571260899304-425eee4c7efd?w=800&h=600&fit=crop"
+    ],
+    "location": {"lat": 25.0657, "lng": 55.1713, "address": "Dubai Marina, Marina Plaza, Dubai, UAE"},
+    "rating": 4.7,
+    "reviewCount": 198,
+    "priceRange": "$$",
+    "instructors": [
+      {"name": "Sofia Rodriguez", "qualification": "Native Spanish, CELTA Certified", "experience": "12 years"},
+      {"name": "Ahmed Al-Rashid", "qualification": "Native Arabic, MA Linguistics", "experience": "8 years"},
+      {"name": "Marie Dubois", "qualification": "Native French, DALF C2", "experience": "10 years"}
+    ],
+    "classTypes": ["Individual", "Small Group (2-4)", "Batch (5-8)", "Corporate Training"],
+    "levels": ["Beginner", "Intermediate", "Advanced", "Business", "Conversational"],
+    "amenities": ["Language Lab", "Interactive Materials", "Cultural Events", "Online Platform"],
+    "openingHours": {"monday": "9:00 AM - 9:00 PM", "tuesday": "9:00 AM - 9:00 PM", "wednesday": "9:00 AM - 9:00 PM", "thursday": "9:00 AM - 9:00 PM", "friday": "2:00 PM - 7:00 PM", "saturday": "10:00 AM - 6:00 PM", "sunday": "10:00 AM - 6:00 PM"},
+    "contactInfo": {"phone": "+971-4-555-0302", "email": "learn@languagelink.ae"}
+  },
+  {
+    "id": "c3",
+    "name": "CodeCraft Academy",
+    "description": "Learn programming from industry professionals. Courses in Python, JavaScript, Data Science, and Web Development. Project-based learning with real-world applications.",
+    "category": "coaching",
+    "subjects": ["Python", "JavaScript", "Data Science", "Web Development", "Mobile Apps", "AI/ML"],
+    "images": [
+      "https://images.unsplash.com/photo-1515378960530-7c0da6231fb1?w=800&h=600&fit=crop"
+    ],
+    "location": {"lat": 25.1972, "lng": 55.2744, "address": "Business Bay, Bay Square, Dubai, UAE"},
+    "rating": 4.8,
+    "reviewCount": 267,
+    "priceRange": "$$$",
+    "instructors": [
+      {"name": "Alex Johnson", "qualification": "Sr. Software Engineer, Ex-Google", "experience": "12 years"},
+      {"name": "Priya Sharma", "qualification": "Data Scientist, PhD CS", "experience": "8 years"}
+    ],
+    "classTypes": ["Bootcamp", "Part-time Course", "Individual Mentoring", "Corporate Training"],
+    "levels": ["Beginner", "Intermediate", "Advanced", "Professional"],
+    "amenities": ["Computer Lab", "High-speed Internet", "Project Support", "Career Guidance", "Certification"],
+    "openingHours": {"monday": "10:00 AM - 9:00 PM", "tuesday": "10:00 AM - 9:00 PM", "wednesday": "10:00 AM - 9:00 PM", "thursday": "10:00 AM - 9:00 PM", "friday": "Closed", "saturday": "9:00 AM - 6:00 PM", "sunday": "9:00 AM - 6:00 PM"},
+    "contactInfo": {"phone": "+971-4-555-0303", "email": "code@codecraft.ae"}
+  },
+  {
+    "id": "c4",
+    "name": "Music Masters Institute",
+    "description": "Classical and contemporary music education for all ages. Piano, guitar, violin, drums, and vocal training. Performance opportunities throughout the year.",
+    "category": "coaching",
+    "subjects": ["Piano", "Guitar", "Violin", "Drums", "Vocals", "Music Theory"],
+    "images": [
+      "https://images.unsplash.com/photo-1514119412350-e174d90d280e?w=800&h=600&fit=crop"
+    ],
+    "location": {"lat": 25.0760, "lng": 55.1373, "address": "Palm Jumeirah, Golden Mile, Dubai, UAE"},
+    "rating": 4.9,
+    "reviewCount": 145,
+    "priceRange": "$$$",
+    "instructors": [
+      {"name": "Victoria Moore", "qualification": "Royal Academy of Music Graduate", "experience": "20 years"},
+      {"name": "Carlos Santana Jr.", "qualification": "Berklee Graduate, Session Musician", "experience": "15 years"}
+    ],
+    "classTypes": ["Individual", "Duet", "Group Ensemble", "Masterclass"],
+    "levels": ["Beginner", "Intermediate", "Advanced", "Professional", "Exam Prep (ABRSM, Trinity)"],
+    "amenities": ["Sound-proof Rooms", "Quality Instruments", "Recording Studio", "Recital Hall"],
+    "openingHours": {"monday": "2:00 PM - 9:00 PM", "tuesday": "2:00 PM - 9:00 PM", "wednesday": "2:00 PM - 9:00 PM", "thursday": "2:00 PM - 9:00 PM", "friday": "10:00 AM - 6:00 PM", "saturday": "10:00 AM - 6:00 PM", "sunday": "10:00 AM - 6:00 PM"},
+    "contactInfo": {"phone": "+971-4-555-0304", "email": "music@musicmasters.ae"}
+  },
+  {
+    "id": "c5",
+    "name": "Art Atelier Dubai",
+    "description": "Explore your creativity with professional art instruction. Painting, drawing, sculpture, and digital art courses for beginners to professionals.",
+    "category": "coaching",
+    "subjects": ["Oil Painting", "Watercolor", "Drawing", "Sculpture", "Digital Art", "Art History"],
+    "images": [
+      "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&h=600&fit=crop"
+    ],
+    "location": {"lat": 25.1850, "lng": 55.2628, "address": "Al Quoz, Alserkal Avenue, Dubai, UAE"},
+    "rating": 4.8,
+    "reviewCount": 178,
+    "priceRange": "$$",
+    "instructors": [
+      {"name": "Elena Petrova", "qualification": "MFA, St. Petersburg Academy of Arts", "experience": "18 years"},
+      {"name": "Omar Al-Farsi", "qualification": "Contemporary Artist, NYFA Alumnus", "experience": "12 years"}
+    ],
+    "classTypes": ["Individual", "Small Group", "Workshop", "Intensive Course"],
+    "levels": ["Beginner", "Intermediate", "Advanced", "Professional Portfolio"],
+    "amenities": ["Natural Light Studios", "Art Supplies Included", "Exhibition Space", "Artist Talks"],
+    "openingHours": {"monday": "10:00 AM - 8:00 PM", "tuesday": "10:00 AM - 8:00 PM", "wednesday": "10:00 AM - 8:00 PM", "thursday": "10:00 AM - 8:00 PM", "friday": "Closed", "saturday": "10:00 AM - 6:00 PM", "sunday": "10:00 AM - 6:00 PM"},
+    "contactInfo": {"phone": "+971-4-555-0305", "email": "create@artatelier.ae"}
+  }
+]

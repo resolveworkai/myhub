@@ -22,18 +22,41 @@ const App = () => (
       <Sonner />
       <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
+          {/* Public Pages */}
           <Route path="/" element={<Index />} />
+          <Route path="/signin" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/signup/business" element={<Signup />} />
+          <Route path="/forgot-password" element={<Login />} />
+          
+          {/* Discovery Pages */}
           <Route path="/explore" element={<Explore />} />
+          <Route path="/gyms" element={<Explore />} />
+          <Route path="/coaching" element={<Explore />} />
+          <Route path="/libraries" element={<Explore />} />
+          
+          {/* Venue Detail */}
+          <Route path="/venue/:id" element={<BusinessDetail />} />
           <Route path="/business/:id" element={<BusinessDetail />} />
+          
+          {/* User Dashboard */}
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/dashboard/*" element={<UserDashboard />} />
+          <Route path="/profile" element={<UserDashboard />} />
+          <Route path="/bookings" element={<UserDashboard />} />
+          <Route path="/favorites" element={<UserDashboard />} />
+          <Route path="/settings" element={<UserDashboard />} />
+          
+          {/* Business Dashboard */}
           <Route path="/business-dashboard" element={<BusinessDashboard />} />
           <Route path="/business-dashboard/*" element={<BusinessDashboard />} />
+          
+          {/* Admin */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/*" element={<AdminDashboard />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          
+          {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

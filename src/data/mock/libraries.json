@@ -1,0 +1,60 @@
+[
+  {
+    "id": "l1",
+    "name": "Knowledge Hub Library",
+    "description": "Modern co-working and study space with extensive digital and physical collections. Featuring private study rooms, computer labs, and quiet zones for focused work.",
+    "category": "library",
+    "images": [
+      "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800&h=600&fit=crop"
+    ],
+    "location": {"lat": 25.2048, "lng": 55.2708, "address": "Downtown Dubai, Boulevard Plaza, Dubai, UAE"},
+    "rating": 4.8,
+    "reviewCount": 187,
+    "studySpaces": 120,
+    "collections": ["Fiction", "Non-fiction", "Business", "Technology", "Digital Resources", "Academic Journals"],
+    "amenities": ["WiFi", "Computer Lab", "Printing", "Cafeteria", "Study Rooms", "Quiet Zone", "Group Areas"],
+    "openingHours": {"monday": "7:00 AM - 11:00 PM", "tuesday": "7:00 AM - 11:00 PM", "wednesday": "7:00 AM - 11:00 PM", "thursday": "7:00 AM - 11:00 PM", "friday": "9:00 AM - 10:00 PM", "saturday": "9:00 AM - 10:00 PM", "sunday": "9:00 AM - 10:00 PM"},
+    "membership": {"types": ["Day Pass", "Monthly", "Annual"], "prices": {"dayPass": 50, "monthly": 300, "annual": 2500}},
+    "currentOccupancy": 78,
+    "contactInfo": {"phone": "+971-4-555-0201", "email": "info@knowledgehub.ae"}
+  },
+  {
+    "id": "l2",
+    "name": "Scholar Zone",
+    "description": "Student-focused study center with affordable rates and exam preparation resources. Extended hours during exam seasons and academic support available.",
+    "category": "library",
+    "images": [
+      "https://images.unsplash.com/photo-1568667256549-094345857637?w=800&h=600&fit=crop"
+    ],
+    "location": {"lat": 25.1850, "lng": 55.2628, "address": "Al Quoz, Alserkal Avenue, Dubai, UAE"},
+    "rating": 4.5,
+    "reviewCount": 234,
+    "studySpaces": 80,
+    "collections": ["Academic", "Reference", "Test Prep", "Digital Library"],
+    "amenities": ["WiFi", "Printing", "Study Rooms", "Quiet Zone", "Tutoring Services"],
+    "openingHours": {"monday": "8:00 AM - 12:00 AM", "tuesday": "8:00 AM - 12:00 AM", "wednesday": "8:00 AM - 12:00 AM", "thursday": "8:00 AM - 12:00 AM", "friday": "10:00 AM - 10:00 PM", "saturday": "10:00 AM - 10:00 PM", "sunday": "10:00 AM - 10:00 PM"},
+    "membership": {"types": ["Day Pass", "Monthly", "Semester"], "prices": {"dayPass": 25, "monthly": 150, "semester": 400}},
+    "currentOccupancy": 52,
+    "contactInfo": {"phone": "+971-4-555-0202", "email": "study@scholarzone.ae"}
+  },
+  {
+    "id": "l3",
+    "name": "The Reading Room",
+    "description": "Cozy, boutique library experience with curated collections and artisanal coffee. Perfect for book lovers and creative professionals seeking inspiration.",
+    "category": "library",
+    "images": [
+      "https://images.unsplash.com/photo-1526243741027-444d633d7365?w=800&h=600&fit=crop"
+    ],
+    "location": {"lat": 25.0993, "lng": 55.1707, "address": "JLT, Cluster D, Dubai, UAE"},
+    "rating": 4.9,
+    "reviewCount": 156,
+    "studySpaces": 40,
+    "collections": ["Contemporary Fiction", "Art & Design", "Photography", "Poetry", "Rare Books"],
+    "amenities": ["Artisan Coffee", "WiFi", "Reading Nooks", "Book Club Events", "Author Talks"],
+    "openingHours": {"monday": "9:00 AM - 9:00 PM", "tuesday": "9:00 AM - 9:00 PM", "wednesday": "9:00 AM - 9:00 PM", "thursday": "9:00 AM - 9:00 PM", "friday": "10:00 AM - 8:00 PM", "saturday": "10:00 AM - 8:00 PM", "sunday": "10:00 AM - 8:00 PM"},
+    "membership": {"types": ["Day Pass", "Monthly", "Annual"], "prices": {"dayPass": 40, "monthly": 250, "annual": 2000}},
+    "currentOccupancy": 28,
+    "contactInfo": {"phone": "+971-4-555-0203", "email": "hello@readingroom.ae"}
+  }
+]

@@ -1,27 +1,40 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Search,
   MapPin,
   Star,
   Users,
   Calendar,
-  TrendingUp,
-  Play,
   ArrowRight,
   Sparkles,
+  Dumbbell,
+  BookOpen,
+  GraduationCap,
 } from "lucide-react";
 
 const stats = [
-  { label: "Businesses", value: "2,500+", icon: Users },
-  { label: "Happy Members", value: "50,000+", icon: Star },
-  { label: "Appointments Booked", value: "1M+", icon: Calendar },
+  { label: "Venues", value: "2,500+", icon: Users },
+  { label: "Happy Users", value: "50,000+", icon: Star },
+  { label: "Bookings Made", value: "1M+", icon: Calendar },
+];
+
+const categories = [
+  { name: "Gyms", icon: Dumbbell, href: "/gyms", color: "bg-blue-500/20 text-blue-400" },
+  { name: "Coaching", icon: GraduationCap, href: "/coaching", color: "bg-purple-500/20 text-purple-400" },
+  { name: "Libraries", icon: BookOpen, href: "/libraries", color: "bg-green-500/20 text-green-400" },
 ];
 
 export function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate(`/explore?q=${encodeURIComponent(searchQuery)}&location=${encodeURIComponent(locationQuery)}`);
+  };
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
@@ -44,76 +57,77 @@ export function HeroSection() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 mb-8 animate-fade-in">
             <Sparkles className="h-4 w-4 text-accent" />
             <span className="text-primary-foreground/90 text-sm font-medium">
-              Trusted by 2,500+ businesses worldwide
+              Trusted by 50,000+ users across UAE
             </span>
           </div>
 
           {/* Headline */}
           <h1 className="font-display text-4xl md:text-5xl lg:text-7xl font-bold text-primary-foreground mb-6 tracking-tight animate-slide-up">
-            Find Your Perfect
+            Your Gateway to
             <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-accent via-warning to-accent">
-              Gym, Library, or Coach
+              Fitness & Learning
             </span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-primary-foreground/80 mb-10 max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: "0.1s" }}>
-            Book appointments, track your progress, and stay motivated.
-            The all-in-one platform for members and business owners.
+            Discover and book gyms, coaching centers, and libraries near you.
+            Real-time availability, instant booking, and progress tracking.
           </p>
 
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-12 animate-slide-up" style={{ animationDelay: "0.2s" }}>
-            <div className="relative flex items-center bg-primary-foreground/10 backdrop-blur-md rounded-2xl border border-primary-foreground/20 p-2 shadow-xl">
+          <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            <div className="relative flex flex-col md:flex-row items-stretch md:items-center bg-primary-foreground/10 backdrop-blur-md rounded-2xl border border-primary-foreground/20 p-2 shadow-xl gap-2 md:gap-0">
               <div className="flex-1 flex items-center gap-3 px-4">
                 <Search className="h-5 w-5 text-primary-foreground/60" />
                 <input
                   type="text"
-                  placeholder="Search for gyms, libraries, coaching centers..."
+                  placeholder="Search gyms, coaching, libraries..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 outline-none text-base"
+                  className="flex-1 bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 outline-none text-base py-2 md:py-0"
                 />
               </div>
-              <div className="hidden md:flex items-center gap-2 px-4 border-l border-primary-foreground/20">
+              <div className="flex items-center gap-2 px-4 md:border-l border-primary-foreground/20">
                 <MapPin className="h-5 w-5 text-primary-foreground/60" />
                 <input
                   type="text"
                   placeholder="Location"
-                  className="w-32 bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 outline-none text-base"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  className="w-full md:w-32 bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 outline-none text-base py-2 md:py-0"
                 />
               </div>
-              <Link to="/explore">
-                <Button variant="accent" size="lg" className="rounded-xl">
-                  <Search className="h-5 w-5 mr-2" />
-                  Search
-                </Button>
+              <Button type="submit" variant="accent" size="lg" className="rounded-xl w-full md:w-auto">
+                <Search className="h-5 w-5 mr-2" />
+                Search
+              </Button>
+            </div>
+          </form>
+
+          {/* Quick Categories */}
+          <div className="flex flex-wrap justify-center gap-3 mb-12 animate-slide-up" style={{ animationDelay: "0.25s" }}>
+            {categories.map((cat) => (
+              <Link
+                key={cat.name}
+                to={cat.href}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full ${cat.color} text-sm font-medium hover:scale-105 transition-transform`}
+              >
+                <cat.icon className="h-4 w-4" />
+                {cat.name}
               </Link>
-            </div>
-            
-            {/* Quick Categories */}
-            <div className="flex flex-wrap justify-center gap-2 mt-4">
-              {["Gyms", "Libraries", "Yoga", "Coaching", "Dance", "Sports"].map((cat) => (
-                <Link
-                  key={cat}
-                  to={`/explore?category=${cat.toLowerCase()}`}
-                  className="px-4 py-1.5 rounded-full bg-primary-foreground/10 text-primary-foreground/80 text-sm font-medium hover:bg-primary-foreground/20 transition-colors"
-                >
-                  {cat}
-                </Link>
-              ))}
-            </div>
+            ))}
           </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-slide-up" style={{ animationDelay: "0.3s" }}>
             <Link to="/explore">
               <Button variant="hero" size="xl">
-                Explore Businesses
+                Explore Venues
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
-            <Link to="/business">
+            <Link to="/for-business">
               <Button variant="hero-outline" size="xl">
                 List Your Business
               </Button>
@@ -121,7 +135,7 @@ export function HeroSection() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 max-w-xl mx-auto animate-fade-in" style={{ animationDelay: "0.4s" }}>
+          <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-xl mx-auto animate-fade-in" style={{ animationDelay: "0.4s" }}>
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="flex justify-center mb-2">
@@ -129,10 +143,10 @@ export function HeroSection() {
                     <stat.icon className="h-5 w-5 text-accent" />
                   </div>
                 </div>
-                <div className="font-display text-2xl md:text-3xl font-bold text-primary-foreground">
+                <div className="font-display text-xl md:text-3xl font-bold text-primary-foreground">
                   {stat.value}
                 </div>
-                <div className="text-sm text-primary-foreground/60">{stat.label}</div>
+                <div className="text-xs md:text-sm text-primary-foreground/60">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -140,7 +154,7 @@ export function HeroSection() {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce-slow">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce-slow hidden md:block">
         <div className="w-6 h-10 rounded-full border-2 border-primary-foreground/30 flex items-start justify-center p-2">
           <div className="w-1.5 h-3 rounded-full bg-primary-foreground/50 animate-pulse" />
         </div>

@@ -5,7 +5,7 @@ const testimonials = [
     name: "Sarah Chen",
     role: "Fitness Enthusiast",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-    content: "MyHub has completely transformed how I manage my fitness routine. I can easily book classes, track my streaks, and stay motivated with the achievement system.",
+    content: "Portal has completely transformed how I manage my fitness routine. I can easily book classes, track my streaks, and stay motivated with the achievement system.",
     rating: 5,
     type: "user",
   },
@@ -13,7 +13,7 @@ const testimonials = [
     name: "Mike Rodriguez",
     role: "Gym Owner",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    content: "As a gym owner, MyHub has streamlined our operations incredibly. Member management, fee collection, and analytics are all in one place. Revenue is up 40%!",
+    content: "As a gym owner, Portal has streamlined our operations incredibly. Member management, fee collection, and analytics are all in one place. Revenue is up 40%!",
     rating: 5,
     type: "business",
   },
@@ -21,7 +21,7 @@ const testimonials = [
     name: "Emily Watson",
     role: "Student",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    content: "Finding a quiet study spot used to be a nightmare. With MyHub, I can see real-time availability at my local library and book my favorite desk in advance.",
+    content: "Finding a quiet study spot used to be a nightmare. With Portal, I can see real-time availability at my local library and book my favorite desk in advance.",
     rating: 5,
     type: "user",
   },
@@ -37,7 +37,7 @@ const testimonials = [
     name: "Lisa Thompson",
     role: "Dance Academy Director",
     image: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=150&h=150&fit=crop&crop=face",
-    content: "We've been able to grow our student base by 60% since listing on MyHub. The platform makes it easy for new students to discover us and sign up for classes.",
+    content: "We've been able to grow our student base by 60% since listing on Portal. The platform makes it easy for new students to discover us and sign up for classes.",
     rating: 5,
     type: "business",
   },
@@ -62,7 +62,7 @@ export function TestimonialsSection() {
           </span>
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Loved by
-            <span className="gradient-text"> Members & Owners</span>
+            <span className="gradient-text"> Users & Owners</span>
           </h2>
           <p className="text-lg text-muted-foreground">
             Don't just take our word for it. Here's what our community has to say.
@@ -126,7 +126,7 @@ export function TestimonialsSection() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
               { label: "Average Rating", value: "4.9/5" },
-              { label: "Member Satisfaction", value: "98%" },
+              { label: "User Satisfaction", value: "98%" },
               { label: "Business Growth", value: "+45%" },
               { label: "NPS Score", value: "72" },
             ].map((stat) => (
