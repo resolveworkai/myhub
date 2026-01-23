@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { memo, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useWalkInStore } from "@/store/walkInStore";
+import { useTodayBookings, useWalkInActions } from "@/store/walkInStore";
 import { 
   Clock, 
   Users, 
@@ -21,42 +21,37 @@ const paymentIcons = {
   cash: Banknote,
   card: CreditCard,
   upi: Smartphone,
+} as const;
+
+const formatTime = (date: Date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+const formatDuration = (minutes: number) => {
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
 };
 
-export function WalkInHistoryLog() {
-  const { getTodayBookings, completeBooking, checkExpiredBookings } = useWalkInStore();
-  const todayBookings = getTodayBookings();
+const getTimeRemaining = (endTime: Date) => {
+  const diff = endTime.getTime() - Date.now();
+  if (diff <= 0) return "Expired";
+  return `${Math.ceil(diff / 60000)}m left`;
+};
+
+export const WalkInHistoryLog = memo(function WalkInHistoryLog() {
+  const todayBookings = useTodayBookings();
+  const { completeBooking, checkExpiredBookings } = useWalkInActions();
   
-  // Check for expired bookings every minute
   useEffect(() => {
     checkExpiredBookings();
     const interval = setInterval(checkExpiredBookings, 60000);
     return () => clearInterval(interval);
   }, [checkExpiredBookings]);
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDuration = (minutes: number) => {
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  };
-
-  const getTimeRemaining = (endTime: Date) => {
-    const now = new Date();
-    const diff = endTime.getTime() - now.getTime();
-    if (diff <= 0) return "Expired";
-    const minutes = Math.ceil(diff / 60000);
-    return `${minutes}m left`;
-  };
-
-  const handleCheckout = (id: string) => {
+  const handleCheckout = useCallback((id: string) => {
     completeBooking(id);
     toast.success("Visitor checked out successfully");
-  };
+  }, [completeBooking]);
 
   if (todayBookings.length === 0) {
     return (
@@ -80,11 +75,9 @@ export function WalkInHistoryLog() {
               key={booking.id}
               className={cn(
                 "p-3 rounded-xl border transition-all",
-                isActive 
-                  ? "bg-success/5 border-success/20" 
-                  : isExpired 
-                    ? "bg-warning/5 border-warning/20"
-                    : "bg-muted/50 border-border"
+                isActive ? "bg-success/5 border-success/20" 
+                  : isExpired ? "bg-warning/5 border-warning/20"
+                  : "bg-muted/50 border-border"
               )}
             >
               <div className="flex items-center justify-between mb-2">
@@ -148,4 +141,4 @@ export function WalkInHistoryLog() {
       </div>
     </ScrollArea>
   );
-}
+});

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 
 export interface WalkInBooking {
   id: string;
@@ -15,22 +16,22 @@ interface WalkInState {
   bookings: WalkInBooking[];
   capacity: number;
   currentOccupancy: number;
-  
-  // Actions
+}
+
+interface WalkInActions {
   addBooking: (booking: Omit<WalkInBooking, 'id' | 'endTime' | 'status'>) => void;
   removeBooking: (id: string) => void;
   completeBooking: (id: string) => void;
   setCapacity: (capacity: number) => void;
-  getCurrentOccupancy: () => number;
-  getActiveBookings: () => WalkInBooking[];
-  getTodayBookings: () => WalkInBooking[];
   checkExpiredBookings: () => void;
 }
 
-export const useWalkInStore = create<WalkInState>((set, get) => ({
+type WalkInStore = WalkInState & WalkInActions;
+
+const useWalkInStoreBase = create<WalkInStore>((set, get) => ({
   bookings: [],
   capacity: 100,
-  currentOccupancy: 45, // Starting occupancy
+  currentOccupancy: 45,
   
   addBooking: (booking) => {
     const endTime = new Date(booking.startTime);
@@ -73,23 +74,6 @@ export const useWalkInStore = create<WalkInState>((set, get) => ({
   
   setCapacity: (capacity) => set({ capacity }),
   
-  getCurrentOccupancy: () => get().currentOccupancy,
-  
-  getActiveBookings: () => {
-    return get().bookings.filter(b => b.status === 'active');
-  },
-  
-  getTodayBookings: () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    return get().bookings.filter(b => 
-      b.startTime >= today && b.startTime < tomorrow
-    ).sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
-  },
-  
   checkExpiredBookings: () => {
     const now = new Date();
     set((state) => {
@@ -102,6 +86,8 @@ export const useWalkInStore = create<WalkInState>((set, get) => ({
         return b;
       });
       
+      if (occupancyReduction === 0) return state;
+      
       return {
         bookings: updatedBookings,
         currentOccupancy: Math.max(0, state.currentOccupancy - occupancyReduction),
@@ -109,3 +95,35 @@ export const useWalkInStore = create<WalkInState>((set, get) => ({
     });
   },
 }));
+
+// Optimized selectors to prevent unnecessary re-renders
+export const useWalkInStore = useWalkInStoreBase;
+
+// Specific selectors for better performance
+export const useOccupancy = () => useWalkInStoreBase(useShallow((s) => ({
+  currentOccupancy: s.currentOccupancy,
+  capacity: s.capacity,
+})));
+
+export const useWalkInActions = () => useWalkInStoreBase(useShallow((s) => ({
+  addBooking: s.addBooking,
+  completeBooking: s.completeBooking,
+  checkExpiredBookings: s.checkExpiredBookings,
+})));
+
+export const useActiveBookings = () => {
+  const bookings = useWalkInStoreBase((s) => s.bookings);
+  return bookings.filter(b => b.status === 'active');
+};
+
+export const useTodayBookings = () => {
+  const bookings = useWalkInStoreBase((s) => s.bookings);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  return bookings
+    .filter(b => b.startTime >= today && b.startTime < tomorrow)
+    .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+};
