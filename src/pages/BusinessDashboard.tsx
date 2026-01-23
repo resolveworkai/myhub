@@ -43,6 +43,8 @@ import { CreateAppointmentModal } from "@/components/business/CreateAppointmentM
 import { ExportReportsModal } from "@/components/business/ExportReportsModal";
 import { SendAnnouncementModal } from "@/components/business/SendAnnouncementModal";
 import { WalkInBookingModal } from "@/components/business/WalkInBookingModal";
+import { WalkInHistoryLog } from "@/components/business/WalkInHistoryLog";
+import { LiveOccupancyCard } from "@/components/business/LiveOccupancyCard";
 import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
 import { UpgradePlanModal } from "@/components/payments/UpgradePlanModal";
 import { SupportModal } from "@/components/support/SupportModal";
@@ -508,42 +510,12 @@ export default function BusinessDashboard() {
               </div>
 
               {/* Live Occupancy */}
+              <LiveOccupancyCard onWalkInClick={() => setWalkInOpen(true)} />
+
+              {/* Walk-in History */}
               <div className="bg-card rounded-2xl border border-border p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-display text-lg font-semibold flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                    Live Occupancy
-                  </h2>
-                  <Button 
-                    size="sm" 
-                    variant="gradient"
-                    onClick={() => setWalkInOpen(true)}
-                  >
-                    <Users className="h-4 w-4 mr-1" />
-                    Walk-in
-                  </Button>
-                </div>
-                <div className="text-center mb-4">
-                  <div className="text-4xl font-bold text-primary">45</div>
-                  <div className="text-muted-foreground">of 100 capacity</div>
-                </div>
-                <div className="h-4 bg-muted rounded-full overflow-hidden mb-4">
-                  <div className="h-full bg-success rounded-full" style={{ width: "45%" }} />
-                </div>
-                <div className="grid grid-cols-3 text-center text-sm">
-                  <div>
-                    <div className="font-semibold">Peak</div>
-                    <div className="text-muted-foreground">6-8 PM</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold">Avg Today</div>
-                    <div className="text-muted-foreground">52</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold">Low</div>
-                    <div className="text-muted-foreground">2-4 PM</div>
-                  </div>
-                </div>
+                <h2 className="font-display text-lg font-semibold mb-4">Today's Walk-ins</h2>
+                <WalkInHistoryLog />
               </div>
             </div>
           </div>
