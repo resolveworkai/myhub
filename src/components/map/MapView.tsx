@@ -3,7 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 interface Venue {
-  id: number;
+  id: string;
   name: string;
   type: string;
   lat: number;
@@ -14,7 +14,7 @@ interface Venue {
 
 interface MapViewProps {
   venues: Venue[];
-  onVenueClick?: (id: number) => void;
+  onVenueClick?: (id: string) => void;
 }
 
 const typeIcons: Record<string, string> = {
