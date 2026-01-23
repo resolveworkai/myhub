@@ -4,21 +4,18 @@ import { Button } from "@/components/ui/button";
 import {
   Menu,
   X,
-  Search,
   ChevronDown,
   Building2,
   Dumbbell,
   BookOpen,
   GraduationCap,
   HelpCircle,
-  Info,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 const navigation = [
@@ -41,6 +38,8 @@ export function Header() {
   const [currentLang, setCurrentLang] = useState(languages[0]);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
     <>
@@ -166,7 +165,7 @@ export function Header() {
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
       )}
 
@@ -180,7 +179,7 @@ export function Header() {
           <Link
             to="/"
             className="flex items-center gap-2"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={closeMobileMenu}
           >
             <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
               <span className="text-primary-foreground font-display font-bold text-xl">
@@ -194,7 +193,7 @@ export function Header() {
           <button
             type="button"
             className="p-2 rounded-lg text-foreground hover:bg-muted"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={closeMobileMenu}
           >
             <X className="h-6 w-6" />
           </button>
@@ -210,7 +209,7 @@ export function Header() {
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={closeMobileMenu}
             >
               <item.icon className="h-5 w-5" />
               {item.name}
@@ -218,12 +217,12 @@ export function Header() {
           ))}
           
           <div className="pt-4 mt-4 border-t border-border space-y-2">
-            <Link to="/signin" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/signin" onClick={closeMobileMenu}>
               <Button variant="outline" className="w-full">
                 Sign In
               </Button>
             </Link>
-            <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/signup" onClick={closeMobileMenu}>
               <Button variant="gradient" className="w-full">
                 Get Started
               </Button>
@@ -248,6 +247,32 @@ export function Header() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Additional Links in Mobile */}
+          <div className="pt-4 border-t border-border">
+            <p className="text-xs text-muted-foreground mb-2 px-4">More</p>
+            <Link
+              to="/about"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
+              onClick={closeMobileMenu}
+            >
+              About Us
+            </Link>
+            <Link
+              to="/contact"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
+              onClick={closeMobileMenu}
+            >
+              Contact
+            </Link>
+            <Link
+              to="/faq"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
+              onClick={closeMobileMenu}
+            >
+              FAQ
+            </Link>
           </div>
         </div>
       </div>

@@ -14,19 +14,19 @@ const footerLinks = {
     { name: "Gyms", href: "/gyms" },
     { name: "Coaching Centers", href: "/coaching" },
     { name: "Libraries", href: "/libraries" },
-    { name: "Near Me", href: "/explore?nearme=true" },
+    { name: "Explore All", href: "/explore" },
   ],
   company: [
     { name: "About Us", href: "/about" },
     { name: "How It Works", href: "/how-it-works" },
     { name: "For Business", href: "/for-business" },
-    { name: "Contact", href: "/contact" },
+    { name: "Contact Us", href: "/contact" },
   ],
   support: [
-    { name: "Help Center", href: "/help" },
-    { name: "FAQs", href: "/faq" },
+    { name: "Help Center", href: "/faq" },
+    { name: "FAQ", href: "/faq" },
     { name: "Privacy Policy", href: "/privacy-policy" },
-    { name: "Terms of Service", href: "/terms-conditions" },
+    { name: "Terms & Conditions", href: "/terms-conditions" },
   ],
 };
 
@@ -134,8 +134,8 @@ export function Footer() {
             <Link to="/terms-conditions" className="hover:text-background transition-colors">
               Terms
             </Link>
-            <Link to="/cookies" className="hover:text-background transition-colors">
-              Cookies
+            <Link to="/faq" className="hover:text-background transition-colors">
+              FAQ
             </Link>
           </div>
         </div>
