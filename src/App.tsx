@@ -25,6 +25,7 @@ import FAQ from "./pages/FAQ";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
 import NotFound from "./pages/NotFound";
+import ProfileSettings from "./pages/ProfileSettings";
 
 const queryClient = new QueryClient();
 
@@ -118,8 +119,8 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/settings" element={
-              <ProtectedRoute requiredAccountType="normal">
-                <UserDashboard />
+              <ProtectedRoute>
+                <ProfileSettings />
               </ProtectedRoute>
             } />
             
