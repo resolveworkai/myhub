@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,8 +30,16 @@ import {
   ChevronRight,
   Building2,
   LogOut,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
+import { toast } from "sonner";
+import { AddMemberModal } from "@/components/business/AddMemberModal";
+import { CreateAppointmentModal } from "@/components/business/CreateAppointmentModal";
+import { ExportReportsModal } from "@/components/business/ExportReportsModal";
+import { SendAnnouncementModal } from "@/components/business/SendAnnouncementModal";
+import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
 
 const navigation = [
   { name: "Dashboard", href: "/business-dashboard", icon: LayoutDashboard },
@@ -129,6 +137,21 @@ const pendingPayments = [
 export default function BusinessDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuthStore();
+  
+  // Modal states
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [createAppointmentOpen, setCreateAppointmentOpen] = useState(false);
+  const [exportReportsOpen, setExportReportsOpen] = useState(false);
+  const [sendAnnouncementOpen, setSendAnnouncementOpen] = useState(false);
+  const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Logged out successfully");
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -139,9 +162,9 @@ export default function BusinessDashboard() {
         </button>
         <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-display font-bold">M</span>
+            <span className="text-primary-foreground font-display font-bold">P</span>
           </div>
-          <span className="font-display font-bold">MyHub</span>
+          <span className="font-display font-bold">Portal</span>
         </Link>
         <button className="p-2 relative">
           <Bell className="h-6 w-6" />
@@ -169,9 +192,9 @@ export default function BusinessDashboard() {
           <div className="h-16 flex items-center justify-between px-4 border-b border-border">
             <Link to="/" className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
-                <span className="text-primary-foreground font-display font-bold text-xl">M</span>
+                <span className="text-primary-foreground font-display font-bold text-xl">P</span>
               </div>
-              <span className="font-display font-bold text-xl">MyHub</span>
+              <span className="font-display font-bold text-xl">Portal</span>
             </Link>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2">
               <X className="h-5 w-5" />
@@ -218,7 +241,10 @@ export default function BusinessDashboard() {
 
           {/* Logout */}
           <div className="p-4 border-t border-border">
-            <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 w-full transition-colors">
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 w-full transition-colors"
+            >
               <LogOut className="h-5 w-5" />
               Logout
             </button>
@@ -428,21 +454,25 @@ export default function BusinessDashboard() {
               <div className="bg-card rounded-2xl border border-border p-6">
                 <h2 className="font-display text-lg font-semibold mb-4">Quick Actions</h2>
                 <div className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => setAddMemberOpen(true)}>
                     <UserPlus className="h-4 w-4 mr-2" />
                     Add New Member
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => setCreateAppointmentOpen(true)}>
                     <Calendar className="h-4 w-4 mr-2" />
                     Create Appointment
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => setExportReportsOpen(true)}>
                     <Download className="h-4 w-4 mr-2" />
                     Export Reports
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => setSendAnnouncementOpen(true)}>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Send Announcement
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => setPaymentMethodsOpen(true)}>
+                    <Wallet className="h-4 w-4 mr-2" />
+                    Payment Methods
                   </Button>
                 </div>
               </div>
@@ -479,6 +509,13 @@ export default function BusinessDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Modals */}
+      <AddMemberModal open={addMemberOpen} onOpenChange={setAddMemberOpen} />
+      <CreateAppointmentModal open={createAppointmentOpen} onOpenChange={setCreateAppointmentOpen} />
+      <ExportReportsModal open={exportReportsOpen} onOpenChange={setExportReportsOpen} />
+      <SendAnnouncementModal open={sendAnnouncementOpen} onOpenChange={setSendAnnouncementOpen} />
+      <PaymentMethodsModal open={paymentMethodsOpen} onOpenChange={setPaymentMethodsOpen} />
     </div>
   );
 }

@@ -451,10 +451,28 @@ export default function FeesPayments() {
                       Debit Card
                     </div>
                   </SelectItem>
-                  <SelectItem value="upi">
+                  <SelectItem value="paytm_upi">
                     <div className="flex items-center gap-2">
                       <Wallet className="h-4 w-4" />
-                      UPI
+                      Paytm UPI
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="gpay_upi">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4" />
+                      Google Pay UPI
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="phonepe_upi">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4" />
+                      PhonePe UPI
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="other_upi">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4" />
+                      Other UPI
                     </div>
                   </SelectItem>
                   <SelectItem value="net_banking">
@@ -487,10 +505,10 @@ export default function FeesPayments() {
               </div>
             )}
 
-            {paymentMethod === "upi" && (
+            {(paymentMethod === "paytm_upi" || paymentMethod === "gpay_upi" || paymentMethod === "phonepe_upi" || paymentMethod === "other_upi") && (
               <div className="space-y-2">
                 <Label>UPI ID</Label>
-                <Input placeholder="yourname@upi" />
+                <Input placeholder={paymentMethod === "paytm_upi" ? "yourname@paytm" : paymentMethod === "gpay_upi" ? "yourname@oksbi" : paymentMethod === "phonepe_upi" ? "yourname@ybl" : "yourname@upi"} />
               </div>
             )}
           </div>
