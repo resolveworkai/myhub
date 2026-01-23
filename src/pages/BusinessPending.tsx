@@ -2,34 +2,61 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { Clock, CheckCircle2, Mail, Phone, ArrowRight, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function BusinessPending() {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuthStore();
-  const [isVerifying, setIsVerifying] = useState(true);
+  const { user, updateUser } = useAuthStore();
+  const [isVerified, setIsVerified] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const hasVerified = useRef(false);
 
   useEffect(() => {
-    // Auto-check verification status every 2 seconds
-    const checkVerification = setInterval(() => {
-      if (user?.accountType === 'business' && (user as any).businessVerified) {
-        setIsVerifying(false);
-        clearInterval(checkVerification);
-      }
-    }, 2000);
+    // Prevent double-execution
+    if (hasVerified.current) return;
+    
+    // Countdown timer
+    const countdownInterval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-    // Simulate auto-verification after 5 seconds for demo
-    const autoVerify = setTimeout(() => {
-      setIsVerifying(false);
+    // Auto-verify after 5 seconds for demo
+    const autoVerifyTimer = setTimeout(() => {
+      if (!hasVerified.current) {
+        hasVerified.current = true;
+        
+        // Update the user in the store to mark as verified
+        if (user?.accountType === 'business') {
+          updateUser({
+            businessVerified: true,
+            accountStatus: 'active',
+          });
+        }
+        
+        setIsVerified(true);
+      }
     }, 5000);
 
     return () => {
-      clearInterval(checkVerification);
-      clearTimeout(autoVerify);
+      clearInterval(countdownInterval);
+      clearTimeout(autoVerifyTimer);
     };
+  }, [user, updateUser]);
+
+  // Check if already verified
+  useEffect(() => {
+    if (user?.accountType === 'business' && (user as any).businessVerified) {
+      setIsVerified(true);
+    }
   }, [user]);
 
-  if (!isVerifying) {
+  if (isVerified) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md text-center">
@@ -113,7 +140,7 @@ export default function BusinessPending() {
         {/* Demo notice */}
         <div className="p-4 rounded-lg bg-info/10 border border-info/30 mb-6">
           <p className="text-sm text-info text-center">
-            <strong>Demo:</strong> Auto-verification will complete in a few seconds...
+            <strong>Demo:</strong> Auto-verification in <span className="font-mono font-bold">{countdown}</span> seconds...
           </p>
         </div>
 
