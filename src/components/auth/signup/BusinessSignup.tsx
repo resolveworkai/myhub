@@ -355,8 +355,8 @@ export function BusinessSignup() {
             <Controller
               name="businessType"
               control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+              render={({ field: { onChange, value } }) => (
+                <Select value={value} onValueChange={onChange}>
                   <SelectTrigger className={cn(errors.businessType && 'border-destructive')}>
                     <SelectValue placeholder="Select business type" />
                   </SelectTrigger>
@@ -390,8 +390,8 @@ export function BusinessSignup() {
             <Controller
               name="yearsInOperation"
               control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+              render={({ field: { onChange, value } }) => (
+                <Select value={value} onValueChange={onChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select years" />
                   </SelectTrigger>
@@ -529,8 +529,8 @@ export function BusinessSignup() {
             <Controller
               name="numberOfLocations"
               control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+              render={({ field: { onChange, value } }) => (
+                <Select value={value} onValueChange={onChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
@@ -778,8 +778,8 @@ export function BusinessSignup() {
               <Controller
                 name="acceptTerms"
                 control={control}
-                render={({ field }) => (
-                  <Checkbox id="acceptTerms" checked={field.value} onCheckedChange={field.onChange} className="mt-1" />
+                render={({ field: { onChange, value } }) => (
+                  <Checkbox id="acceptTerms" checked={value} onCheckedChange={onChange} className="mt-1" />
                 )}
               />
               <div>
@@ -800,8 +800,8 @@ export function BusinessSignup() {
               <Controller
                 name="acceptPrivacy"
                 control={control}
-                render={({ field }) => (
-                  <Checkbox id="acceptPrivacy" checked={field.value} onCheckedChange={field.onChange} className="mt-1" />
+                render={({ field: { onChange, value } }) => (
+                  <Checkbox id="acceptPrivacy" checked={value} onCheckedChange={onChange} className="mt-1" />
                 )}
               />
               <div>
@@ -822,8 +822,8 @@ export function BusinessSignup() {
               <Controller
                 name="verificationConsent"
                 control={control}
-                render={({ field }) => (
-                  <Checkbox id="verificationConsent" checked={field.value} onCheckedChange={field.onChange} className="mt-1" />
+                render={({ field: { onChange, value } }) => (
+                  <Checkbox id="verificationConsent" checked={value} onCheckedChange={onChange} className="mt-1" />
                 )}
               />
               <div>
