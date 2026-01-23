@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -10,8 +10,10 @@ import { BookingModal } from "@/components/booking/BookingModal";
 import { usePagination } from "@/hooks/usePagination";
 import { FilterPanel } from "@/components/explore/FilterPanel";
 import { ActiveFilters } from "@/components/explore/ActiveFilters";
+import { SavedSearches } from "@/components/explore/SavedSearches";
 import { useFilterStore, VenueCategory } from "@/store/filterStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { useFilterDebounce } from "@/hooks/useDebounce";
 import { filterVenues, sortVenues, Venue } from "@/lib/filterEngine";
 import { sortOptions, categories } from "@/lib/filterDefinitions";
 import {
@@ -58,7 +60,6 @@ export default function Explore() {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);
-  const [isFiltering, setIsFiltering] = useState(false);
 
   // Filter store
   const {
@@ -105,8 +106,8 @@ export default function Explore() {
     }
   }, [routePath, routeCategory, activeCategory, setActiveCategory]);
 
-  // Debounced filtering
-  const debouncedFilters = useMemo(
+  // Create filter state object for debouncing
+  const currentFilters = useMemo(
     () => ({
       activeCategory: routeCategory || activeCategory,
       searchQuery,
@@ -138,14 +139,15 @@ export default function Explore() {
     ]
   );
 
-  // Filter and sort businesses
+  // Debounce filter changes (300ms delay)
+  const { debouncedFilters, isPending } = useFilterDebounce(currentFilters, 300);
+
+  // Filter businesses with debounced filters
   const filteredBusinesses = useMemo(() => {
-    setIsFiltering(true);
-    const filtered = filterVenues(allBusinesses, debouncedFilters);
-    setTimeout(() => setIsFiltering(false), 100);
-    return filtered;
+    return filterVenues(allBusinesses, debouncedFilters);
   }, [debouncedFilters]);
 
+  // Sort businesses
   const sortedBusinesses = useMemo(() => {
     return sortVenues(filteredBusinesses, sortBy, userLocation);
   }, [filteredBusinesses, sortBy, userLocation]);
@@ -342,7 +344,7 @@ export default function Explore() {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
-                    {isFiltering && (
+                    {isPending && (
                       <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                     )}
                     {totalItems} Businesses Found
@@ -359,7 +361,9 @@ export default function Explore() {
                   </p>
                 </div>
 
-                {/* Sort Dropdown */}
+                {/* Saved Searches + Sort */}
+                <div className="flex items-center gap-2">
+                  <SavedSearches currentFilters={currentFilters} />
                 <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
                   <SelectTrigger className="w-48 bg-muted border-0">
                     <SelectValue placeholder="Sort by" />
@@ -372,6 +376,7 @@ export default function Explore() {
                     ))}
                   </SelectContent>
                 </Select>
+                </div>
               </div>
 
               {/* Results */}
@@ -523,7 +528,7 @@ export default function Explore() {
               )}
 
               {/* No Results */}
-              {sortedBusinesses.length === 0 && !isFiltering && (
+              {sortedBusinesses.length === 0 && !isPending && (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                     <Search className="h-8 w-8 text-muted-foreground" />
