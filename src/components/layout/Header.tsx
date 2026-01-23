@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,25 +36,45 @@ const languages = [
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState(languages[0]);
+  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  const getHeaderClasses = () => {
+    if (isHomePage) {
+      if (isScrolled) {
+        return "bg-gradient-to-r from-primary/95 via-primary/90 to-[hsl(195,85%,40%)]/95 backdrop-blur-lg shadow-lg";
+      }
+      return "bg-transparent";
+    }
+    return "bg-background/80 backdrop-blur-lg border-b border-border";
+  };
 
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isHomePage
-            ? "bg-transparent"
-            : "bg-background/80 backdrop-blur-lg border-b border-border"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${getHeaderClasses()}`}
       >
         <nav className="container mx-auto px-4 lg:px-8">
           <div className="flex h-16 lg:h-20 items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md group-hover:shadow-glow transition-shadow">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-glow transition-shadow ${
+                isHomePage && !isScrolled 
+                  ? "bg-primary-foreground/20 backdrop-blur-sm" 
+                  : "gradient-primary"
+              }`}>
                 <span className="text-primary-foreground font-display font-bold text-xl">
                   P
                 </span>
