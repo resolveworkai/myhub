@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, memo, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -12,6 +12,7 @@ import { FilterPanel } from "@/components/explore/FilterPanel";
 import { ActiveFilters } from "@/components/explore/ActiveFilters";
 import { SavedSearches } from "@/components/explore/SavedSearches";
 import { useFilterStore, VenueCategory } from "@/store/filterStore";
+import { useFavoriteStore } from "@/store/favoriteStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useFilterDebounce } from "@/hooks/useDebounce";
 import { filterVenues, sortVenues, Venue } from "@/lib/filterEngine";
@@ -58,8 +59,10 @@ const allBusinesses: Venue[] = [
 export default function Explore() {
   const location = useLocation();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [favorites, setFavorites] = useState<string[]>([]);
   const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);
+
+  // Use persisted favorites store instead of local state
+  const { favorites, toggleFavorite, isFavorite } = useFavoriteStore();
 
   // Filter store
   const {
@@ -166,11 +169,10 @@ export default function Explore() {
     itemsPerPage: 12,
   });
 
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
-    );
-  };
+  // Memoized toggle handler
+  const handleToggleFavorite = useCallback((id: string) => {
+    toggleFavorite(id);
+  }, [toggleFavorite]);
 
   const toggleCategory = (id: string) => {
     const newCategory = id as VenueCategory;
@@ -393,18 +395,19 @@ export default function Explore() {
                             src={business.image}
                             alt={business.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
                           />
                           <button
-                            onClick={() => toggleFavorite(business.id)}
+                            onClick={() => handleToggleFavorite(business.id)}
                             className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-                              favorites.includes(business.id)
+                              isFavorite(business.id)
                                 ? "bg-accent text-accent-foreground"
                                 : "bg-card/80 backdrop-blur-sm text-foreground hover:bg-card"
                             }`}
                           >
                             <Heart
                               className={`h-5 w-5 ${
-                                favorites.includes(business.id)
+                                isFavorite(business.id)
                                   ? "fill-current"
                                   : ""
                               }`}
