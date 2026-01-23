@@ -31,6 +31,14 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsConditions = lazy(() => import("./pages/TermsConditions"));
 const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
 
+// Business Dashboard Pages
+const BusinessMembers = lazy(() => import("./pages/business/BusinessMembers"));
+const BusinessAppointments = lazy(() => import("./pages/business/BusinessAppointments"));
+const BusinessPayments = lazy(() => import("./pages/business/BusinessPayments"));
+const BusinessAnalytics = lazy(() => import("./pages/business/BusinessAnalytics"));
+const BusinessMessages = lazy(() => import("./pages/business/BusinessMessages"));
+const BusinessSettings = lazy(() => import("./pages/business/BusinessSettings"));
+
 // Optimized QueryClient with better defaults
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -155,7 +163,15 @@ const App = () => (
                 <ProtectedRoute requiredAccountType="business">
                   <BusinessDashboard />
                 </ProtectedRoute>
-              } />
+              }>
+                <Route index element={null} />
+                <Route path="members" element={<BusinessMembers />} />
+                <Route path="appointments" element={<BusinessAppointments />} />
+                <Route path="fees" element={<BusinessPayments />} />
+                <Route path="analytics" element={<BusinessAnalytics />} />
+                <Route path="messages" element={<BusinessMessages />} />
+                <Route path="settings" element={<BusinessSettings />} />
+              </Route>
               
               {/* Admin */}
               <Route path="/admin" element={<AdminDashboard />} />
