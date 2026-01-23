@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookingModal } from "@/components/booking/BookingModal";
 import {
   Star,
   MapPin,
@@ -24,127 +25,200 @@ import {
   Snowflake,
   ShowerHead,
   MessageSquare,
-  X,
   Check,
   Navigation,
+  ArrowLeft,
+  Loader2,
 } from "lucide-react";
 
-const businessData = {
-  id: 1,
-  name: "FitZone Premium Gym",
-  type: "gym",
-  tagline: "Transform Your Body, Transform Your Life",
-  description: "FitZone Premium Gym is a state-of-the-art fitness facility offering a comprehensive range of workout options. Our 10,000 sq ft space features the latest cardio and strength training equipment, dedicated zones for functional training, and peaceful yoga studios. Whether you're a beginner or a seasoned athlete, our certified trainers are here to help you achieve your fitness goals.",
-  rating: 4.8,
-  reviewCount: 156,
-  verified: true,
-  status: "open",
-  occupancy: 45,
-  capacity: 100,
-  images: [
-    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1558611848-73f7eb4001a1?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&h=600&fit=crop",
-  ],
-  address: "123 Fitness Street, Downtown, New York, NY 10001",
-  phone: "+1 (555) 123-4567",
-  email: "info@fitzonegym.com",
-  website: "https://fitzonegym.com",
-  hours: [
-    { day: "Monday", open: "5:00 AM", close: "11:00 PM" },
-    { day: "Tuesday", open: "5:00 AM", close: "11:00 PM" },
-    { day: "Wednesday", open: "5:00 AM", close: "11:00 PM" },
-    { day: "Thursday", open: "5:00 AM", close: "11:00 PM" },
-    { day: "Friday", open: "5:00 AM", close: "10:00 PM" },
-    { day: "Saturday", open: "6:00 AM", close: "8:00 PM" },
-    { day: "Sunday", open: "7:00 AM", close: "6:00 PM" },
-  ],
-  amenities: [
-    { id: "wifi", name: "Free WiFi", icon: Wifi },
-    { id: "parking", name: "Parking", icon: Car },
-    { id: "ac", name: "Air Conditioning", icon: Snowflake },
-    { id: "shower", name: "Showers & Lockers", icon: ShowerHead },
-    { id: "trainer", name: "Personal Trainers", icon: Users },
-  ],
-  pricing: [
-    {
-      name: "Basic",
-      price: "₹1,500",
-      duration: "month",
-      features: ["Access to gym floor", "Cardio equipment", "Basic locker access", "Water fountain access"],
-      popular: false,
-    },
-    {
-      name: "Premium",
-      price: "₹2,500",
-      duration: "month",
-      features: ["All Basic features", "Group classes", "Steam room access", "Towel service", "1 PT session/month"],
-      popular: true,
-    },
-    {
-      name: "VIP",
-      price: "₹5,000",
-      duration: "month",
-      features: ["All Premium features", "Priority booking", "4 PT sessions/month", "Nutrition consultation", "Guest passes (2/month)"],
-      popular: false,
-    },
-  ],
-  reviewsList: [
-    {
-      id: 1,
-      user: "Sarah Chen",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
-      rating: 5,
-      date: "2 weeks ago",
-      comment: "Absolutely love this gym! The equipment is always clean and well-maintained. The trainers are super helpful and motivating.",
-      helpful: 24,
-    },
-    {
-      id: 2,
-      user: "Mike Johnson",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-      rating: 4,
-      date: "1 month ago",
-      comment: "Great gym with excellent facilities. Can get crowded during peak hours but overall a fantastic experience.",
-      helpful: 18,
-    },
-    {
-      id: 3,
-      user: "Emily Watson",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-      rating: 5,
-      date: "1 month ago",
-      comment: "The yoga classes here are amazing! Instructors are knowledgeable and the studio has a great atmosphere.",
-      helpful: 12,
-    },
-  ],
-  schedule: [
-    { time: "6:00 AM", slots: 15, booked: 8 },
-    { time: "7:00 AM", slots: 15, booked: 14 },
-    { time: "8:00 AM", slots: 15, booked: 12 },
-    { time: "9:00 AM", slots: 15, booked: 6 },
-    { time: "10:00 AM", slots: 15, booked: 4 },
-    { time: "5:00 PM", slots: 15, booked: 15 },
-    { time: "6:00 PM", slots: 15, booked: 13 },
-    { time: "7:00 PM", slots: 15, booked: 10 },
-    { time: "8:00 PM", slots: 15, booked: 7 },
-  ],
+import gymsData from "@/data/mock/gyms.json";
+import coachingData from "@/data/mock/coaching.json";
+import librariesData from "@/data/mock/libraries.json";
+
+// Combine all venue data
+const allVenues = [
+  ...gymsData.map((g) => ({ ...g, type: "gym" as const })),
+  ...coachingData.map((c) => ({ ...c, type: "coaching" as const })),
+  ...librariesData.map((l) => ({ ...l, type: "library" as const })),
+];
+
+// Icon mapping for amenities
+const amenityIcons: Record<string, any> = {
+  wifi: Wifi,
+  parking: Car,
+  ac: Snowflake,
+  shower: ShowerHead,
+  lockers: Users,
+  trainer: Users,
+};
+
+// Default mock schedule
+const defaultSchedule = [
+  { time: "06:00 AM", slots: 15, booked: 8 },
+  { time: "07:00 AM", slots: 15, booked: 14 },
+  { time: "08:00 AM", slots: 15, booked: 12 },
+  { time: "09:00 AM", slots: 15, booked: 6 },
+  { time: "10:00 AM", slots: 15, booked: 4 },
+  { time: "05:00 PM", slots: 15, booked: 15 },
+  { time: "06:00 PM", slots: 15, booked: 13 },
+  { time: "07:00 PM", slots: 15, booked: 10 },
+  { time: "08:00 PM", slots: 15, booked: 7 },
+];
+
+// Default operating hours
+const defaultHours = [
+  { day: "Monday", open: "6:00 AM", close: "10:00 PM" },
+  { day: "Tuesday", open: "6:00 AM", close: "10:00 PM" },
+  { day: "Wednesday", open: "6:00 AM", close: "10:00 PM" },
+  { day: "Thursday", open: "6:00 AM", close: "10:00 PM" },
+  { day: "Friday", open: "6:00 AM", close: "9:00 PM" },
+  { day: "Saturday", open: "7:00 AM", close: "8:00 PM" },
+  { day: "Sunday", open: "8:00 AM", close: "6:00 PM" },
+];
+
+// Default pricing tiers
+const getDefaultPricing = (price: number) => [
+  {
+    name: "Basic",
+    price: `₹${Math.round(price * 0.6).toLocaleString()}`,
+    duration: "month",
+    features: ["Access to facility", "Standard equipment", "Basic locker access", "Water fountain"],
+    popular: false,
+  },
+  {
+    name: "Premium",
+    price: `₹${price.toLocaleString()}`,
+    duration: "month",
+    features: ["All Basic features", "Group classes", "Premium amenities", "Towel service", "1 session/month"],
+    popular: true,
+  },
+  {
+    name: "VIP",
+    price: `₹${Math.round(price * 2).toLocaleString()}`,
+    duration: "month",
+    features: ["All Premium features", "Priority booking", "4 sessions/month", "Consultation", "Guest passes"],
+    popular: false,
+  },
+];
+
+// Default reviews
+const defaultReviews = [
+  {
+    id: 1,
+    user: "Sarah Chen",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
+    rating: 5,
+    date: "2 weeks ago",
+    comment: "Absolutely love this place! The facilities are always clean and well-maintained. Highly recommend!",
+    helpful: 24,
+  },
+  {
+    id: 2,
+    user: "Mike Johnson",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+    rating: 4,
+    date: "1 month ago",
+    comment: "Great facility with excellent amenities. Can get crowded during peak hours but overall a fantastic experience.",
+    helpful: 18,
+  },
+  {
+    id: 3,
+    user: "Emily Watson",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
+    rating: 5,
+    date: "1 month ago",
+    comment: "The staff here is amazing! Very knowledgeable and the atmosphere is great.",
+    helpful: 12,
+  },
+];
+
+// Additional images based on type
+const getAdditionalImages = (type: string, mainImage: string) => {
+  const typeImages: Record<string, string[]> = {
+    gym: [
+      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1558611848-73f7eb4001a1?w=800&h=600&fit=crop",
+    ],
+    coaching: [
+      "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&h=600&fit=crop",
+    ],
+    library: [
+      "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1568667256549-094345857637?w=800&h=600&fit=crop",
+    ],
+  };
+  return [mainImage, ...(typeImages[type] || typeImages.gym)];
+};
+
+const getTypeEmoji = (type: string) => {
+  switch (type) {
+    case "gym": return "🏋️";
+    case "coaching": return "📚";
+    case "library": return "📖";
+    default: return "🏢";
+  }
 };
 
 export default function BusinessDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
-  const business = businessData;
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+
+  // Find the venue by ID from combined data
+  const venue = useMemo(() => {
+    return allVenues.find((v) => v.id === id);
+  }, [id]);
+
+  if (!venue) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-20">
+          <div className="container mx-auto px-4 py-16 text-center">
+            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
+              <Loader2 className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <h1 className="font-display text-2xl font-bold text-foreground mb-4">
+              Venue Not Found
+            </h1>
+            <p className="text-muted-foreground mb-6">
+              The venue you're looking for doesn't exist or has been removed.
+            </p>
+            <Button onClick={() => navigate("/explore")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Explore
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Derived data
+  const images = getAdditionalImages(venue.type, venue.image);
+  const pricing = getDefaultPricing(venue.price);
+  const amenities = (venue.amenities || []).map((a: string) => ({
+    id: a,
+    name: a.charAt(0).toUpperCase() + a.slice(1),
+    icon: amenityIcons[a] || Wifi,
+  }));
 
   const nextImage = () => {
-    setCurrentImage((prev) => (prev + 1) % business.images.length);
+    setCurrentImage((prev) => (prev + 1) % images.length);
   };
 
   const prevImage = () => {
-    setCurrentImage((prev) => (prev - 1 + business.images.length) % business.images.length);
+    setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
   };
 
   return (
@@ -155,8 +229,8 @@ export default function BusinessDetail() {
         {/* Hero Image Gallery */}
         <div className="relative h-[50vh] lg:h-[60vh] bg-muted">
           <img
-            src={business.images[currentImage]}
-            alt={business.name}
+            src={images[currentImage]}
+            alt={venue.name}
             className="w-full h-full object-cover"
           />
           
@@ -176,7 +250,7 @@ export default function BusinessDetail() {
 
           {/* Thumbnails */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-            {business.images.map((_, index) => (
+            {images.slice(0, 5).map((img, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentImage(index)}
@@ -185,7 +259,7 @@ export default function BusinessDetail() {
                 }`}
               >
                 <img
-                  src={business.images[index]}
+                  src={img}
                   alt=""
                   className="w-full h-full object-cover"
                 />
@@ -208,10 +282,19 @@ export default function BusinessDetail() {
             </button>
           </div>
 
+          {/* Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+
           {/* Verified Badge */}
-          {business.verified && (
-            <div className="absolute top-4 left-4">
-              <Badge variant="verified" className="gap-1 px-3 py-1.5">
+          {venue.verified && (
+            <div className="absolute top-16 left-4">
+              <Badge variant="default" className="gap-1 px-3 py-1.5 bg-success text-success-foreground">
                 <Shield className="h-4 w-4" />
                 Verified Business
               </Badge>
@@ -227,35 +310,41 @@ export default function BusinessDetail() {
               {/* Header */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl">🏋️</span>
-                  <Badge variant="gym">Gym</Badge>
-                  <Badge variant="available" className="ml-2">
-                    Open Now
+                  <span className="text-2xl">{getTypeEmoji(venue.type)}</span>
+                  <Badge variant="default" className="capitalize">{venue.type}</Badge>
+                  <Badge 
+                    variant={venue.status === "available" ? "default" : venue.status === "filling" ? "secondary" : "destructive"}
+                    className={venue.status === "available" ? "bg-success text-success-foreground" : ""}
+                  >
+                    {venue.openNow ? "Open Now" : "Closed"}
                   </Badge>
                 </div>
                 <h1 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-2">
-                  {business.name}
+                  {venue.name}
                 </h1>
-                <p className="text-lg text-muted-foreground mb-4">{business.tagline}</p>
+                <p className="text-lg text-muted-foreground mb-4">{venue.description}</p>
                 <div className="flex flex-wrap items-center gap-4 text-sm">
                   <div className="flex items-center gap-1">
                     <Star className="h-5 w-5 fill-warning text-warning" />
-                    <span className="font-semibold text-foreground">{business.rating}</span>
-                    <span className="text-muted-foreground">({business.reviewCount} reviews)</span>
+                    <span className="font-semibold text-foreground">{venue.rating}</span>
+                    <span className="text-muted-foreground">({venue.reviews} reviews)</span>
                   </div>
                   <div className="flex items-center gap-1 text-muted-foreground">
                     <MapPin className="h-4 w-4" />
-                    2.5 km away
+                    {venue.location?.address}
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">Occupancy:</span>
                     <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-success rounded-full"
-                        style={{ width: `${(business.occupancy / business.capacity) * 100}%` }}
+                        className={`h-full rounded-full ${
+                          (venue.occupancy / venue.capacity) > 0.8 ? "bg-destructive" :
+                          (venue.occupancy / venue.capacity) > 0.5 ? "bg-warning" : "bg-success"
+                        }`}
+                        style={{ width: `${(venue.occupancy / venue.capacity) * 100}%` }}
                       />
                     </div>
-                    <span className="text-sm font-medium">{business.occupancy}/{business.capacity}</span>
+                    <span className="text-sm font-medium">{venue.occupancy}/{venue.capacity}</span>
                   </div>
                 </div>
               </div>
@@ -263,7 +352,7 @@ export default function BusinessDetail() {
               {/* Tabs */}
               <Tabs defaultValue="overview" className="w-full">
                 <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
-                  {["overview", "pricing", "schedule", "reviews", "community"].map((tab) => (
+                  {["overview", "pricing", "schedule", "reviews"].map((tab) => (
                     <TabsTrigger
                       key={tab}
                       value={tab}
@@ -278,32 +367,34 @@ export default function BusinessDetail() {
                   {/* Description */}
                   <div>
                     <h3 className="font-display text-xl font-semibold mb-3">About</h3>
-                    <p className="text-muted-foreground leading-relaxed">{business.description}</p>
+                    <p className="text-muted-foreground leading-relaxed">{venue.description}</p>
                   </div>
 
                   {/* Amenities */}
-                  <div>
-                    <h3 className="font-display text-xl font-semibold mb-4">Amenities</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {business.amenities.map((amenity) => (
-                        <div
-                          key={amenity.id}
-                          className="flex items-center gap-3 p-3 rounded-xl bg-muted/50"
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <amenity.icon className="h-5 w-5 text-primary" />
+                  {amenities.length > 0 && (
+                    <div>
+                      <h3 className="font-display text-xl font-semibold mb-4">Amenities</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {amenities.map((amenity: any) => (
+                          <div
+                            key={amenity.id}
+                            className="flex items-center gap-3 p-3 rounded-xl bg-muted/50"
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <amenity.icon className="h-5 w-5 text-primary" />
+                            </div>
+                            <span className="font-medium capitalize">{amenity.name}</span>
                           </div>
-                          <span className="font-medium">{amenity.name}</span>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Hours */}
                   <div>
                     <h3 className="font-display text-xl font-semibold mb-4">Operating Hours</h3>
                     <div className="grid gap-2">
-                      {business.hours.map((hour) => (
+                      {defaultHours.map((hour) => (
                         <div
                           key={hour.day}
                           className="flex items-center justify-between py-2 border-b border-border last:border-0"
@@ -328,7 +419,7 @@ export default function BusinessDetail() {
                     </div>
                     <p className="text-muted-foreground flex items-start gap-2">
                       <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                      {business.address}
+                      {venue.location?.address}, {venue.location?.city}
                     </p>
                     <Button variant="outline" className="mt-4">
                       <Navigation className="h-4 w-4 mr-2" />
@@ -339,7 +430,7 @@ export default function BusinessDetail() {
 
                 <TabsContent value="pricing" className="mt-6">
                   <div className="grid md:grid-cols-3 gap-6">
-                    {business.pricing.map((plan) => (
+                    {pricing.map((plan) => (
                       <div
                         key={plan.name}
                         className={`relative p-6 rounded-2xl border-2 transition-all ${
@@ -367,8 +458,9 @@ export default function BusinessDetail() {
                           ))}
                         </ul>
                         <Button
-                          variant={plan.popular ? "gradient" : "outline"}
+                          variant={plan.popular ? "default" : "outline"}
                           className="w-full"
+                          onClick={() => setIsBookingOpen(true)}
                         >
                           Choose {plan.name}
                         </Button>
@@ -387,7 +479,7 @@ export default function BusinessDetail() {
                       </Button>
                     </div>
                     <div className="grid gap-3">
-                      {business.schedule.map((slot) => {
+                      {defaultSchedule.map((slot) => {
                         const availability = slot.slots - slot.booked;
                         const isFull = availability === 0;
                         return (
@@ -396,7 +488,7 @@ export default function BusinessDetail() {
                             className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-primary/50 transition-colors"
                           >
                             <div className="flex items-center gap-4">
-                              <div className="text-lg font-semibold w-20">{slot.time}</div>
+                              <div className="text-lg font-semibold w-24">{slot.time}</div>
                               <div className="flex items-center gap-2">
                                 <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                                   <div
@@ -415,6 +507,7 @@ export default function BusinessDetail() {
                               variant={isFull ? "outline" : "default"}
                               size="sm"
                               disabled={isFull}
+                              onClick={() => setIsBookingOpen(true)}
                             >
                               {isFull ? "Full" : "Book"}
                             </Button>
@@ -425,183 +518,138 @@ export default function BusinessDetail() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="reviews" className="mt-6">
-                  <div className="space-y-6">
-                    {/* Rating Summary */}
-                    <div className="flex items-center gap-8 p-6 rounded-2xl bg-muted/50">
-                      <div className="text-center">
-                        <div className="text-5xl font-bold text-foreground">{business.rating}</div>
-                        <div className="flex gap-1 my-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`h-5 w-5 ${
-                                star <= Math.round(business.rating)
-                                  ? "fill-warning text-warning"
-                                  : "text-muted"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <div className="text-sm text-muted-foreground">{business.reviewCount} reviews</div>
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        {[5, 4, 3, 2, 1].map((rating) => (
-                          <div key={rating} className="flex items-center gap-2">
-                            <span className="text-sm w-3">{rating}</span>
-                            <Star className="h-4 w-4 fill-warning text-warning" />
-                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-warning rounded-full"
-                                style={{ width: `${rating === 5 ? 70 : rating === 4 ? 20 : 10}%` }}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Reviews List */}
-                    <div className="space-y-4">
-                      {business.reviewsList.map((review) => (
-                        <div key={review.id} className="p-4 rounded-xl border border-border">
-                          <div className="flex items-start gap-4">
-                            <img
-                              src={review.avatar}
-                              alt={review.user}
-                              className="w-12 h-12 rounded-full object-cover"
-                            />
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <h4 className="font-semibold">{review.user}</h4>
-                                <span className="text-sm text-muted-foreground">{review.date}</span>
-                              </div>
-                              <div className="flex gap-1 mb-2">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`h-4 w-4 ${
-                                      star <= review.rating
-                                        ? "fill-warning text-warning"
-                                        : "text-muted"
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                              <p className="text-muted-foreground">{review.comment}</p>
-                              <button className="text-sm text-primary mt-2 hover:underline">
-                                Helpful ({review.helpful})
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button variant="outline" className="w-full">
-                      Load More Reviews
+                <TabsContent value="reviews" className="mt-6 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display text-xl font-semibold">Customer Reviews</h3>
+                    <Button variant="outline" size="sm">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Write Review
                     </Button>
                   </div>
-                </TabsContent>
 
-                <TabsContent value="community" className="mt-6">
-                  <div className="text-center py-12">
-                    <MessageSquare className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-display text-xl font-semibold mb-2">Community Section</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Join the conversation with fellow members
-                    </p>
-                    <Link to="/signup">
-                      <Button variant="gradient">Sign Up to Participate</Button>
-                    </Link>
+                  {/* Rating Summary */}
+                  <div className="flex items-center gap-6 p-4 rounded-xl bg-muted/50">
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-foreground">{venue.rating}</div>
+                      <div className="flex items-center gap-1 justify-center my-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`h-4 w-4 ${
+                              star <= Math.round(venue.rating)
+                                ? "fill-warning text-warning"
+                                : "text-muted-foreground"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="text-sm text-muted-foreground">{venue.reviews} reviews</div>
+                    </div>
+                  </div>
+
+                  {/* Reviews List */}
+                  <div className="space-y-4">
+                    {defaultReviews.map((review) => (
+                      <div key={review.id} className="p-4 rounded-xl border border-border">
+                        <div className="flex items-start gap-4">
+                          <img
+                            src={review.avatar}
+                            alt={review.user}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <h4 className="font-semibold text-foreground">{review.user}</h4>
+                              <span className="text-sm text-muted-foreground">{review.date}</span>
+                            </div>
+                            <div className="flex items-center gap-1 mb-2">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`h-4 w-4 ${
+                                    star <= review.rating
+                                      ? "fill-warning text-warning"
+                                      : "text-muted-foreground"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <p className="text-muted-foreground">{review.comment}</p>
+                            <div className="mt-3">
+                              <Button variant="ghost" size="sm" className="text-xs">
+                                👍 Helpful ({review.helpful})
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </TabsContent>
               </Tabs>
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Quick Actions Card */}
-              <div className="sticky top-24 space-y-6">
+            <div className="lg:col-span-1">
+              <div className="sticky top-24 space-y-4">
+                {/* Quick Actions */}
                 <div className="p-6 rounded-2xl border border-border bg-card">
-                  <div className="text-center mb-6">
-                    <div className="text-sm text-muted-foreground mb-1">Starting from</div>
-                    <div className="text-3xl font-bold text-primary">₹1,500<span className="text-base font-normal text-muted-foreground">/month</span></div>
+                  <div className="text-center mb-4">
+                    <div className="text-3xl font-bold text-primary">{venue.priceLabel}</div>
                   </div>
-                  
-                  <div className="space-y-3">
-                    <Link to="/signup">
-                      <Button variant="gradient" className="w-full" size="lg">
-                        Enroll Now
-                      </Button>
-                    </Link>
-                    <Button variant="outline" className="w-full" size="lg">
-                      <Calendar className="h-5 w-5 mr-2" />
-                      Book Trial Session
-                    </Button>
-                  </div>
+                  <Button 
+                    variant="default" 
+                    className="w-full mb-3 bg-primary hover:bg-primary/90"
+                    size="lg"
+                    onClick={() => setIsBookingOpen(true)}
+                  >
+                    Book Now
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <Phone className="h-4 w-4 mr-2" />
+                    Call Now
+                  </Button>
+                </div>
 
-                  <div className="mt-6 pt-6 border-t border-border space-y-3">
-                    <a
-                      href={`tel:${business.phone}`}
-                      className="flex items-center gap-3 text-sm hover:text-primary transition-colors"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                        <Phone className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="font-medium">Call Us</div>
-                        <div className="text-muted-foreground">{business.phone}</div>
-                      </div>
-                    </a>
-                    <a
-                      href={`mailto:${business.email}`}
-                      className="flex items-center gap-3 text-sm hover:text-primary transition-colors"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                        <Mail className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="font-medium">Email Us</div>
-                        <div className="text-muted-foreground">{business.email}</div>
-                      </div>
-                    </a>
-                    <a
-                      href={business.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-sm hover:text-primary transition-colors"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                        <Globe className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="font-medium">Website</div>
-                        <div className="text-muted-foreground">fitzonegym.com</div>
-                      </div>
-                    </a>
+                {/* Contact Info */}
+                <div className="p-6 rounded-2xl border border-border bg-card">
+                  <h3 className="font-semibold mb-4">Contact Information</h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>{venue.location?.address}, {venue.location?.city}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span>+91 98765 43210</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span>info@{venue.name.toLowerCase().replace(/\s+/g, '')}.com</span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Live Occupancy */}
                 <div className="p-6 rounded-2xl border border-border bg-card">
-                  <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                    Live Occupancy
-                  </h3>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-3xl font-bold">{business.occupancy}</span>
-                    <span className="text-muted-foreground">/ {business.capacity}</span>
+                  <h3 className="font-semibold mb-4">Live Occupancy</h3>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-foreground mb-2">
+                      {venue.occupancy}/{venue.capacity}
+                    </div>
+                    <div className="w-full h-3 bg-muted rounded-full overflow-hidden mb-2">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          (venue.occupancy / venue.capacity) > 0.8 ? "bg-destructive" :
+                          (venue.occupancy / venue.capacity) > 0.5 ? "bg-warning" : "bg-success"
+                        }`}
+                        style={{ width: `${(venue.occupancy / venue.capacity) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {venue.capacity - venue.occupancy} spots available
+                    </p>
                   </div>
-                  <div className="h-3 bg-muted rounded-full overflow-hidden mb-2">
-                    <div
-                      className="h-full bg-success rounded-full transition-all"
-                      style={{ width: `${(business.occupancy / business.capacity) * 100}%` }}
-                    />
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Usually busy at this time
-                  </p>
                 </div>
               </div>
             </div>
@@ -611,20 +659,34 @@ export default function BusinessDetail() {
 
       <Footer />
 
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        venue={{
+          id: venue.id,
+          name: venue.name,
+          type: venue.type,
+          rating: venue.rating,
+          price: venue.priceLabel,
+          image: venue.image,
+        }}
+      />
+
       {/* Mobile Fixed Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border lg:hidden z-50">
         <div className="flex gap-3">
-          <Button variant="outline" size="lg" className="flex-1">
-            <Phone className="h-5 w-5" />
+          <Button variant="outline" className="flex-1">
+            <Phone className="h-4 w-4 mr-2" />
+            Call
           </Button>
-          <Button variant="outline" size="lg" className="flex-1">
-            <Mail className="h-5 w-5" />
+          <Button 
+            variant="default" 
+            className="flex-1 bg-primary"
+            onClick={() => setIsBookingOpen(true)}
+          >
+            Book Now
           </Button>
-          <Link to="/signup" className="flex-[2]">
-            <Button variant="gradient" size="lg" className="w-full">
-              Enroll Now
-            </Button>
-          </Link>
         </div>
       </div>
     </div>
