@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import {
   LayoutDashboard,
   Users,
@@ -15,7 +14,7 @@ import {
   Bell,
   Menu,
   X,
-  Search,
+  Search as SearchIcon,
   Plus,
   TrendingUp,
   TrendingDown,
@@ -283,15 +282,9 @@ export default function BusinessDashboard() {
       {/* Main Content */}
       <main className="lg:ml-72 pt-16 lg:pt-0 min-h-screen">
         {/* Desktop Header */}
-        <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-border bg-card">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative max-w-md flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search members, appointments..." className="pl-10" />
-            </div>
-          </div>
+        <header className="hidden lg:flex h-16 items-center justify-end px-8 border-b border-border bg-card">
           <div className="flex items-center gap-4">
-            <Button variant="gradient">
+            <Button variant="gradient" onClick={() => setAddMemberOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add Member
             </Button>

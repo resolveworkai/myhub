@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -17,10 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Users, Clock, Loader2, CheckCircle, CreditCard, Smartphone, IndianRupee, ArrowLeft, Banknote } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Users, Clock, Loader2, CheckCircle, CreditCard, Smartphone, IndianRupee, ArrowLeft, Banknote, Crown, Search } from "lucide-react";
 import { toast } from "sonner";
 import { useSchedules } from "@/hooks/useSchedules";
 import { useWalkInActions } from "@/store/walkInStore";
+import { useMemberStore, Member } from "@/store/memberStore";
 import { cn } from "@/lib/utils";
 
 interface WalkInBookingModalProps {
@@ -29,15 +31,6 @@ interface WalkInBookingModalProps {
   venueId?: string;
   venueName?: string;
 }
-
-const personOptions = [
-  { value: "1", label: "1 Person" },
-  { value: "2", label: "2 Persons" },
-  { value: "3", label: "3 Persons" },
-  { value: "4", label: "4 Persons" },
-  { value: "5", label: "5 Persons" },
-  { value: "6", label: "6+ Persons" },
-];
 
 const durationOptions = [
   { value: "30", label: "30 Minutes", price: 99 },
@@ -62,33 +55,70 @@ export function WalkInBookingModal({
 }: WalkInBookingModalProps) {
   const [step, setStep] = useState<"details" | "payment">("details");
   const [isLoading, setIsLoading] = useState(false);
-  const [persons, setPersons] = useState("");
+  const [isMonthlyMember, setIsMonthlyMember] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<string>("");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [persons, setPersons] = useState("1");
   const [duration, setDuration] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [upiId, setUpiId] = useState("");
+  
   const { addSchedule } = useSchedules();
   const { addBooking } = useWalkInActions();
+  const { getMonthlyPaidMembers } = useMemberStore();
 
-  const selectedDuration = durationOptions.find(d => d.value === duration);
-  const numPersons = parseInt(persons) || 0;
+  // Get monthly paid members for this venue
+  const monthlyMembers = useMemo(() => {
+    return getMonthlyPaidMembers(venueId);
+  }, [venueId, getMonthlyPaidMembers]);
+
+  // Filter members by search
+  const filteredMembers = useMemo(() => {
+    if (!memberSearch) return monthlyMembers;
+    const search = memberSearch.toLowerCase();
+    return monthlyMembers.filter(
+      (m) =>
+        m.name.toLowerCase().includes(search) ||
+        m.email.toLowerCase().includes(search) ||
+        m.phone.includes(search)
+    );
+  }, [monthlyMembers, memberSearch]);
+
+  const selectedMemberData = monthlyMembers.find((m) => m.id === selectedMember);
+  const selectedDuration = durationOptions.find((d) => d.value === duration);
+  const numPersons = parseInt(persons) || 1;
   const basePrice = selectedDuration?.price || 0;
-  const totalPrice = basePrice * numPersons;
+  
+  // Monthly members pay ₹0
+  const totalPrice = isMonthlyMember && selectedMember ? 0 : basePrice * numPersons;
 
   const handleProceedToPayment = () => {
-    if (!persons || !duration) {
-      toast.error("Please select both persons and duration");
+    if (!duration) {
+      toast.error("Please select duration");
       return;
     }
+
+    if (isMonthlyMember && !selectedMember) {
+      toast.error("Please select a monthly member");
+      return;
+    }
+
+    // Monthly members skip payment step
+    if (isMonthlyMember && selectedMember) {
+      handleQuickBook();
+      return;
+    }
+
     setStep("payment");
   };
 
   const handleQuickBook = async () => {
-    if (!paymentMethod) {
+    if (!isMonthlyMember && !paymentMethod) {
       toast.error("Please select a payment method");
       return;
     }
 
-    if (paymentMethod === "upi" && !upiId) {
+    if (!isMonthlyMember && paymentMethod === "upi" && !upiId) {
       toast.error("Please enter your UPI ID");
       return;
     }
@@ -105,17 +135,25 @@ export function WalkInBookingModal({
     
     // Add to walk-in store (updates live occupancy)
     addBooking({
-      persons: numPersons,
+      persons: isMonthlyMember ? 1 : numPersons,
       duration: parseInt(duration),
       startTime: now,
-      paymentMethod,
+      paymentMethod: isMonthlyMember ? "monthly_subscription" : paymentMethod,
       amount: totalPrice,
     });
     
-    // Add to schedules for each person
-    for (let i = 0; i < numPersons; i++) {
+    // Add to schedules
+    const memberName = isMonthlyMember && selectedMemberData 
+      ? selectedMemberData.name 
+      : `Walk-in Guest`;
+    
+    const notes = isMonthlyMember 
+      ? `Monthly Member Walk-in - ${memberName} - ₹0 (Subscription Active)`
+      : `Walk-in booking - ${numPersons} person(s) - ₹${totalPrice} paid via ${paymentMethod}`;
+
+    if (isMonthlyMember) {
       addSchedule({
-        userId: `walk-in-${Date.now()}-${i}`,
+        userId: selectedMember,
         venueId,
         venueName,
         venueType: "gym",
@@ -123,16 +161,37 @@ export function WalkInBookingModal({
         time: currentTime,
         duration: parseInt(duration),
         status: "confirmed",
-        notes: `Walk-in booking - ${numPersons} person(s) - ₹${totalPrice} paid via ${paymentMethod}`,
+        notes,
       });
+    } else {
+      for (let i = 0; i < numPersons; i++) {
+        addSchedule({
+          userId: `walk-in-${Date.now()}-${i}`,
+          venueId,
+          venueName,
+          venueType: "gym",
+          date: currentDate,
+          time: currentTime,
+          duration: parseInt(duration),
+          status: "confirmed",
+          notes,
+        });
+      }
     }
 
     setIsLoading(false);
     
-    toast.success("Payment successful! Walk-in confirmed", {
-      description: `₹${totalPrice} received • ${numPersons} person(s) for ${selectedDuration?.label}`,
-      icon: <CheckCircle className="h-4 w-4 text-success" />,
-    });
+    if (isMonthlyMember) {
+      toast.success(`Monthly member check-in confirmed!`, {
+        description: `${memberName} - ${selectedDuration?.label} session logged`,
+        icon: <Crown className="h-4 w-4 text-warning" />,
+      });
+    } else {
+      toast.success("Payment successful! Walk-in confirmed", {
+        description: `₹${totalPrice} received • ${numPersons} person(s) for ${selectedDuration?.label}`,
+        icon: <CheckCircle className="h-4 w-4 text-success" />,
+      });
+    }
 
     // Reset and close
     resetModal();
@@ -141,7 +200,10 @@ export function WalkInBookingModal({
 
   const resetModal = () => {
     setStep("details");
-    setPersons("");
+    setIsMonthlyMember(false);
+    setSelectedMember("");
+    setMemberSearch("");
+    setPersons("1");
     setDuration("");
     setPaymentMethod("");
     setUpiId("");
@@ -154,7 +216,7 @@ export function WalkInBookingModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {step === "payment" && (
@@ -173,25 +235,99 @@ export function WalkInBookingModal({
         {step === "details" ? (
           <>
             <div className="space-y-4 py-4">
-              {/* Persons Selection */}
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  Number of Persons
-                </Label>
-                <Select value={persons} onValueChange={setPersons}>
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Select persons" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {personOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Monthly Member Toggle */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-warning/5 border border-warning/20">
+                <div className="flex items-center gap-3">
+                  <Crown className="h-5 w-5 text-warning" />
+                  <div>
+                    <p className="text-sm font-medium">Monthly Member?</p>
+                    <p className="text-xs text-muted-foreground">
+                      {monthlyMembers.length} active members
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={isMonthlyMember}
+                  onCheckedChange={(checked) => {
+                    setIsMonthlyMember(checked);
+                    if (!checked) {
+                      setSelectedMember("");
+                      setMemberSearch("");
+                    }
+                  }}
+                />
               </div>
+
+              {/* Member Selection for Monthly Members */}
+              {isMonthlyMember && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    Select Member
+                  </Label>
+                  <Input
+                    placeholder="Search by name, email or phone..."
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
+                    className="mb-2"
+                  />
+                  <div className="max-h-40 overflow-y-auto space-y-1 border rounded-lg p-2">
+                    {filteredMembers.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-3">
+                        No monthly members found
+                      </p>
+                    ) : (
+                      filteredMembers.map((member) => (
+                        <button
+                          key={member.id}
+                          onClick={() => setSelectedMember(member.id)}
+                          className={cn(
+                            "w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left",
+                            selectedMember === member.id
+                              ? "bg-primary/10 border border-primary"
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          <img
+                            src={member.avatar || `https://ui-avatars.com/api/?name=${member.name}`}
+                            alt={member.name}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{member.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+                          </div>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-warning/20 text-warning capitalize">
+                            {member.membership}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Persons Selection - Only for non-monthly members */}
+              {!isMonthlyMember && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    Number of Persons
+                  </Label>
+                  <Select value={persons} onValueChange={setPersons}>
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Select persons" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 4, 5, 6].map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num} {num === 1 ? "Person" : "Persons"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* Duration Selection */}
               <div className="space-y-2">
@@ -208,7 +344,9 @@ export function WalkInBookingModal({
                       <SelectItem key={option.value} value={option.value}>
                         <span className="flex items-center justify-between w-full gap-4">
                           {option.label}
-                          <span className="text-muted-foreground">₹{option.price}/person</span>
+                          {!isMonthlyMember && (
+                            <span className="text-muted-foreground">₹{option.price}/person</span>
+                          )}
                         </span>
                       </SelectItem>
                     ))}
@@ -217,23 +355,50 @@ export function WalkInBookingModal({
               </div>
 
               {/* Pricing Preview */}
-              {persons && duration && (
-                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">
-                      {personOptions.find(p => p.value === persons)?.label} × {selectedDuration?.label}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      ₹{basePrice} × {numPersons}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between font-semibold text-lg">
-                    <span>Total</span>
-                    <span className="text-primary flex items-center">
-                      <IndianRupee className="h-4 w-4" />
-                      {totalPrice}
-                    </span>
-                  </div>
+              {duration && (
+                <div className={cn(
+                  "p-4 rounded-xl border",
+                  isMonthlyMember && selectedMember
+                    ? "bg-success/5 border-success/20"
+                    : "bg-primary/5 border-primary/20"
+                )}>
+                  {isMonthlyMember && selectedMember ? (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-muted-foreground">
+                          {selectedMemberData?.name} • {selectedDuration?.label}
+                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-success/20 text-success">
+                          Monthly Member
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between font-semibold text-lg">
+                        <span>Total</span>
+                        <span className="text-success flex items-center">
+                          <IndianRupee className="h-4 w-4" />
+                          0 <span className="text-sm font-normal ml-1">(Subscription)</span>
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-muted-foreground">
+                          {numPersons} {numPersons === 1 ? "Person" : "Persons"} × {selectedDuration?.label}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          ₹{basePrice} × {numPersons}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between font-semibold text-lg">
+                        <span>Total</span>
+                        <span className="text-primary flex items-center">
+                          <IndianRupee className="h-4 w-4" />
+                          {totalPrice}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -244,11 +409,20 @@ export function WalkInBookingModal({
               </Button>
               <Button 
                 onClick={handleProceedToPayment} 
-                disabled={!persons || !duration}
+                disabled={!duration || (isMonthlyMember && !selectedMember)}
                 className="min-w-[120px]"
               >
-                <CreditCard className="h-4 w-4 mr-2" />
-                Checkout
+                {isMonthlyMember && selectedMember ? (
+                  <>
+                    <Crown className="h-4 w-4 mr-2" />
+                    Confirm Check-in
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Checkout
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </>
@@ -259,7 +433,7 @@ export function WalkInBookingModal({
               <div className="p-3 rounded-lg bg-muted/50 text-sm">
                 <div className="flex justify-between mb-1">
                   <span className="text-muted-foreground">
-                    {personOptions.find(p => p.value === persons)?.label} • {selectedDuration?.label}
+                    {numPersons} {numPersons === 1 ? "Person" : "Persons"} • {selectedDuration?.label}
                   </span>
                   <span className="font-medium">₹{totalPrice}</span>
                 </div>
