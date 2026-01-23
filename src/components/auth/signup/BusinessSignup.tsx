@@ -67,6 +67,7 @@ const businessSchema = z.object({
   // Step 3 - Business Details
   numberOfLocations: z.string(),
   totalCapacity: z.number().min(1, 'Capacity must be at least 1'),
+  specialties: z.array(z.string()).default([]),
   serviceAreas: z.string().max(500, 'Description must be less than 500 characters'),
   
   // Step 4 - Security
@@ -136,6 +137,52 @@ const subscriptionTiers = [
   },
 ];
 
+// Smart specialty suggestions per business type
+const specialtySuggestions: Record<string, { value: string; label: string; emoji: string }[]> = {
+  gym: [
+    { value: 'hiit', label: 'HIIT & Cardio Blitz', emoji: '🔥' },
+    { value: 'strength', label: 'Powerlifting Paradise', emoji: '💪' },
+    { value: 'crossfit', label: 'CrossFit Zone', emoji: '🏋️' },
+    { value: 'yoga', label: 'Zen Yoga Studio', emoji: '🧘' },
+    { value: 'boxing', label: 'Boxing Ring', emoji: '🥊' },
+    { value: 'spinning', label: 'Spin Cycle Hub', emoji: '🚴' },
+    { value: 'personal_training', label: 'Elite Personal Training', emoji: '🎯' },
+    { value: 'functional', label: 'Functional Fitness Lab', emoji: '⚡' },
+    { value: 'swimming', label: 'Aqua Fitness Center', emoji: '🏊' },
+    { value: 'martial_arts', label: 'MMA & Combat Sports', emoji: '🥋' },
+    { value: 'wellness', label: 'Recovery & Wellness Spa', emoji: '🌿' },
+    { value: 'womens_only', label: "Women's Only Zone", emoji: '👑' },
+  ],
+  coaching: [
+    { value: 'academic', label: 'Academic Excellence Hub', emoji: '📚' },
+    { value: 'test_prep', label: 'Test Prep Mastery', emoji: '✍️' },
+    { value: 'language', label: 'Language Learning Lab', emoji: '🌍' },
+    { value: 'coding', label: 'Code Academy Pro', emoji: '💻' },
+    { value: 'stem', label: 'STEM Innovation Center', emoji: '🔬' },
+    { value: 'music', label: 'Music & Arts Academy', emoji: '🎵' },
+    { value: 'sports', label: 'Sports Excellence Program', emoji: '⚽' },
+    { value: 'career', label: 'Career Launchpad', emoji: '🚀' },
+    { value: 'leadership', label: 'Leadership Forge', emoji: '🎖️' },
+    { value: 'public_speaking', label: 'Public Speaking Dojo', emoji: '🎤' },
+    { value: 'entrepreneurship', label: 'Startup Incubator', emoji: '💡' },
+    { value: 'kids', label: 'Kids & Teens Academy', emoji: '🌟' },
+  ],
+  library: [
+    { value: 'study_pods', label: 'Silent Study Pods', emoji: '🤫' },
+    { value: 'coworking', label: 'Co-Working Space', emoji: '💼' },
+    { value: 'digital', label: 'Digital Media Lab', emoji: '🖥️' },
+    { value: 'rare_books', label: 'Rare Books Collection', emoji: '📖' },
+    { value: 'research', label: 'Research & Archives', emoji: '🔍' },
+    { value: 'maker_space', label: 'Maker Space Hub', emoji: '🛠️' },
+    { value: 'kids_corner', label: "Children's Reading Corner", emoji: '🧒' },
+    { value: 'audiobooks', label: 'Audio & Podcast Lounge', emoji: '🎧' },
+    { value: 'cafe', label: 'Library Café', emoji: '☕' },
+    { value: 'events', label: 'Event & Workshop Space', emoji: '🎪' },
+    { value: 'study_groups', label: 'Group Study Rooms', emoji: '👥' },
+    { value: '247_access', label: '24/7 Access Zone', emoji: '🌙' },
+  ],
+};
+
 export function BusinessSignup() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -159,6 +206,7 @@ export function BusinessSignup() {
       address: { street: '', city: '', state: '', postalCode: '', country: 'UAE' },
       numberOfLocations: '1 location',
       totalCapacity: 50,
+      specialties: [],
       serviceAreas: '',
       password: '',
       confirmPassword: '',
@@ -176,6 +224,20 @@ export function BusinessSignup() {
   const confirmPassword = watch('confirmPassword') || '';
   const passwordsMatch = password && confirmPassword && password === confirmPassword;
   const selectedTier = watch('subscriptionTier');
+  const businessType = watch('businessType');
+  const selectedSpecialties = watch('specialties') || [];
+
+  // Get specialty options based on business type
+  const currentSpecialties = specialtySuggestions[businessType] || [];
+
+  const toggleSpecialty = (value: string) => {
+    const current = selectedSpecialties || [];
+    if (current.includes(value)) {
+      setValue('specialties', current.filter(s => s !== value));
+    } else {
+      setValue('specialties', [...current, value]);
+    }
+  };
 
   const validateStep = async (step: number): Promise<boolean> => {
     const fieldsByStep: Record<number, string[]> = {
@@ -492,13 +554,49 @@ export function BusinessSignup() {
             )}
           </div>
 
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Service Areas / Specialties</Label>
+              <span className="text-xs text-muted-foreground">
+                {selectedSpecialties.length} selected
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground -mt-1">
+              Select the specialties that best describe your {businessType === 'gym' ? 'fitness center' : businessType === 'coaching' ? 'coaching center' : 'library'}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {currentSpecialties.map((specialty) => {
+                const isSelected = selectedSpecialties.includes(specialty.value);
+                return (
+                  <button
+                    key={specialty.value}
+                    type="button"
+                    onClick={() => toggleSpecialty(specialty.value)}
+                    className={cn(
+                      "flex items-center gap-2 p-3 rounded-lg border text-left text-sm transition-all",
+                      isSelected
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    )}
+                  >
+                    <span className="text-lg">{specialty.emoji}</span>
+                    <span className="font-medium truncate">{specialty.label}</span>
+                    {isSelected && (
+                      <Check className="h-4 w-4 ml-auto flex-shrink-0" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="serviceAreas">Service Areas / Specialties</Label>
+            <Label htmlFor="serviceAreas">Additional Details (Optional)</Label>
             <Textarea
               id="serviceAreas"
               {...register('serviceAreas')}
-              placeholder="Describe what makes your business unique (max 500 characters)"
-              className={cn('min-h-[100px]', errors.serviceAreas && 'border-destructive')}
+              placeholder="Add any other unique features or specialties not listed above..."
+              className={cn('min-h-[80px]', errors.serviceAreas && 'border-destructive')}
               maxLength={500}
             />
             <p className="text-xs text-muted-foreground">
