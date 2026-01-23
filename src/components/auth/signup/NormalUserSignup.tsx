@@ -107,7 +107,7 @@ export function NormalUserSignup() {
         login(result.user, '', false);
         
         toast.success('Account created successfully! Please verify your email.');
-        navigate('/verify-email');
+        navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
       } else {
         toast.error(result.error || 'Failed to create account');
       }

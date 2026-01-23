@@ -320,33 +320,51 @@ export const login = async (
   return { success: true, user: userWithoutPassword as AuthUser };
 };
 
-// Verify OTP
+// Verify OTP - Always accepts "000000" for demo purposes
 export const verifyOTP = async (
   email: string,
   otp: string
 ): Promise<{ success: boolean; error?: string }> => {
   await simulateDelay(500);
   
+  // Always accept 000000 as valid OTP for demo
+  if (otp === '000000') {
+    // Mark email as verified
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const businessUser = businessUsers.find(bu => bu.email.toLowerCase() === email.toLowerCase());
+    
+    if (user) {
+      user.emailVerified = true;
+    }
+    if (businessUser) {
+      businessUser.emailVerified = true;
+    }
+    
+    otpStore.delete(email.toLowerCase());
+    return { success: true };
+  }
+  
   const stored = otpStore.get(email.toLowerCase());
   
   if (!stored) {
-    return { success: false, error: 'No verification code found. Please request a new one.' };
+    // For demo: if no stored OTP, still accept 000000 (handled above)
+    return { success: false, error: 'Invalid verification code. Use 000000 for demo.' };
   }
   
   if (Date.now() > stored.expiresAt) {
     otpStore.delete(email.toLowerCase());
-    return { success: false, error: 'Verification code has expired. Please request a new one.' };
+    return { success: false, error: 'Verification code has expired. Use 000000 for demo.' };
   }
   
   stored.attempts++;
   
   if (stored.attempts > 3) {
     otpStore.delete(email.toLowerCase());
-    return { success: false, error: 'Too many failed attempts. Please request a new code.' };
+    return { success: false, error: 'Too many failed attempts. Use 000000 for demo.' };
   }
   
   if (stored.otp !== otp) {
-    return { success: false, error: `Invalid verification code. Please try again. ${3 - stored.attempts} attempts remaining.` };
+    return { success: false, error: `Invalid verification code. Use 000000 for demo. ${3 - stored.attempts} attempts remaining.` };
   }
   
   // Mark email as verified
