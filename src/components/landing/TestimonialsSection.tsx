@@ -2,50 +2,56 @@ import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
-    name: "Sarah Chen",
+    name: "Priya Sharma",
     role: "Fitness Enthusiast",
+    location: "Mumbai, Maharashtra",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-    content: "Portal has completely transformed how I manage my fitness routine. I can easily book classes, track my streaks, and stay motivated with the achievement system.",
+    content: "Portal has completely transformed how I manage my fitness routine. I can easily book classes at my favorite gyms across Mumbai, track my streaks, and stay motivated!",
     rating: 5,
     type: "user",
   },
   {
-    name: "Mike Rodriguez",
-    role: "Gym Owner",
+    name: "Rajesh Patel",
+    role: "Gym Owner - FitZone",
+    location: "Ahmedabad, Gujarat",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    content: "As a gym owner, Portal has streamlined our operations incredibly. Member management, fee collection, and analytics are all in one place. Revenue is up 40%!",
+    content: "As a gym owner, Portal has streamlined our operations incredibly. Member management, fee collection, and analytics are all in one place. Revenue is up 45%!",
     rating: 5,
     type: "business",
   },
   {
-    name: "Emily Watson",
-    role: "Student",
+    name: "Ananya Reddy",
+    role: "Engineering Student",
+    location: "Hyderabad, Telangana",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    content: "Finding a quiet study spot used to be a nightmare. With Portal, I can see real-time availability at my local library and book my favorite desk in advance.",
+    content: "Finding a quiet study spot used to be a nightmare. With Portal, I can see real-time availability at libraries across Hyderabad and book my favorite desk in advance.",
     rating: 5,
     type: "user",
   },
   {
-    name: "David Park",
+    name: "Vikram Singh",
     role: "Yoga Studio Owner",
+    location: "Jaipur, Rajasthan",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
     content: "The booking system is seamless, and our members love the progress tracking features. The analytics help us understand peak hours and optimize our class schedule.",
     rating: 5,
     type: "business",
   },
   {
-    name: "Lisa Thompson",
-    role: "Dance Academy Director",
+    name: "Kavitha Nair",
+    role: "Coaching Center Director",
+    location: "Kochi, Kerala",
     image: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=150&h=150&fit=crop&crop=face",
     content: "We've been able to grow our student base by 60% since listing on Portal. The platform makes it easy for new students to discover us and sign up for classes.",
     rating: 5,
     type: "business",
   },
   {
-    name: "James Wilson",
-    role: "Personal Training Client",
+    name: "Arjun Mehta",
+    role: "IT Professional",
+    location: "Bangalore, Karnataka",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-    content: "I love the streak feature! Seeing my 45-day streak keeps me accountable. The reminders ensure I never miss a session with my trainer.",
+    content: "I love the streak feature! Seeing my 45-day streak keeps me accountable. The reminders ensure I never miss a session at my local gym in Koramangala.",
     rating: 5,
     type: "user",
   },
@@ -65,7 +71,7 @@ export function TestimonialsSection() {
             <span className="gradient-text"> Users & Owners</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Don't just take our word for it. Here's what our community has to say.
+            Don't just take our word for it. Here's what our community from across India has to say.
           </p>
         </div>
 
@@ -103,16 +109,19 @@ export function TestimonialsSection() {
                   alt={testimonial.name}
                   className="w-12 h-12 rounded-full object-cover ring-2 ring-border"
                 />
-                <div>
+                <div className="flex-1">
                   <h4 className="font-semibold text-foreground">
                     {testimonial.name}
                   </h4>
                   <p className="text-sm text-muted-foreground">
                     {testimonial.role}
                   </p>
+                  <p className="text-xs text-primary">
+                    📍 {testimonial.location}
+                  </p>
                 </div>
                 {testimonial.type === "business" && (
-                  <span className="ml-auto px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium">
+                  <span className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium">
                     Business
                   </span>
                 )}
@@ -128,7 +137,7 @@ export function TestimonialsSection() {
               { label: "Average Rating", value: "4.9/5" },
               { label: "User Satisfaction", value: "98%" },
               { label: "Business Growth", value: "+45%" },
-              { label: "NPS Score", value: "72" },
+              { label: "Cities Covered", value: "50+" },
             ].map((stat) => (
               <div key={stat.label}>
                 <div className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-1">

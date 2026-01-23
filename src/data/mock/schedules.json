@@ -1,0 +1,12 @@
+[
+  {"id": "s1", "userId": "u1", "venueId": "g1", "venueName": "FitZone Premium Gym", "venueType": "gym", "date": "2026-01-24", "time": "06:00", "duration": 60, "status": "confirmed", "createdAt": "2026-01-20T10:00:00Z", "notes": "Morning workout session"},
+  {"id": "s2", "userId": "u1", "venueId": "l1", "venueName": "Central Public Library", "venueType": "library", "date": "2026-01-25", "time": "10:00", "duration": 120, "status": "confirmed", "createdAt": "2026-01-20T11:00:00Z", "notes": "Study session for exam prep"},
+  {"id": "s3", "userId": "u2", "venueId": "c1", "venueName": "Excel Coaching Center", "venueType": "coaching", "date": "2026-01-24", "time": "14:00", "duration": 90, "status": "confirmed", "createdAt": "2026-01-19T09:00:00Z", "notes": "Mathematics class"},
+  {"id": "s4", "userId": "u3", "venueId": "g2", "venueName": "Iron Paradise Gym", "venueType": "gym", "date": "2026-01-26", "time": "18:00", "duration": 60, "status": "pending", "createdAt": "2026-01-21T15:00:00Z", "notes": "Evening cardio"},
+  {"id": "s5", "userId": "u1", "venueId": "g1", "venueName": "FitZone Premium Gym", "venueType": "gym", "date": "2026-01-27", "time": "07:00", "duration": 90, "status": "confirmed", "createdAt": "2026-01-21T08:00:00Z", "notes": "Personal training session"},
+  {"id": "s6", "userId": "u4", "venueId": "l2", "venueName": "Knowledge Hub Library", "venueType": "library", "date": "2026-01-24", "time": "09:00", "duration": 180, "status": "confirmed", "createdAt": "2026-01-18T12:00:00Z", "notes": "Research work"},
+  {"id": "s7", "userId": "u5", "venueId": "c3", "venueName": "CodeMaster Academy", "venueType": "coaching", "date": "2026-01-25", "time": "16:00", "duration": 120, "status": "confirmed", "createdAt": "2026-01-20T14:00:00Z", "notes": "Python programming class"},
+  {"id": "s8", "userId": "u2", "venueId": "g3", "venueName": "Zen Yoga Studio", "venueType": "gym", "date": "2026-01-28", "time": "06:30", "duration": 60, "status": "pending", "createdAt": "2026-01-22T07:00:00Z", "notes": "Morning yoga"},
+  {"id": "s9", "userId": "u1", "venueId": "c2", "venueName": "Language Pro Institute", "venueType": "coaching", "date": "2026-01-29", "time": "11:00", "duration": 60, "status": "confirmed", "createdAt": "2026-01-22T09:00:00Z", "notes": "French language class"},
+  {"id": "s10", "userId": "u6", "venueId": "g1", "venueName": "FitZone Premium Gym", "venueType": "gym", "date": "2026-01-24", "time": "19:00", "duration": 60, "status": "confirmed", "createdAt": "2026-01-21T16:00:00Z", "notes": "Evening workout"}
+]
