@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +13,10 @@ import {
   MapPin,
   TrendingUp,
   ExternalLink,
+  Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
 
 const enrollments = [
   {
@@ -73,6 +76,7 @@ interface DashboardHomeProps {
 export default function DashboardHome({ userName }: DashboardHomeProps) {
   const navigate = useNavigate();
   const currentStreak = 12;
+  const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false);
 
   const handleCheckIn = (appointmentId: string, businessName: string) => {
     toast.success(`Checked in at ${businessName}!`, {
@@ -301,6 +305,14 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
               <Button 
                 variant="outline" 
                 className="w-full justify-start"
+                onClick={() => setPaymentMethodsOpen(true)}
+              >
+                <Wallet className="h-4 w-4 mr-2" />
+                Payment Methods
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
                 onClick={() => navigate('/dashboard/profile')}
               >
                 <TrendingUp className="h-4 w-4 mr-2" />
@@ -310,6 +322,9 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
           </div>
         </div>
       </div>
+
+      {/* Payment Methods Modal */}
+      <PaymentMethodsModal open={paymentMethodsOpen} onOpenChange={setPaymentMethodsOpen} />
     </div>
   );
 }
