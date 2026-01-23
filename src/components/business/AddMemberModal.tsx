@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserPlus, Loader2 } from "lucide-react";
+import { UserPlus, Loader2, Crown } from "lucide-react";
 import { toast } from "sonner";
+import { useMemberStore } from "@/store/memberStore";
 
 interface AddMemberModalProps {
   open: boolean;
@@ -32,7 +34,10 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
     email: "",
     phone: "",
     membership: "",
+    isMonthlyPaid: false,
   });
+  
+  const { addMember } = useMemberStore();
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.email || !formData.membership) {
@@ -41,14 +46,42 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
     }
 
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    
+    // Calculate expiry date based on membership
+    const today = new Date();
+    let expiryDate = new Date(today);
+    if (formData.membership === 'annual') {
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    } else {
+      expiryDate.setMonth(expiryDate.getMonth() + 1);
+    }
+
+    // Calculate monthly paid until (end of current month if monthly paid)
+    const monthlyPaidUntil = formData.isMonthlyPaid
+      ? new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0]
+      : undefined;
+
+    addMember({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      membership: formData.membership as 'basic' | 'premium' | 'vip' | 'annual',
+      status: 'active',
+      joinDate: today.toISOString().split('T')[0],
+      expiryDate: expiryDate.toISOString().split('T')[0],
+      isMonthlyPaid: formData.isMonthlyPaid,
+      monthlyPaidUntil,
+      venueId: 'g1', // Default venue for demo
+    });
+    
     setIsLoading(false);
 
     toast.success("Member added successfully!", {
-      description: `${formData.name} has been added with ${formData.membership} membership`,
+      description: `${formData.name} has been added with ${formData.membership} membership${formData.isMonthlyPaid ? ' (Monthly Paid)' : ''}`,
     });
 
-    setFormData({ name: "", email: "", phone: "", membership: "" });
+    setFormData({ name: "", email: "", phone: "", membership: "", isMonthlyPaid: false });
     onOpenChange(false);
   };
 
@@ -111,6 +144,23 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
                 <SelectItem value="annual">Annual - ₹19,999/year</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Monthly Paid Toggle */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-warning/5 border border-warning/20">
+            <div className="flex items-center gap-3">
+              <Crown className="h-5 w-5 text-warning" />
+              <div>
+                <p className="text-sm font-medium">Monthly Subscription Paid</p>
+                <p className="text-xs text-muted-foreground">
+                  Mark if payment for current month is received
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={formData.isMonthlyPaid}
+              onCheckedChange={(checked) => setFormData({ ...formData, isMonthlyPaid: checked })}
+            />
           </div>
         </div>
 
