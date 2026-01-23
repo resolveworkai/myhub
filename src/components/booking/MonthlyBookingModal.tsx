@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from "date-fns";
+import { format, addDays, eachDayOfInterval, isWeekend } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -61,6 +61,8 @@ const durations = [
   { value: 60, label: "1 hour" },
   { value: 90, label: "1.5 hours" },
   { value: 120, label: "2 hours" },
+  { value: 180, label: "3 hours" },
+  { value: 240, label: "4 hours" },
 ];
 
 export function MonthlyBookingModal({
@@ -77,11 +79,11 @@ export function MonthlyBookingModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addSchedule } = useSchedules(userId);
 
-  // Get all remaining days of current month
+  // Get next 30 days from today
   const monthDays = useMemo(() => {
     const today = new Date();
-    const monthEnd = endOfMonth(today);
-    const days = eachDayOfInterval({ start: today, end: monthEnd });
+    const thirtyDaysLater = addDays(today, 29); // 30 days total including today
+    const days = eachDayOfInterval({ start: today, end: thirtyDaysLater });
     
     if (excludeWeekends) {
       return days.filter((day) => !isWeekend(day));
@@ -189,13 +191,13 @@ export function MonthlyBookingModal({
           {/* Duration Selection */}
           <div className="space-y-2">
             <Label>Session Duration</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-5 gap-2">
               {durations.map((d) => (
                 <button
                   key={d.value}
                   onClick={() => setSelectedDuration(d.value)}
                   className={cn(
-                    "p-2 rounded-lg border text-sm font-medium transition-all",
+                    "p-2 rounded-lg border text-xs font-medium transition-all",
                     selectedDuration === d.value
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-card border-border hover:border-primary/50"
