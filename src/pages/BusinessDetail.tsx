@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingModal } from "@/components/booking/BookingModal";
+import { MembershipPaymentModal } from "@/components/payments/MembershipPaymentModal";
 import {
   Star,
   MapPin,
@@ -29,6 +30,7 @@ import {
   Navigation,
   ArrowLeft,
   Loader2,
+  CreditCard,
 } from "lucide-react";
 
 import gymsData from "@/data/mock/gyms.json";
@@ -179,6 +181,35 @@ export default function BusinessDetail() {
   const [currentImage, setCurrentImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [isMembershipOpen, setIsMembershipOpen] = useState(false);
+
+  // Membership plans for the venue
+  const membershipPlans = [
+    {
+      id: "monthly",
+      name: "Monthly",
+      duration: "1 Month",
+      price: 2499,
+      features: ["Full access", "Locker included", "Free parking"],
+    },
+    {
+      id: "quarterly",
+      name: "Quarterly",
+      duration: "3 Months",
+      price: 5999,
+      originalPrice: 7497,
+      popular: true,
+      features: ["Full access", "Locker included", "Free parking", "1 PT session"],
+    },
+    {
+      id: "annual",
+      name: "Annual",
+      duration: "12 Months",
+      price: 19999,
+      originalPrice: 29988,
+      features: ["Full access", "Locker included", "Free parking", "4 PT sessions", "Diet consultation"],
+    },
+  ];
 
   // Find the venue by ID from combined data
   // First check if ID is a venue ID, then check if it's a business user ID
@@ -625,7 +656,15 @@ export default function BusinessDetail() {
                   >
                     Book Now
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full mb-3"
+                    onClick={() => setIsMembershipOpen(true)}
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Buy Membership
+                  </Button>
+                  <Button variant="ghost" className="w-full">
                     <Phone className="h-4 w-4 mr-2" />
                     Call Now
                   </Button>
@@ -693,12 +732,23 @@ export default function BusinessDetail() {
         }}
       />
 
+      <MembershipPaymentModal
+        open={isMembershipOpen}
+        onOpenChange={setIsMembershipOpen}
+        venueName={venue.name}
+        venueImage={(venue as any).images?.[0]}
+        plans={membershipPlans}
+        onSuccess={(planId) => {
+          console.log("Membership purchased:", planId);
+        }}
+      />
+
       {/* Mobile Fixed Bottom Bar */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border lg:hidden z-50">
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1">
-            <Phone className="h-4 w-4 mr-2" />
-            Call
+          <Button variant="outline" className="flex-1" onClick={() => setIsMembershipOpen(true)}>
+            <CreditCard className="h-4 w-4 mr-2" />
+            Join
           </Button>
           <Button 
             variant="default" 

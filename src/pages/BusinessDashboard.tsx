@@ -31,6 +31,8 @@ import {
   Building2,
   LogOut,
   Wallet,
+  Sparkles,
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
@@ -40,6 +42,7 @@ import { CreateAppointmentModal } from "@/components/business/CreateAppointmentM
 import { ExportReportsModal } from "@/components/business/ExportReportsModal";
 import { SendAnnouncementModal } from "@/components/business/SendAnnouncementModal";
 import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
+import { UpgradePlanModal } from "@/components/payments/UpgradePlanModal";
 
 const navigation = [
   { name: "Dashboard", href: "/business-dashboard", icon: LayoutDashboard },
@@ -146,11 +149,16 @@ export default function BusinessDashboard() {
   const [exportReportsOpen, setExportReportsOpen] = useState(false);
   const [sendAnnouncementOpen, setSendAnnouncementOpen] = useState(false);
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false);
+  const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     toast.success("Logged out successfully");
     navigate("/");
+  };
+
+  const handleUpgrade = (plan: string) => {
+    toast.success(`Upgraded to ${plan} plan!`);
   };
 
   return (
@@ -239,8 +247,21 @@ export default function BusinessDashboard() {
             ))}
           </nav>
 
-          {/* Logout */}
+          {/* Upgrade Banner */}
           <div className="p-4 border-t border-border">
+            <div className="p-3 rounded-xl bg-gradient-to-r from-primary/10 to-info/10 border border-primary/20 mb-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Crown className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Starter Plan</span>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Upgrade to unlock unlimited bookings
+              </p>
+              <Button size="sm" variant="default" className="w-full" onClick={() => setUpgradePlanOpen(true)}>
+                <Sparkles className="h-3 w-3 mr-1" />
+                Upgrade Plan
+              </Button>
+            </div>
             <button 
               onClick={handleLogout}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 w-full transition-colors"
@@ -516,6 +537,7 @@ export default function BusinessDashboard() {
       <ExportReportsModal open={exportReportsOpen} onOpenChange={setExportReportsOpen} />
       <SendAnnouncementModal open={sendAnnouncementOpen} onOpenChange={setSendAnnouncementOpen} />
       <PaymentMethodsModal open={paymentMethodsOpen} onOpenChange={setPaymentMethodsOpen} />
+      <UpgradePlanModal open={upgradePlanOpen} onOpenChange={setUpgradePlanOpen} currentPlan="starter" onUpgrade={handleUpgrade} />
     </div>
   );
 }

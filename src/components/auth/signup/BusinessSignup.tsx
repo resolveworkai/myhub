@@ -121,19 +121,28 @@ const subscriptionTiers = [
     id: 'starter',
     name: 'Starter',
     price: 'Free',
-    features: ['1 location', '50 bookings/month', 'Basic analytics'],
+    priceValue: 0,
+    period: 'forever',
+    features: ['1 location', '50 bookings/month', 'Basic analytics', 'Email support'],
+    popular: false,
   },
   {
     id: 'growth',
     name: 'Growth',
-    price: '$49/month',
-    features: ['3 locations', 'Unlimited bookings', 'Advanced analytics'],
+    price: '₹3,999',
+    priceValue: 3999,
+    period: 'month',
+    features: ['3 locations', 'Unlimited bookings', 'Advanced analytics', 'Priority support', 'Smart scheduling'],
+    popular: true,
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: 'Custom',
-    features: ['Unlimited locations', 'API access', 'Dedicated support'],
+    price: '₹9,999',
+    priceValue: 9999,
+    period: 'month',
+    features: ['Unlimited locations', 'API access', 'Dedicated support', 'White-label options', 'SLA guarantee'],
+    popular: false,
   },
 ];
 
@@ -709,18 +718,29 @@ export function BusinessSignup() {
                   type="button"
                   onClick={() => setValue('subscriptionTier', tier.id as any)}
                   className={cn(
-                    'flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all',
+                    'flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all relative',
                     selectedTier === tier.id
                       ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
+                      : 'border-border hover:border-primary/50',
+                    tier.popular && 'ring-2 ring-primary/20'
                   )}
                 >
+                  {tier.popular && (
+                    <span className="absolute -top-2 left-4 px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded">
+                      Most Popular
+                    </span>
+                  )}
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold">{tier.name}</span>
-                      <span className={cn('font-bold', tier.id === 'starter' ? 'text-success' : 'text-primary')}>
-                        {tier.price}
-                      </span>
+                      <div className="text-right">
+                        <span className={cn('font-bold', tier.id === 'starter' ? 'text-success' : 'text-primary')}>
+                          {tier.price}
+                        </span>
+                        {tier.price !== 'Free' && (
+                          <span className="text-xs text-muted-foreground">/{tier.period}</span>
+                        )}
+                      </div>
                     </div>
                     <ul className="text-sm text-muted-foreground space-y-1">
                       {tier.features.map((feature) => (
@@ -742,6 +762,15 @@ export function BusinessSignup() {
                 </button>
               ))}
             </div>
+            
+            {/* Payment notice for paid plans */}
+            {selectedTier !== 'starter' && (
+              <div className="p-4 rounded-xl bg-info/10 border border-info/20">
+                <p className="text-sm text-info-foreground">
+                  💳 Payment will be processed after account verification. Start with a 14-day free trial.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4 pt-4 border-t border-border">
