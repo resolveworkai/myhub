@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, Suspense } from "react";
+import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -309,216 +309,225 @@ export default function BusinessDashboard() {
 
         {/* Dashboard Content */}
         <div className="p-4 lg:p-8">
-          {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground">Overview of your business performance</p>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {stats.map((stat) => (
-              <div key={stat.name} className="p-6 rounded-2xl bg-card border border-border">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", stat.bgColor)}>
-                    <stat.icon className={cn("h-6 w-6", stat.color)} />
-                  </div>
-                  <div className={cn(
-                    "flex items-center gap-1 text-sm font-medium",
-                    stat.trend === "up" ? "text-success" : "text-destructive"
-                  )}>
-                    {stat.trend === "up" ? (
-                      <TrendingUp className="h-4 w-4" />
-                    ) : (
-                      <TrendingDown className="h-4 w-4" />
-                    )}
-                    {stat.change}
-                  </div>
-                </div>
-                <div className="text-2xl font-bold mb-1">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.name}</div>
+          {/* Render nested routes or dashboard home */}
+          {location.pathname === "/business-dashboard" ? (
+            <>
+              {/* Page Header */}
+              <div className="mb-8">
+                <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">Dashboard</h1>
+                <p className="text-muted-foreground">Overview of your business performance</p>
               </div>
-            ))}
-          </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Main Column */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Today's Appointments */}
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-display text-lg font-semibold">Today's Appointments</h2>
-                  <Button variant="outline" size="sm">
-                    View All
-                  </Button>
-                </div>
-                <div className="space-y-3">
-                  {todayAppointments.map((apt) => (
-                    <div
-                      key={apt.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="text-center min-w-[60px]">
-                          <div className="text-sm font-semibold">{apt.time}</div>
-                        </div>
-                        <div>
-                          <div className="font-medium">{apt.member}</div>
-                          <div className="text-sm text-muted-foreground">{apt.type}</div>
-                        </div>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {stats.map((stat) => (
+                  <div key={stat.name} className="p-6 rounded-2xl bg-card border border-border">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", stat.bgColor)}>
+                        <stat.icon className={cn("h-6 w-6", stat.color)} />
                       </div>
-                      <div className="flex items-center gap-2">
-                        {apt.status === "completed" ? (
-                          <Badge variant="success">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Completed
-                          </Badge>
+                      <div className={cn(
+                        "flex items-center gap-1 text-sm font-medium",
+                        stat.trend === "up" ? "text-success" : "text-destructive"
+                      )}>
+                        {stat.trend === "up" ? (
+                          <TrendingUp className="h-4 w-4" />
                         ) : (
-                          <Badge variant="info">
-                            <Clock className="h-3 w-3 mr-1" />
-                            Upcoming
-                          </Badge>
+                          <TrendingDown className="h-4 w-4" />
                         )}
-                        <Button variant="ghost" size="icon-sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
+                        {stat.change}
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <div className="text-2xl font-bold mb-1">{stat.value}</div>
+                    <div className="text-sm text-muted-foreground">{stat.name}</div>
+                  </div>
+                ))}
               </div>
 
-              {/* Recent Members */}
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-display text-lg font-semibold">Recent Members</h2>
-                  <Button variant="outline" size="sm">
-                    View All
-                  </Button>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Member</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Membership</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Joined</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
-                        <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentMembers.map((member) => (
-                        <tr key={member.id} className="border-b border-border last:border-0 hover:bg-muted/50">
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-3">
-                              <img
-                                src={member.avatar}
-                                alt={member.name}
-                                className="w-10 h-10 rounded-full object-cover"
-                              />
-                              <div>
-                                <div className="font-medium">{member.name}</div>
-                                <div className="text-sm text-muted-foreground">{member.email}</div>
-                              </div>
+              <div className="grid lg:grid-cols-3 gap-8">
+                {/* Main Column */}
+                <div className="lg:col-span-2 space-y-8">
+                  {/* Today's Appointments */}
+                  <div className="bg-card rounded-2xl border border-border p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="font-display text-lg font-semibold">Today's Appointments</h2>
+                      <Button variant="outline" size="sm" onClick={() => navigate("/business-dashboard/appointments")}>
+                        View All
+                      </Button>
+                    </div>
+                    <div className="space-y-3">
+                      {todayAppointments.map((apt) => (
+                        <div
+                          key={apt.id}
+                          className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="text-center min-w-[60px]">
+                              <div className="text-sm font-semibold">{apt.time}</div>
                             </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <Badge variant="secondary">{member.membership}</Badge>
-                          </td>
-                          <td className="py-4 px-4 text-sm text-muted-foreground">{member.joinDate}</td>
-                          <td className="py-4 px-4">
-                            <Badge variant="success">Active</Badge>
-                          </td>
-                          <td className="py-4 px-4 text-right">
-                            <Button variant="ghost" size="sm">
-                              View
-                              <ChevronRight className="h-4 w-4 ml-1" />
+                            <div>
+                              <div className="font-medium">{apt.member}</div>
+                              <div className="text-sm text-muted-foreground">{apt.type}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {apt.status === "completed" ? (
+                              <Badge variant="success">
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Completed
+                              </Badge>
+                            ) : (
+                              <Badge variant="info">
+                                <Clock className="h-3 w-3 mr-1" />
+                                Upcoming
+                              </Badge>
+                            )}
+                            <Button variant="ghost" size="icon-sm">
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
-                          </td>
-                        </tr>
+                          </div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Sidebar */}
-            <div className="space-y-8">
-              {/* Pending Payments */}
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-display text-lg font-semibold">Pending Payments</h2>
-                  <Button variant="outline" size="sm">
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Reminders
-                  </Button>
-                </div>
-                <div className="space-y-4">
-                  {pendingPayments.map((payment) => (
-                    <div
-                      key={payment.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-muted/50"
-                    >
-                      <div>
-                        <div className="font-medium">{payment.member}</div>
-                        <div className="text-sm text-muted-foreground">Due: {payment.dueDate}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold">{payment.amount}</div>
-                        {payment.daysOverdue > 0 && (
-                          <Badge variant="destructive" className="text-xs">
-                            {payment.daysOverdue}d overdue
-                          </Badge>
-                        )}
-                      </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Recent Members */}
+                  <div className="bg-card rounded-2xl border border-border p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="font-display text-lg font-semibold">Recent Members</h2>
+                      <Button variant="outline" size="sm" onClick={() => navigate("/business-dashboard/members")}>
+                        View All
+                      </Button>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-border">
+                            <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Member</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Membership</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Joined</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                            <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {recentMembers.map((member) => (
+                            <tr key={member.id} className="border-b border-border last:border-0 hover:bg-muted/50">
+                              <td className="py-4 px-4">
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    src={member.avatar}
+                                    alt={member.name}
+                                    className="w-10 h-10 rounded-full object-cover"
+                                  />
+                                  <div>
+                                    <div className="font-medium">{member.name}</div>
+                                    <div className="text-sm text-muted-foreground">{member.email}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-4 px-4">
+                                <Badge variant="secondary">{member.membership}</Badge>
+                              </td>
+                              <td className="py-4 px-4 text-sm text-muted-foreground">{member.joinDate}</td>
+                              <td className="py-4 px-4">
+                                <Badge variant="success">Active</Badge>
+                              </td>
+                              <td className="py-4 px-4 text-right">
+                                <Button variant="ghost" size="sm">
+                                  View
+                                  <ChevronRight className="h-4 w-4 ml-1" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Sidebar */}
+                <div className="space-y-8">
+                  {/* Pending Payments */}
+                  <div className="bg-card rounded-2xl border border-border p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="font-display text-lg font-semibold">Pending Payments</h2>
+                      <Button variant="outline" size="sm" onClick={() => navigate("/business-dashboard/fees")}>
+                        <Send className="h-4 w-4 mr-2" />
+                        View All
+                      </Button>
+                    </div>
+                    <div className="space-y-4">
+                      {pendingPayments.map((payment) => (
+                        <div
+                          key={payment.id}
+                          className="flex items-center justify-between p-3 rounded-xl bg-muted/50"
+                        >
+                          <div>
+                            <div className="font-medium">{payment.member}</div>
+                            <div className="text-sm text-muted-foreground">Due: {payment.dueDate}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold">{payment.amount}</div>
+                            {payment.daysOverdue > 0 && (
+                              <Badge variant="destructive" className="text-xs">
+                                {payment.daysOverdue}d overdue
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="bg-card rounded-2xl border border-border p-6">
+                    <h2 className="font-display text-lg font-semibold mb-4">Quick Actions</h2>
+                    <div className="space-y-2">
+                      <Button variant="outline" className="w-full justify-start" onClick={() => setAddMemberOpen(true)}>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Add New Member
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start" onClick={() => setCreateAppointmentOpen(true)}>
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Create Appointment
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start" onClick={() => setExportReportsOpen(true)}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Reports
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start" onClick={() => setSendAnnouncementOpen(true)}>
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Send Announcement
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start" onClick={() => setPaymentMethodsOpen(true)}>
+                        <Wallet className="h-4 w-4 mr-2" />
+                        Payment Methods
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start" onClick={() => setSupportOpen(true)}>
+                        <HelpCircle className="h-4 w-4 mr-2" />
+                        Get Support
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Live Occupancy */}
+                  <LiveOccupancyCard onWalkInClick={() => setWalkInOpen(true)} />
+
+                  {/* Walk-in History */}
+                  <div className="bg-card rounded-2xl border border-border p-6">
+                    <h2 className="font-display text-lg font-semibold mb-4">Today's Walk-ins</h2>
+                    <WalkInHistoryLog />
+                  </div>
                 </div>
               </div>
-
-              {/* Quick Actions */}
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <h2 className="font-display text-lg font-semibold mb-4">Quick Actions</h2>
-                <div className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start" onClick={() => setAddMemberOpen(true)}>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Add New Member
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" onClick={() => setCreateAppointmentOpen(true)}>
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Create Appointment
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" onClick={() => setExportReportsOpen(true)}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Export Reports
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" onClick={() => setSendAnnouncementOpen(true)}>
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Send Announcement
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" onClick={() => setPaymentMethodsOpen(true)}>
-                    <Wallet className="h-4 w-4 mr-2" />
-                    Payment Methods
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" onClick={() => setSupportOpen(true)}>
-                    <HelpCircle className="h-4 w-4 mr-2" />
-                    Get Support
-                  </Button>
-                </div>
-              </div>
-
-              {/* Live Occupancy */}
-              <LiveOccupancyCard onWalkInClick={() => setWalkInOpen(true)} />
-
-              {/* Walk-in History */}
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <h2 className="font-display text-lg font-semibold mb-4">Today's Walk-ins</h2>
-                <WalkInHistoryLog />
-              </div>
-            </div>
-          </div>
+            </>
+          ) : (
+            <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>}>
+              <Outlet />
+            </Suspense>
+          )}
         </div>
       </main>
 
