@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,7 @@ export default function Login() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     setError,
   } = useForm<LoginFormData>({
@@ -229,7 +230,17 @@ export default function Login() {
 
             {/* Remember Me */}
             <div className="flex items-center gap-2">
-              <Checkbox id="remember" {...register("rememberMe")} />
+              <Controller
+                name="rememberMe"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox 
+                    id="remember" 
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
               <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
                 Remember me for 30 days
               </Label>
@@ -244,6 +255,7 @@ export default function Login() {
 
             {/* Submit Button */}
             <Button 
+              type="submit"
               variant="gradient" 
               className="w-full" 
               size="lg"
