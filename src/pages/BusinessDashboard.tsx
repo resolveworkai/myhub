@@ -42,6 +42,7 @@ import { AddMemberModal } from "@/components/business/AddMemberModal";
 import { CreateAppointmentModal } from "@/components/business/CreateAppointmentModal";
 import { ExportReportsModal } from "@/components/business/ExportReportsModal";
 import { SendAnnouncementModal } from "@/components/business/SendAnnouncementModal";
+import { WalkInBookingModal } from "@/components/business/WalkInBookingModal";
 import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
 import { UpgradePlanModal } from "@/components/payments/UpgradePlanModal";
 import { SupportModal } from "@/components/support/SupportModal";
@@ -153,6 +154,7 @@ export default function BusinessDashboard() {
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false);
   const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [walkInOpen, setWalkInOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -507,10 +509,20 @@ export default function BusinessDashboard() {
 
               {/* Live Occupancy */}
               <div className="bg-card rounded-2xl border border-border p-6">
-                <h2 className="font-display text-lg font-semibold mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                  Live Occupancy
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-display text-lg font-semibold flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                    Live Occupancy
+                  </h2>
+                  <Button 
+                    size="sm" 
+                    variant="gradient"
+                    onClick={() => setWalkInOpen(true)}
+                  >
+                    <Users className="h-4 w-4 mr-1" />
+                    Walk-in
+                  </Button>
+                </div>
                 <div className="text-center mb-4">
                   <div className="text-4xl font-bold text-primary">45</div>
                   <div className="text-muted-foreground">of 100 capacity</div>
@@ -543,6 +555,7 @@ export default function BusinessDashboard() {
       <CreateAppointmentModal open={createAppointmentOpen} onOpenChange={setCreateAppointmentOpen} />
       <ExportReportsModal open={exportReportsOpen} onOpenChange={setExportReportsOpen} />
       <SendAnnouncementModal open={sendAnnouncementOpen} onOpenChange={setSendAnnouncementOpen} />
+      <WalkInBookingModal open={walkInOpen} onOpenChange={setWalkInOpen} />
       <PaymentMethodsModal open={paymentMethodsOpen} onOpenChange={setPaymentMethodsOpen} />
       <UpgradePlanModal open={upgradePlanOpen} onOpenChange={setUpgradePlanOpen} currentPlan="starter" onUpgrade={handleUpgrade} />
       <SupportModal open={supportOpen} onOpenChange={setSupportOpen} />
