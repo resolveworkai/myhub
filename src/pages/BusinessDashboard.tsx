@@ -33,6 +33,7 @@ import {
   Wallet,
   Sparkles,
   Crown,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
@@ -43,6 +44,7 @@ import { ExportReportsModal } from "@/components/business/ExportReportsModal";
 import { SendAnnouncementModal } from "@/components/business/SendAnnouncementModal";
 import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
 import { UpgradePlanModal } from "@/components/payments/UpgradePlanModal";
+import { SupportModal } from "@/components/support/SupportModal";
 
 const navigation = [
   { name: "Dashboard", href: "/business-dashboard", icon: LayoutDashboard },
@@ -150,6 +152,7 @@ export default function BusinessDashboard() {
   const [sendAnnouncementOpen, setSendAnnouncementOpen] = useState(false);
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false);
   const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -495,6 +498,10 @@ export default function BusinessDashboard() {
                     <Wallet className="h-4 w-4 mr-2" />
                     Payment Methods
                   </Button>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => setSupportOpen(true)}>
+                    <HelpCircle className="h-4 w-4 mr-2" />
+                    Get Support
+                  </Button>
                 </div>
               </div>
 
@@ -538,6 +545,7 @@ export default function BusinessDashboard() {
       <SendAnnouncementModal open={sendAnnouncementOpen} onOpenChange={setSendAnnouncementOpen} />
       <PaymentMethodsModal open={paymentMethodsOpen} onOpenChange={setPaymentMethodsOpen} />
       <UpgradePlanModal open={upgradePlanOpen} onOpenChange={setUpgradePlanOpen} currentPlan="starter" onUpgrade={handleUpgrade} />
+      <SupportModal open={supportOpen} onOpenChange={setSupportOpen} />
     </div>
   );
 }
