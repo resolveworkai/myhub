@@ -174,14 +174,6 @@ export default function Explore() {
     toggleFavorite(id);
   }, [toggleFavorite]);
 
-  const toggleCategory = (id: string) => {
-    const newCategory = id as VenueCategory;
-    if (activeCategory === newCategory) {
-      setActiveCategory("all");
-    } else {
-      setActiveCategory(newCategory);
-    }
-  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -305,25 +297,6 @@ export default function Explore() {
                   </button>
                 </div>
               </div>
-            </div>
-
-            {/* Category Pills */}
-            <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => toggleCategory(cat.id)}
-                  disabled={!!routeCategory}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                    effectiveCategory === cat.id
-                      ? "bg-primary text-primary-foreground"
-                      : `${cat.color} hover:opacity-80`
-                  } ${routeCategory ? "cursor-default" : "cursor-pointer"}`}
-                >
-                  <span>{cat.icon}</span>
-                  {cat.name}
-                </button>
-              ))}
             </div>
           </div>
         </div>

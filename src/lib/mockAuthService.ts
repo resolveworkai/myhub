@@ -32,6 +32,7 @@ let businessUsers: BusinessUser[] = (businessUsersData as any[]).map(bu => ({
   totalCapacity: 100,
   operatingHours: {},
   serviceAreas: '',
+  specialties: [], // Business-type specific specialties
   avatar: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=150&h=150&fit=crop',
   accountType: 'business' as const,
   subscriptionStatus: 'active' as const,
@@ -163,6 +164,7 @@ export const registerBusinessUser = async (userData: {
   numberOfLocations: string;
   totalCapacity: number;
   serviceAreas: string;
+  specialties: string[]; // Business-type specific specialties
   password: string;
   accountManagerEmail?: string;
   subscriptionTier: 'starter' | 'growth' | 'enterprise';
@@ -192,6 +194,7 @@ export const registerBusinessUser = async (userData: {
     totalCapacity: userData.totalCapacity,
     operatingHours: {},
     serviceAreas: userData.serviceAreas,
+    specialties: userData.specialties, // Save business-type specific specialties
     accountManagerEmail: userData.accountManagerEmail,
     avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.businessName)}&background=random`,
     accountType: 'business',

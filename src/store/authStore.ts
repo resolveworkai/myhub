@@ -54,6 +54,7 @@ export interface BusinessUser {
   totalCapacity: number;
   operatingHours: Record<string, { open: string; close: string; closed: boolean }>;
   serviceAreas: string;
+  specialties: string[]; // Business-type specific specialties
   accountManagerEmail?: string;
   avatar: string;
   accountType: 'business';
