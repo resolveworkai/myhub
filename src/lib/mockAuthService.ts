@@ -194,7 +194,7 @@ export const registerBusinessUser = async (userData: {
     totalCapacity: userData.totalCapacity,
     operatingHours: {},
     serviceAreas: userData.serviceAreas,
-    specialties: userData.specialties, // Save business-type specific specialties
+    specialties: userData.specialties,
     accountManagerEmail: userData.accountManagerEmail,
     avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.businessName)}&background=random`,
     accountType: 'business',
@@ -212,6 +212,28 @@ export const registerBusinessUser = async (userData: {
     failedLoginAttempts: 0,
     lockedUntil: null,
     password: userData.password,
+    
+    // New media fields
+    logo: '',
+    coverImage: '',
+    galleryImages: [],
+    
+    // Filter-relevant attributes
+    amenities: [],
+    equipment: userData.businessType === 'gym' ? [] : undefined,
+    classTypes: userData.businessType === 'gym' ? [] : undefined,
+    membershipOptions: [],
+    subjects: userData.businessType === 'coaching' ? [] : undefined,
+    levels: userData.businessType === 'coaching' ? [] : undefined,
+    teachingModes: userData.businessType === 'coaching' ? [] : undefined,
+    batchSizes: userData.businessType === 'coaching' ? [] : undefined,
+    facilities: userData.businessType === 'library' ? [] : undefined,
+    collections: userData.businessType === 'library' ? [] : undefined,
+    spaceTypes: userData.businessType === 'library' ? [] : undefined,
+    
+    // Listing status - not published until they add location/images
+    isPublished: false,
+    publishedAt: undefined,
   };
   
   businessUsers.push(newBusinessUser);

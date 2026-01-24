@@ -71,6 +71,34 @@ export interface BusinessUser {
   totalRevenue: number;
   failedLoginAttempts: number;
   lockedUntil: string | null;
+  
+  // Media fields
+  logo: string;
+  coverImage: string;
+  galleryImages: string[];
+  
+  // Filter-relevant attributes (based on businessType)
+  amenities: string[];
+  
+  // Gym-specific
+  equipment?: string[];
+  classTypes?: string[];
+  membershipOptions?: string[];
+  
+  // Coaching-specific
+  subjects?: string[];
+  levels?: string[];
+  teachingModes?: string[];
+  batchSizes?: string[];
+  
+  // Library-specific
+  facilities?: string[];
+  collections?: string[];
+  spaceTypes?: string[];
+  
+  // Listing status
+  isPublished: boolean;
+  publishedAt?: string;
 }
 
 export type AuthUser = User | BusinessUser;
