@@ -301,6 +301,7 @@ export function BusinessSignup() {
         numberOfLocations: data.numberOfLocations,
         totalCapacity: data.totalCapacity,
         serviceAreas: data.serviceAreas,
+        specialties: data.specialties, // Business-type specific specialties
         password: data.password,
         accountManagerEmail: data.accountManagerEmail,
         subscriptionTier: data.subscriptionTier,
