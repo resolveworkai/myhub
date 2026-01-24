@@ -15,13 +15,8 @@ const CITIES = [
   { name: 'Noida', lat: 28.5355, lng: 77.391 },
 ];
 
-// Default location (Mumbai)
-const DEFAULT_LOCATION: UserLocation = {
-  lat: 19.076,
-  lng: 72.8777,
-  city: 'Mumbai',
-  source: 'default',
-};
+// No default location - we'll request browser location first
+const DEFAULT_LOCATION: UserLocation | null = null;
 
 // Find nearest city based on coordinates
 function findNearestCity(lat: number, lng: number): string {
@@ -54,16 +49,24 @@ export function useGeolocation(): UseGeolocationReturn {
   const { userLocation, setUserLocation } = useFilterStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasRequested, setHasRequested] = useState(false);
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser');
-      setUserLocation(DEFAULT_LOCATION);
+      // Fallback to Mumbai if geolocation not supported
+      setUserLocation({
+        lat: 19.076,
+        lng: 72.8777,
+        city: 'Mumbai',
+        source: 'default',
+      });
       return;
     }
 
     setLoading(true);
     setError(null);
+    setHasRequested(true);
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -93,8 +96,13 @@ export function useGeolocation(): UseGeolocationReturn {
           default:
             setError('An unknown error occurred');
         }
-        // Fall back to default location
-        setUserLocation(DEFAULT_LOCATION);
+        // Fall back to Mumbai only after user denies/error
+        setUserLocation({
+          lat: 19.076,
+          lng: 72.8777,
+          city: 'Mumbai',
+          source: 'default',
+        });
       },
       {
         enableHighAccuracy: true,
@@ -119,12 +127,12 @@ export function useGeolocation(): UseGeolocationReturn {
     [setUserLocation]
   );
 
-  // Auto-request location on mount if not already set
+  // Auto-request browser location on mount if not already set
   useEffect(() => {
-    if (!userLocation) {
+    if (!userLocation && !hasRequested) {
       requestLocation();
     }
-  }, [userLocation, requestLocation]);
+  }, [userLocation, hasRequested, requestLocation]);
 
   return {
     location: userLocation,
