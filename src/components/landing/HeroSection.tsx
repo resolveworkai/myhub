@@ -41,8 +41,8 @@ export function HeroSection() {
       {/* Background Gradient */}
       <div className="absolute inset-0 gradient-hero" />
       
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* Animated Background Elements - Hidden on mobile for performance */}
+      <div className="absolute inset-0 overflow-hidden hidden sm:block">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary-foreground/10 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float" style={{ animationDelay: "-3s" }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-foreground/5 rounded-full blur-3xl" />
@@ -51,102 +51,102 @@ export function HeroSection() {
       {/* Pattern Overlay */}
       <div className="absolute inset-0 bg-hero-pattern opacity-30" />
 
-      <div className="container relative mx-auto px-4 lg:px-8 pt-24 lg:pt-32 pb-16">
+      <div className="container relative mx-auto px-4 lg:px-8 pt-20 sm:pt-24 lg:pt-32 pb-12 sm:pb-16">
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 mb-8 animate-fade-in">
-            <Sparkles className="h-4 w-4 text-accent" />
-            <span className="text-primary-foreground/90 text-sm font-medium">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 mb-6 sm:mb-8 animate-fade-in">
+            <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
+            <span className="text-primary-foreground/90 text-xs sm:text-sm font-medium">
               Trusted by 50,000+ users across UAE
             </span>
           </div>
 
           {/* Headline */}
-          <h1 className="font-display text-4xl md:text-5xl lg:text-7xl font-bold text-primary-foreground mb-6 tracking-tight animate-slide-up">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-primary-foreground mb-4 sm:mb-6 tracking-tight animate-slide-up leading-tight">
             Your Gateway to
-            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-accent via-warning to-accent">
+            <span className="block mt-1 sm:mt-2 text-transparent bg-clip-text bg-gradient-to-r from-accent via-warning to-accent">
               Fitness & Learning
             </span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg md:text-xl text-primary-foreground/80 mb-10 max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: "0.1s" }}>
+          <p className="text-base sm:text-lg md:text-xl text-primary-foreground/80 mb-8 sm:mb-10 max-w-2xl mx-auto animate-slide-up px-4" style={{ animationDelay: "0.1s" }}>
             Discover and book gyms, coaching centers, and libraries near you.
             Real-time availability, instant booking, and progress tracking.
           </p>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8 animate-slide-up" style={{ animationDelay: "0.2s" }}>
-            <div className="relative flex flex-col md:flex-row items-stretch md:items-center bg-primary-foreground/10 backdrop-blur-md rounded-2xl border border-primary-foreground/20 p-2 shadow-xl gap-2 md:gap-0">
-              <div className="flex-1 flex items-center gap-3 px-4">
-                <Search className="h-5 w-5 text-primary-foreground/60" />
+          <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-6 sm:mb-8 animate-slide-up px-2" style={{ animationDelay: "0.2s" }}>
+            <div className="relative flex flex-col gap-2 sm:flex-row sm:items-center bg-primary-foreground/10 backdrop-blur-md rounded-xl sm:rounded-2xl border border-primary-foreground/20 p-2 shadow-xl">
+              <div className="flex-1 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 bg-primary-foreground/5 sm:bg-transparent rounded-lg sm:rounded-none">
+                <Search className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground/60 shrink-0" />
                 <input
                   type="text"
                   placeholder="Search gyms, coaching, libraries..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 outline-none text-base py-2 md:py-0"
+                  className="flex-1 bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 outline-none text-sm sm:text-base py-2.5 sm:py-2"
                 />
               </div>
-              <div className="flex items-center gap-2 px-4 md:border-l border-primary-foreground/20">
-                <MapPin className="h-5 w-5 text-primary-foreground/60" />
+              <div className="flex items-center gap-2 px-3 sm:px-4 sm:border-l border-primary-foreground/20 bg-primary-foreground/5 sm:bg-transparent rounded-lg sm:rounded-none">
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground/60 shrink-0" />
                 <input
                   type="text"
                   placeholder="Location"
                   value={locationQuery}
                   onChange={(e) => setLocationQuery(e.target.value)}
-                  className="w-full md:w-32 bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 outline-none text-base py-2 md:py-0"
+                  className="flex-1 sm:w-28 md:w-32 bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 outline-none text-sm sm:text-base py-2.5 sm:py-2"
                 />
               </div>
-              <Button type="submit" variant="accent" size="lg" className="rounded-xl w-full md:w-auto">
-                <Search className="h-5 w-5 mr-2" />
-                Search
+              <Button type="submit" variant="accent" size="lg" className="rounded-lg sm:rounded-xl w-full sm:w-auto h-11 sm:h-auto">
+                <Search className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
+                <span className="sm:inline">Search</span>
               </Button>
             </div>
           </form>
 
           {/* Quick Categories */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12 animate-slide-up" style={{ animationDelay: "0.25s" }}>
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 sm:mb-12 animate-slide-up px-2" style={{ animationDelay: "0.25s" }}>
             {categories.map((cat) => (
               <Link
                 key={cat.name}
                 to={cat.href}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full ${cat.color} text-sm font-medium hover:scale-105 transition-transform`}
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full ${cat.color} text-xs sm:text-sm font-medium hover:scale-105 transition-transform`}
               >
-                <cat.icon className="h-4 w-4" />
+                <cat.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 {cat.name}
               </Link>
             ))}
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-slide-up" style={{ animationDelay: "0.3s" }}>
-            <Link to="/explore">
-              <Button variant="hero" size="xl">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12 sm:mb-16 animate-slide-up px-4" style={{ animationDelay: "0.3s" }}>
+            <Link to="/explore" className="w-full sm:w-auto">
+              <Button variant="hero" size="lg" className="w-full sm:w-auto h-12 sm:h-14 text-sm sm:text-base">
                 Explore Venues
-                <ArrowRight className="h-5 w-5 ml-2" />
+                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
               </Button>
             </Link>
-            <Link to="/for-business">
-              <Button variant="hero-outline" size="xl">
+            <Link to="/for-business" className="w-full sm:w-auto">
+              <Button variant="hero-outline" size="lg" className="w-full sm:w-auto h-12 sm:h-14 text-sm sm:text-base">
                 List Your Business
               </Button>
             </Link>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-xl mx-auto animate-fade-in" style={{ animationDelay: "0.4s" }}>
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8 max-w-xl mx-auto animate-fade-in px-2" style={{ animationDelay: "0.4s" }}>
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="flex justify-center mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-primary-foreground/10 flex items-center justify-center">
-                    <stat.icon className="h-5 w-5 text-accent" />
+                <div className="flex justify-center mb-1 sm:mb-2">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary-foreground/10 flex items-center justify-center">
+                    <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
                   </div>
                 </div>
-                <div className="font-display text-xl md:text-3xl font-bold text-primary-foreground">
+                <div className="font-display text-lg sm:text-xl md:text-3xl font-bold text-primary-foreground">
                   {stat.value}
                 </div>
-                <div className="text-xs md:text-sm text-primary-foreground/60">{stat.label}</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-primary-foreground/60">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -154,7 +154,7 @@ export function HeroSection() {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce-slow hidden md:block">
+      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 animate-bounce-slow hidden md:block">
         <div className="w-6 h-10 rounded-full border-2 border-primary-foreground/30 flex items-start justify-center p-2">
           <div className="w-1.5 h-3 rounded-full bg-primary-foreground/50 animate-pulse" />
         </div>

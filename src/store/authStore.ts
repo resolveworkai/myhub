@@ -33,72 +33,123 @@ export interface User {
 
 export interface BusinessUser {
   id: string;
-  email: string;
   businessName: string;
-  ownerName: string;
+  email: string;
   phone: string;
-  website?: string;
+  avatar?: string;
+  accountType: 'business';
+  
+  // Timestamps
+  createdAt?: string;
+  updatedAt?: string;
+  joinDate?: string;
+  
+  // Verification
+  businessVerified: boolean;
+  profileCompleted?: boolean;
+  verificationStatus?: 'pending' | 'verified' | 'rejected';
+  emailVerified: boolean;
+  phoneVerified?: boolean;
+  emailVerificationCode?: string;
+  
+  // Account status fields (matching User)
+  lastLogin?: string | null;
+  accountStatus?: 'active' | 'suspended' | 'pending_verification';
+  failedLoginAttempts?: number;
+  lockedUntil?: string | null;
+  
+  // Business Details
   businessType: 'gym' | 'coaching' | 'library';
-  registrationNumber: string;
+  registrationNumber?: string;
+  taxId?: string;
+  yearEstablished?: string;
+  yearsInOperation?: string;
+  numberOfLocations?: string;
+  totalCapacity?: number;
+  operatingHours?: {
+    [key: string]: { open: string; close: string; closed?: boolean };
+  };
+  description?: string;
+  
+  // Owner info
+  ownerName?: string;
+  accountManagerEmail?: string;
+  
+  // Location & Contact
   address: {
     street: string;
     city: string;
     state: string;
-    postalCode: string;
     country: string;
-    lat: number;
-    lng: number;
+    zipCode?: string;
+    postalCode?: string;
+    lat?: number;
+    lng?: number;
   };
-  yearsInOperation: string;
-  numberOfLocations: string;
-  totalCapacity: number;
-  operatingHours: Record<string, { open: string; close: string; closed: boolean }>;
-  serviceAreas: string;
-  specialties: string[]; // Business-type specific specialties
-  accountManagerEmail?: string;
-  avatar: string;
-  accountType: 'business';
-  subscriptionTier: 'starter' | 'growth' | 'enterprise';
-  subscriptionStatus: 'active' | 'inactive' | 'cancelled';
-  joinDate: string;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  businessVerified: boolean;
-  lastLogin: string | null;
-  accountStatus: 'active' | 'pending_verification' | 'suspended';
-  locations: string[];
-  staffMembers: string[];
-  totalRevenue: number;
-  failedLoginAttempts: number;
-  lockedUntil: string | null;
+  website?: string;
+  socialLinks?: {
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    linkedin?: string;
+  };
   
-  // Media fields
-  logo: string;
-  coverImage: string;
-  galleryImages: string[];
+  // Media
+  logo?: string;
+  coverImage?: string;
+  galleryImages?: string[];
   
-  // Filter-relevant attributes (based on businessType)
-  amenities: string[];
+  // Business-specific fields
+  amenities?: string[];
+  serviceAreas?: string;
+  targetAudience?: string;
+  specializations?: string[];
+  specialties?: string[];
+  certifications?: string[];
   
-  // Gym-specific
-  equipment?: string[];
-  classTypes?: string[];
-  membershipOptions?: string[];
+  // Subscription tier
+  subscriptionTier?: 'starter' | 'growth' | 'enterprise';
+  subscriptionStatus?: 'active' | 'trial' | 'expired';
   
-  // Coaching-specific
-  subjects?: string[];
-  levels?: string[];
-  teachingModes?: string[];
-  batchSizes?: string[];
+  // Additional business data
+  locations?: string[];
+  staffMembers?: any[];
+  totalRevenue?: number;
   
-  // Library-specific
-  facilities?: string[];
-  collections?: string[];
-  spaceTypes?: string[];
+  // Type-specific attributes (from filterDefinitions)
+  equipment?: string[];      // Gym
+  classTypes?: string[];     // Gym
+  operatingSchedule?: string[]; // Gym
+  membershipTypes?: string[]; // Gym
+  membershipOptions?: string[]; // Gym (legacy support)
   
-  // Listing status
+  subjects?: string[];       // Coaching
+  levels?: string[];         // Coaching
+  teachingModes?: string[];  // Coaching
+  batchSizes?: string[];     // Coaching
+  ageGroups?: string[];      // Coaching
+  qualifications?: string[]; // Coaching
+  
+  facilities?: string[];     // Library
+  collections?: string[];    // Library
+  spaceTypes?: string[];     // Library
+  services?: string[];       // Library
+  hoursOptions?: string[];   // Library
+  
+  // Publishing
   isPublished: boolean;
   publishedAt?: string;
+  
+  // Package Pricing (in ₹)
+  dailyPackagePrice: number;
+  weeklyPackagePrice: number;
+  monthlyPackagePrice: number;
+  customPackages?: {
+    name: string;
+    duration: number; // days
+    price: number;
+    description?: string;
+  }[];
 }
 
 export type AuthUser = User | BusinessUser;

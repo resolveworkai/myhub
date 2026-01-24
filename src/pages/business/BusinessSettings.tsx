@@ -27,6 +27,8 @@ import {
   Rocket,
   Check,
   AlertCircle,
+  DollarSign,
+  IndianRupee,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore, BusinessUser } from "@/store/authStore";
@@ -52,15 +54,32 @@ export default function BusinessSettings() {
     website: businessUser?.website || "",
   });
 
+  const defaultHours = {
+    monday: { open: "06:00", close: "22:00", closed: false },
+    tuesday: { open: "06:00", close: "22:00", closed: false },
+    wednesday: { open: "06:00", close: "22:00", closed: false },
+    thursday: { open: "06:00", close: "22:00", closed: false },
+    friday: { open: "06:00", close: "22:00", closed: false },
+    saturday: { open: "08:00", close: "20:00", closed: false },
+    sunday: { open: "08:00", close: "18:00", closed: false },
+  };
+
   const [operatingHours, setOperatingHours] = useState<Record<string, { open: string; close: string; closed: boolean }>>(
-    businessUser?.operatingHours || {
-      monday: { open: "06:00", close: "22:00", closed: false },
-      tuesday: { open: "06:00", close: "22:00", closed: false },
-      wednesday: { open: "06:00", close: "22:00", closed: false },
-      thursday: { open: "06:00", close: "22:00", closed: false },
-      friday: { open: "06:00", close: "22:00", closed: false },
-      saturday: { open: "08:00", close: "20:00", closed: false },
-      sunday: { open: "08:00", close: "18:00", closed: false },
+    () => {
+      const savedHours = businessUser?.operatingHours;
+      if (savedHours) {
+        // Ensure closed field exists for all entries
+        const normalized: Record<string, { open: string; close: string; closed: boolean }> = {};
+        Object.entries(savedHours).forEach(([day, hours]) => {
+          normalized[day] = {
+            open: hours.open,
+            close: hours.close,
+            closed: hours.closed ?? false,
+          };
+        });
+        return { ...defaultHours, ...normalized };
+      }
+      return defaultHours;
     }
   );
 
@@ -103,6 +122,13 @@ export default function BusinessSettings() {
 
   // Publishing state
   const [isPublished, setIsPublished] = useState(businessUser?.isPublished || false);
+
+  // Package pricing state
+  const [pricing, setPricing] = useState({
+    daily: businessUser?.dailyPackagePrice || 299,
+    weekly: businessUser?.weeklyPackagePrice || 1499,
+    monthly: businessUser?.monthlyPackagePrice || 4999,
+  });
 
   // Sync with user changes
   useEffect(() => {
@@ -336,23 +362,40 @@ export default function BusinessSettings() {
 
       <Tabs defaultValue="business">
         <TabsList className="w-full overflow-x-auto flex-nowrap justify-start gap-1 h-auto p-1">
-          <TabsTrigger value="business" className="shrink-0">
-            <Building2 className="h-4 w-4 mr-2 hidden sm:inline" />Business
+          <TabsTrigger value="business" className="shrink-0 text-xs sm:text-sm">
+            <Building2 className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Business</span>
+            <span className="sm:hidden">Info</span>
           </TabsTrigger>
-          <TabsTrigger value="location" className="shrink-0">
-            <MapPin className="h-4 w-4 mr-2 hidden sm:inline" />Location
+          <TabsTrigger value="location" className="shrink-0 text-xs sm:text-sm">
+            <MapPin className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Location</span>
+            <span className="sm:hidden">Map</span>
           </TabsTrigger>
-          <TabsTrigger value="attributes" className="shrink-0">
-            <Tags className="h-4 w-4 mr-2 hidden sm:inline" />Attributes
+          <TabsTrigger value="attributes" className="shrink-0 text-xs sm:text-sm">
+            <Tags className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Attributes</span>
+            <span className="sm:hidden">Attr</span>
           </TabsTrigger>
-          <TabsTrigger value="hours" className="shrink-0">
-            <Clock className="h-4 w-4 mr-2 hidden sm:inline" />Hours
+          <TabsTrigger value="pricing" className="shrink-0 text-xs sm:text-sm">
+            <IndianRupee className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Pricing</span>
+            <span className="sm:hidden">₹</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="shrink-0">
-            <Bell className="h-4 w-4 mr-2 hidden sm:inline" />Alerts
+          <TabsTrigger value="hours" className="shrink-0 text-xs sm:text-sm">
+            <Clock className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Hours</span>
+            <span className="sm:hidden">Hrs</span>
           </TabsTrigger>
-          <TabsTrigger value="security" className="shrink-0">
-            <Shield className="h-4 w-4 mr-2 hidden sm:inline" />Security
+          <TabsTrigger value="notifications" className="shrink-0 text-xs sm:text-sm">
+            <Bell className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Alerts</span>
+            <span className="sm:hidden">🔔</span>
+          </TabsTrigger>
+          <TabsTrigger value="security" className="shrink-0 text-xs sm:text-sm">
+            <Shield className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Security</span>
+            <span className="sm:hidden">🔒</span>
           </TabsTrigger>
         </TabsList>
 
@@ -507,6 +550,119 @@ export default function BusinessSettings() {
               <Button onClick={handleSaveAttributes}>
                 <Save className="h-4 w-4 mr-2" />
                 Save Attributes
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Pricing Tab */}
+        <TabsContent value="pricing">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <IndianRupee className="h-5 w-5" />
+                Membership Packages
+              </CardTitle>
+              <CardDescription>
+                Set pricing for daily, weekly, and monthly passes. These prices will be shown to customers during booking.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-xl border-2 border-border space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-sm font-bold">1D</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Daily Pass</p>
+                      <p className="text-xs text-muted-foreground">1 day access</p>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                    <Input
+                      type="number"
+                      value={pricing.daily}
+                      onChange={(e) => setPricing({ ...pricing, daily: parseInt(e.target.value) || 0 })}
+                      className="pl-8"
+                      min={0}
+                    />
+                  </div>
+                </div>
+                
+                <div className="p-4 rounded-xl border-2 border-border space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-info/10 flex items-center justify-center">
+                      <span className="text-sm font-bold">7D</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Weekly Pass</p>
+                      <p className="text-xs text-muted-foreground">7 days access</p>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                    <Input
+                      type="number"
+                      value={pricing.weekly}
+                      onChange={(e) => setPricing({ ...pricing, weekly: parseInt(e.target.value) || 0 })}
+                      className="pl-8"
+                      min={0}
+                    />
+                  </div>
+                  {pricing.daily > 0 && (
+                    <p className="text-xs text-success">
+                      {Math.round((1 - pricing.weekly / (pricing.daily * 7)) * 100)}% savings vs daily
+                    </p>
+                  )}
+                </div>
+                
+                <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 space-y-3 relative">
+                  <div className="absolute -top-2 right-3 px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded-full">
+                    Popular
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <span className="text-sm font-bold">30D</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Monthly Pass</p>
+                      <p className="text-xs text-muted-foreground">30 days access</p>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                    <Input
+                      type="number"
+                      value={pricing.monthly}
+                      onChange={(e) => setPricing({ ...pricing, monthly: parseInt(e.target.value) || 0 })}
+                      className="pl-8"
+                      min={0}
+                    />
+                  </div>
+                  {pricing.daily > 0 && (
+                    <p className="text-xs text-success">
+                      {Math.round((1 - pricing.monthly / (pricing.daily * 30)) * 100)}% savings vs daily
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+                <p><strong>Note:</strong> Monthly members who pay in cash cannot be removed for 30 days after assignment. This ensures commitment from both parties.</p>
+              </div>
+
+              <Button onClick={() => {
+                updateUser({
+                  dailyPackagePrice: pricing.daily,
+                  weeklyPackagePrice: pricing.weekly,
+                  monthlyPackagePrice: pricing.monthly,
+                } as Partial<BusinessUser>);
+                toast.success("Pricing updated successfully");
+              }}>
+                <Save className="h-4 w-4 mr-2" />
+                Save Pricing
               </Button>
             </CardContent>
           </Card>
