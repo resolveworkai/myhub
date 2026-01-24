@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Menu,
@@ -20,30 +21,30 @@ import {
 import { useAuthStore } from "@/store/authStore";
 import { UserMenu } from "./UserMenu";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { languages } from "@/i18n";
 
 const navigation = [
-  { name: "Gyms", href: "/gyms", icon: Dumbbell },
-  { name: "Coaching", href: "/coaching", icon: GraduationCap },
-  { name: "Libraries", href: "/libraries", icon: BookOpen },
-  { name: "How It Works", href: "/how-it-works", icon: HelpCircle },
-  { name: "For Business", href: "/for-business", icon: Building2 },
-];
-
-const languages = [
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "ar", name: "العربية", flag: "🇦🇪" },
-  { code: "hi", name: "हिंदी", flag: "🇮🇳" },
-  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { nameKey: "nav.gyms", href: "/gyms", icon: Dumbbell },
+  { nameKey: "nav.coaching", href: "/coaching", icon: GraduationCap },
+  { nameKey: "nav.libraries", href: "/libraries", icon: BookOpen },
+  { nameKey: "nav.howItWorks", href: "/how-it-works", icon: HelpCircle },
+  { nameKey: "nav.forBusiness", href: "/for-business", icon: Building2 },
 ];
 
 export function Header() {
+  const { t, i18n } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState(languages[0]);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   
   const { isAuthenticated, accountType } = useAuthStore();
+  
+  const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
+
+  const handleLanguageChange = (langCode: string) => {
+    i18n.changeLanguage(langCode);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -97,9 +98,9 @@ export function Header() {
             <div className="hidden lg:flex items-center gap-1">
               {navigation.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.nameKey}
                   to={item.href}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
                     location.pathname === item.href
                       ? isHomePage
                         ? "text-primary-foreground bg-primary-foreground/20"
@@ -109,7 +110,8 @@ export function Header() {
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
-                  {item.name}
+                  <item.icon className="h-4 w-4" />
+                  {t(item.nameKey)}
                 </Link>
               ))}
             </div>
@@ -136,7 +138,7 @@ export function Header() {
                   {languages.map((lang) => (
                     <DropdownMenuItem
                       key={lang.code}
-                      onClick={() => setCurrentLang(lang)}
+                      onClick={() => handleLanguageChange(lang.code)}
                       className="cursor-pointer"
                     >
                       <span className="text-lg mr-2">{lang.flag}</span>
@@ -158,18 +160,18 @@ export function Header() {
                     <Button
                       variant={isHomePage ? "hero-outline" : "outline"}
                       size="sm"
-                      className={isHomePage ? "!px-4 !py-2 !h-auto !text-sm" : ""}
+                      className={isHomePage ? "!px-3 !py-2 !h-auto !text-sm" : ""}
                     >
-                      Sign In
+                      {t('common.signIn')}
                     </Button>
                   </Link>
                   <Link to="/signup">
                     <Button
                       variant={isHomePage ? "hero" : "gradient"}
                       size="sm"
-                      className={isHomePage ? "!px-4 !py-2 !h-auto !text-sm" : ""}
+                      className={isHomePage ? "!px-3 !py-2 !h-auto !text-sm" : ""}
                     >
-                      Get Started
+                      {t('common.signUp')}
                     </Button>
                   </Link>
                 </>
@@ -237,7 +239,7 @@ export function Header() {
         <div className="p-4 space-y-2 overflow-y-auto h-[calc(100%-80px)]">
           {navigation.map((item) => (
             <Link
-              key={item.name}
+              key={item.nameKey}
               to={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                 location.pathname === item.href
@@ -247,7 +249,7 @@ export function Header() {
               onClick={closeMobileMenu}
             >
               <item.icon className="h-5 w-5" />
-              {item.name}
+              {t(item.nameKey)}
             </Link>
           ))}
           
@@ -259,12 +261,12 @@ export function Header() {
                   onClick={closeMobileMenu}
                 >
                   <Button variant="outline" className="w-full">
-                    Dashboard
+                    {t('common.dashboard')}
                   </Button>
                 </Link>
                 <Link to="/settings" onClick={closeMobileMenu}>
                   <Button variant="ghost" className="w-full">
-                    Settings
+                    {t('common.settings')}
                   </Button>
                 </Link>
               </>
@@ -272,12 +274,12 @@ export function Header() {
               <>
                 <Link to="/signin" onClick={closeMobileMenu}>
                   <Button variant="outline" className="w-full">
-                    Sign In
+                    {t('common.signIn')}
                   </Button>
                 </Link>
                 <Link to="/signup" onClick={closeMobileMenu}>
                   <Button variant="gradient" className="w-full">
-                    Get Started
+                    {t('common.signUp')}
                   </Button>
                 </Link>
               </>
@@ -286,11 +288,11 @@ export function Header() {
 
           <div className="pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground mb-2 px-4">Language</p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {languages.map((lang) => (
                 <button
                   key={lang.code}
-                  onClick={() => setCurrentLang(lang)}
+                  onClick={() => handleLanguageChange(lang.code)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                     currentLang.code === lang.code
                       ? "bg-primary/10 text-primary"
