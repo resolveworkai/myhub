@@ -13,6 +13,7 @@ import { ActiveFilters } from "@/components/explore/ActiveFilters";
 import { SavedSearches } from "@/components/explore/SavedSearches";
 import { useFilterStore, VenueCategory } from "@/store/filterStore";
 import { useFavoriteStore } from "@/store/favoriteStore";
+import { useVenueStore } from "@/store/venueStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useFilterDebounce } from "@/hooks/useDebounce";
 import { filterVenues, sortVenues, Venue } from "@/lib/filterEngine";
@@ -45,17 +46,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import gymsData from "@/data/mock/gyms.json";
-import coachingData from "@/data/mock/coaching.json";
-import librariesData from "@/data/mock/libraries.json";
-
-// Combine all data with type information
-const allBusinesses: Venue[] = [
-  ...gymsData.map((g) => ({ ...g, type: "gym" } as Venue)),
-  ...coachingData.map((c) => ({ ...c, type: "coaching" } as Venue)),
-  ...librariesData.map((l) => ({ ...l, type: "library" } as Venue)),
-];
-
 export default function Explore() {
   const location = useLocation();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
@@ -63,6 +53,10 @@ export default function Explore() {
 
   // Use persisted favorites store instead of local state
   const { favorites, toggleFavorite, isFavorite } = useFavoriteStore();
+
+  // Use venue store to get all venues (mock + registered)
+  const { getAllVenues } = useVenueStore();
+  const allBusinesses = useMemo(() => getAllVenues(), [getAllVenues]);
 
   // Filter store
   const {

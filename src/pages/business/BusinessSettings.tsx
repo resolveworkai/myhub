@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,33 +18,51 @@ import {
   Clock,
   Bell,
   Shield,
-  CreditCard,
   Globe,
   Mail,
   Save,
-  Upload,
+  MapPin,
+  Image as ImageIcon,
+  Tags,
+  Rocket,
+  Check,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuthStore, BusinessUser } from "@/store/authStore";
+import { useVenueStore } from "@/store/venueStore";
+import { LocationPicker } from "@/components/business/LocationPicker";
+import { BusinessImageUpload } from "@/components/business/BusinessImageUpload";
+import { BusinessAttributesEditor } from "@/components/business/BusinessAttributesEditor";
+import { cn } from "@/lib/utils";
 
 export default function BusinessSettings() {
+  const { user, updateUser } = useAuthStore();
+  const { publishVenue, unpublishVenue, isVenuePublished } = useVenueStore();
+  
+  const businessUser = user as BusinessUser | null;
+  
+  // Local state for form fields
   const [businessInfo, setBusinessInfo] = useState({
-    name: "FitZone Premium",
-    email: "contact@fitzone.com",
-    phone: "+91 98765 43210",
-    address: "123 Fitness Street, Dubai, UAE",
-    description: "Premium fitness center offering world-class facilities and expert trainers.",
-    website: "https://fitzone.com",
+    name: businessUser?.businessName || "",
+    email: businessUser?.email || "",
+    phone: businessUser?.phone || "",
+    address: businessUser?.address?.street || "",
+    description: businessUser?.serviceAreas || "",
+    website: businessUser?.website || "",
   });
 
-  const [operatingHours, setOperatingHours] = useState({
-    monday: { open: "06:00", close: "22:00", closed: false },
-    tuesday: { open: "06:00", close: "22:00", closed: false },
-    wednesday: { open: "06:00", close: "22:00", closed: false },
-    thursday: { open: "06:00", close: "22:00", closed: false },
-    friday: { open: "06:00", close: "22:00", closed: false },
-    saturday: { open: "08:00", close: "20:00", closed: false },
-    sunday: { open: "08:00", close: "18:00", closed: false },
-  });
+  const [operatingHours, setOperatingHours] = useState<Record<string, { open: string; close: string; closed: boolean }>>(
+    businessUser?.operatingHours || {
+      monday: { open: "06:00", close: "22:00", closed: false },
+      tuesday: { open: "06:00", close: "22:00", closed: false },
+      wednesday: { open: "06:00", close: "22:00", closed: false },
+      thursday: { open: "06:00", close: "22:00", closed: false },
+      friday: { open: "06:00", close: "22:00", closed: false },
+      saturday: { open: "08:00", close: "20:00", closed: false },
+      sunday: { open: "08:00", close: "18:00", closed: false },
+    }
+  );
 
   const [notifications, setNotifications] = useState({
     emailBookings: true,
@@ -60,11 +78,81 @@ export default function BusinessSettings() {
     sessionTimeout: "30",
   });
 
+  // Location and media state
+  const [location, setLocation] = useState<{ lat: number; lng: number } | undefined>(
+    businessUser?.address?.lat && businessUser?.address?.lng
+      ? { lat: businessUser.address.lat, lng: businessUser.address.lng }
+      : undefined
+  );
+  const [logo, setLogo] = useState(businessUser?.logo || "");
+  const [coverImage, setCoverImage] = useState(businessUser?.coverImage || "");
+  const [galleryImages, setGalleryImages] = useState<string[]>(businessUser?.galleryImages || []);
+
+  // Attributes state
+  const [amenities, setAmenities] = useState<string[]>(businessUser?.amenities || []);
+  const [equipment, setEquipment] = useState<string[]>(businessUser?.equipment || []);
+  const [classTypes, setClassTypes] = useState<string[]>(businessUser?.classTypes || []);
+  const [membershipOptions, setMembershipOptions] = useState<string[]>(businessUser?.membershipOptions || []);
+  const [subjects, setSubjects] = useState<string[]>(businessUser?.subjects || []);
+  const [levels, setLevels] = useState<string[]>(businessUser?.levels || []);
+  const [teachingModes, setTeachingModes] = useState<string[]>(businessUser?.teachingModes || []);
+  const [batchSizes, setBatchSizes] = useState<string[]>(businessUser?.batchSizes || []);
+  const [facilities, setFacilities] = useState<string[]>(businessUser?.facilities || []);
+  const [collections, setCollections] = useState<string[]>(businessUser?.collections || []);
+  const [spaceTypes, setSpaceTypes] = useState<string[]>(businessUser?.spaceTypes || []);
+
+  // Publishing state
+  const [isPublished, setIsPublished] = useState(businessUser?.isPublished || false);
+
+  // Sync with user changes
+  useEffect(() => {
+    if (businessUser) {
+      setBusinessInfo({
+        name: businessUser.businessName || "",
+        email: businessUser.email || "",
+        phone: businessUser.phone || "",
+        address: businessUser.address?.street || "",
+        description: businessUser.serviceAreas || "",
+        website: businessUser.website || "",
+      });
+      setLocation(
+        businessUser.address?.lat && businessUser.address?.lng
+          ? { lat: businessUser.address.lat, lng: businessUser.address.lng }
+          : undefined
+      );
+      setLogo(businessUser.logo || "");
+      setCoverImage(businessUser.coverImage || "");
+      setGalleryImages(businessUser.galleryImages || []);
+      setAmenities(businessUser.amenities || []);
+      setIsPublished(businessUser.isPublished || false);
+    }
+  }, [businessUser]);
+
+  // Check if business can be published
+  const canPublish = location?.lat && location?.lng && (coverImage || logo);
+  const hasAnyAttribute = amenities.length > 0 || 
+    equipment.length > 0 || 
+    classTypes.length > 0 || 
+    subjects.length > 0 || 
+    facilities.length > 0;
+
   const handleSaveBusinessInfo = () => {
+    updateUser({
+      businessName: businessInfo.name,
+      email: businessInfo.email,
+      phone: businessInfo.phone,
+      website: businessInfo.website,
+      serviceAreas: businessInfo.description,
+      address: {
+        ...businessUser?.address,
+        street: businessInfo.address,
+      },
+    } as Partial<BusinessUser>);
     toast.success("Business information updated");
   };
 
   const handleSaveHours = () => {
+    updateUser({ operatingHours } as Partial<BusinessUser>);
     toast.success("Operating hours updated");
   };
 
@@ -76,21 +164,196 @@ export default function BusinessSettings() {
     toast.success("Security settings updated");
   };
 
+  const handleSaveLocation = () => {
+    if (!location) {
+      toast.error("Please select a location on the map");
+      return;
+    }
+    updateUser({
+      address: {
+        ...businessUser?.address,
+        lat: location.lat,
+        lng: location.lng,
+      },
+      logo,
+      coverImage,
+      galleryImages,
+    } as Partial<BusinessUser>);
+    toast.success("Location and media updated");
+  };
+
+  const handleSaveAttributes = () => {
+    updateUser({
+      amenities,
+      equipment: businessUser?.businessType === 'gym' ? equipment : undefined,
+      classTypes: businessUser?.businessType === 'gym' ? classTypes : undefined,
+      membershipOptions,
+      subjects: businessUser?.businessType === 'coaching' ? subjects : undefined,
+      levels: businessUser?.businessType === 'coaching' ? levels : undefined,
+      teachingModes: businessUser?.businessType === 'coaching' ? teachingModes : undefined,
+      batchSizes: businessUser?.businessType === 'coaching' ? batchSizes : undefined,
+      facilities: businessUser?.businessType === 'library' ? facilities : undefined,
+      collections: businessUser?.businessType === 'library' ? collections : undefined,
+      spaceTypes: businessUser?.businessType === 'library' ? spaceTypes : undefined,
+    } as Partial<BusinessUser>);
+    toast.success("Business attributes updated");
+  };
+
+  const handleTogglePublish = () => {
+    if (!isPublished && !canPublish) {
+      toast.error("Please add location and at least one image before publishing");
+      return;
+    }
+
+    const newPublishState = !isPublished;
+    setIsPublished(newPublishState);
+    
+    // Update auth store
+    updateUser({
+      isPublished: newPublishState,
+      publishedAt: newPublishState ? new Date().toISOString() : undefined,
+    } as Partial<BusinessUser>);
+
+    // Update venue store
+    if (newPublishState && businessUser) {
+      publishVenue({
+        ...businessUser,
+        isPublished: true,
+        address: {
+          ...businessUser.address,
+          lat: location?.lat || businessUser.address.lat,
+          lng: location?.lng || businessUser.address.lng,
+        },
+        logo,
+        coverImage,
+        galleryImages,
+        amenities,
+        equipment,
+        classTypes,
+        membershipOptions,
+        subjects,
+        levels,
+        teachingModes,
+        batchSizes,
+        facilities,
+        collections,
+        spaceTypes,
+      } as BusinessUser);
+      toast.success("🎉 Your business is now live on Explore!");
+    } else if (businessUser) {
+      unpublishVenue(businessUser.id);
+      toast.info("Your business has been unpublished");
+    }
+  };
+
   const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+
+  if (!businessUser) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Please log in as a business user</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-2xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your business preferences</p>
+        <p className="text-muted-foreground">Manage your business profile and preferences</p>
       </div>
 
+      {/* Publishing Status Card */}
+      <Card className={cn(
+        "border-2",
+        isPublished ? "border-success bg-success/5" : "border-warning bg-warning/5"
+      )}>
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                "w-12 h-12 rounded-full flex items-center justify-center",
+                isPublished ? "bg-success/20 text-success" : "bg-warning/20 text-warning"
+              )}>
+                <Rocket className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold">
+                  {isPublished ? "Your business is live! 🎉" : "Your business is not listed"}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {isPublished 
+                    ? "Customers can find you on Explore" 
+                    : "Complete your profile to go live"}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:items-end gap-2">
+              <Button
+                variant={isPublished ? "outline" : "gradient"}
+                onClick={handleTogglePublish}
+                disabled={!isPublished && !canPublish}
+                className="w-full sm:w-auto"
+              >
+                {isPublished ? "Unpublish" : "Publish Listing"}
+              </Button>
+              {!canPublish && !isPublished && (
+                <div className="flex items-center gap-1 text-xs text-warning">
+                  <AlertCircle className="h-3 w-3" />
+                  Add location & image to publish
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Checklist */}
+          {!isPublished && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-sm font-medium mb-2">Complete to publish:</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                <div className={cn("flex items-center gap-1", businessInfo.name && "text-success")}>
+                  <Check className="h-4 w-4" />
+                  Business name
+                </div>
+                <div className={cn("flex items-center gap-1", location?.lat && "text-success")}>
+                  <Check className="h-4 w-4" />
+                  Location
+                </div>
+                <div className={cn("flex items-center gap-1", (coverImage || logo) && "text-success")}>
+                  <Check className="h-4 w-4" />
+                  Image
+                </div>
+                <div className={cn("flex items-center gap-1", hasAnyAttribute && "text-success")}>
+                  <Check className="h-4 w-4" />
+                  Attributes
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="business">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="business"><Building2 className="h-4 w-4 mr-2 hidden sm:inline" />Business</TabsTrigger>
-          <TabsTrigger value="hours"><Clock className="h-4 w-4 mr-2 hidden sm:inline" />Hours</TabsTrigger>
-          <TabsTrigger value="notifications"><Bell className="h-4 w-4 mr-2 hidden sm:inline" />Notifications</TabsTrigger>
-          <TabsTrigger value="security"><Shield className="h-4 w-4 mr-2 hidden sm:inline" />Security</TabsTrigger>
+        <TabsList className="w-full overflow-x-auto flex-nowrap justify-start gap-1 h-auto p-1">
+          <TabsTrigger value="business" className="shrink-0">
+            <Building2 className="h-4 w-4 mr-2 hidden sm:inline" />Business
+          </TabsTrigger>
+          <TabsTrigger value="location" className="shrink-0">
+            <MapPin className="h-4 w-4 mr-2 hidden sm:inline" />Location
+          </TabsTrigger>
+          <TabsTrigger value="attributes" className="shrink-0">
+            <Tags className="h-4 w-4 mr-2 hidden sm:inline" />Attributes
+          </TabsTrigger>
+          <TabsTrigger value="hours" className="shrink-0">
+            <Clock className="h-4 w-4 mr-2 hidden sm:inline" />Hours
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="shrink-0">
+            <Bell className="h-4 w-4 mr-2 hidden sm:inline" />Alerts
+          </TabsTrigger>
+          <TabsTrigger value="security" className="shrink-0">
+            <Shield className="h-4 w-4 mr-2 hidden sm:inline" />Security
+          </TabsTrigger>
         </TabsList>
 
         {/* Business Info */}
@@ -101,16 +364,6 @@ export default function BusinessSettings() {
               <CardDescription>Update your business details and public profile</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center gap-6">
-                <div className="w-24 h-24 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Building2 className="h-10 w-10 text-primary" />
-                </div>
-                <div>
-                  <Button variant="outline"><Upload className="h-4 w-4 mr-2" />Upload Logo</Button>
-                  <p className="text-sm text-muted-foreground mt-2">Recommended: 400x400px, PNG or JPG</p>
-                </div>
-              </div>
-
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Business Name</Label>
@@ -157,12 +410,103 @@ export default function BusinessSettings() {
                   value={businessInfo.description}
                   onChange={(e) => setBusinessInfo({ ...businessInfo, description: e.target.value })}
                   rows={4}
+                  placeholder="Tell customers what makes your business special..."
                 />
               </div>
 
               <Button onClick={handleSaveBusinessInfo}>
                 <Save className="h-4 w-4 mr-2" />
                 Save Changes
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Location & Media */}
+        <TabsContent value="location">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Location & Media
+              </CardTitle>
+              <CardDescription>
+                Pin your exact location and add photos to attract customers
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* Location Picker */}
+              <div className="space-y-4">
+                <h3 className="font-medium">Business Location</h3>
+                <LocationPicker
+                  value={location}
+                  onChange={(loc) => setLocation({ lat: loc.lat, lng: loc.lng })}
+                />
+              </div>
+
+              {/* Image Uploads */}
+              <div className="space-y-4">
+                <h3 className="font-medium">Business Images</h3>
+                <BusinessImageUpload
+                  logo={logo}
+                  coverImage={coverImage}
+                  galleryImages={galleryImages}
+                  onLogoChange={setLogo}
+                  onCoverChange={setCoverImage}
+                  onGalleryChange={setGalleryImages}
+                />
+              </div>
+
+              <Button onClick={handleSaveLocation}>
+                <Save className="h-4 w-4 mr-2" />
+                Save Location & Media
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Attributes */}
+        <TabsContent value="attributes">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Tags className="h-5 w-5" />
+                Business Attributes
+              </CardTitle>
+              <CardDescription>
+                Select the features and services you offer to help customers find you
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <BusinessAttributesEditor
+                businessType={businessUser.businessType}
+                amenities={amenities}
+                equipment={equipment}
+                classTypes={classTypes}
+                subjects={subjects}
+                levels={levels}
+                teachingModes={teachingModes}
+                batchSizes={batchSizes}
+                facilities={facilities}
+                collections={collections}
+                spaceTypes={spaceTypes}
+                membershipOptions={membershipOptions}
+                onAmenitiesChange={setAmenities}
+                onEquipmentChange={setEquipment}
+                onClassTypesChange={setClassTypes}
+                onSubjectsChange={setSubjects}
+                onLevelsChange={setLevels}
+                onTeachingModesChange={setTeachingModes}
+                onBatchSizesChange={setBatchSizes}
+                onFacilitiesChange={setFacilities}
+                onCollectionsChange={setCollections}
+                onSpaceTypesChange={setSpaceTypes}
+                onMembershipOptionsChange={setMembershipOptions}
+              />
+
+              <Button onClick={handleSaveAttributes}>
+                <Save className="h-4 w-4 mr-2" />
+                Save Attributes
               </Button>
             </CardContent>
           </Card>
@@ -177,40 +521,42 @@ export default function BusinessSettings() {
             </CardHeader>
             <CardContent className="space-y-4">
               {days.map((day) => (
-                <div key={day} className="flex items-center gap-4 py-2 border-b border-border last:border-0">
+                <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-2 border-b border-border last:border-0">
                   <div className="w-24 font-medium capitalize">{day}</div>
-                  <Switch
-                    checked={!operatingHours[day].closed}
-                    onCheckedChange={(checked) => setOperatingHours({
-                      ...operatingHours,
-                      [day]: { ...operatingHours[day], closed: !checked }
-                    })}
-                  />
-                  {!operatingHours[day].closed ? (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="time"
-                        value={operatingHours[day].open}
-                        onChange={(e) => setOperatingHours({
-                          ...operatingHours,
-                          [day]: { ...operatingHours[day], open: e.target.value }
-                        })}
-                        className="w-32"
-                      />
-                      <span className="text-muted-foreground">to</span>
-                      <Input
-                        type="time"
-                        value={operatingHours[day].close}
-                        onChange={(e) => setOperatingHours({
-                          ...operatingHours,
-                          [day]: { ...operatingHours[day], close: e.target.value }
-                        })}
-                        className="w-32"
-                      />
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground">Closed</span>
-                  )}
+                  <div className="flex items-center gap-4">
+                    <Switch
+                      checked={!operatingHours[day]?.closed}
+                      onCheckedChange={(checked) => setOperatingHours({
+                        ...operatingHours,
+                        [day]: { ...operatingHours[day], closed: !checked }
+                      })}
+                    />
+                    {!operatingHours[day]?.closed ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="time"
+                          value={operatingHours[day]?.open || "06:00"}
+                          onChange={(e) => setOperatingHours({
+                            ...operatingHours,
+                            [day]: { ...operatingHours[day], open: e.target.value }
+                          })}
+                          className="w-28"
+                        />
+                        <span className="text-muted-foreground">to</span>
+                        <Input
+                          type="time"
+                          value={operatingHours[day]?.close || "22:00"}
+                          onChange={(e) => setOperatingHours({
+                            ...operatingHours,
+                            [day]: { ...operatingHours[day], close: e.target.value }
+                          })}
+                          className="w-28"
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">Closed</span>
+                    )}
+                  </div>
                 </div>
               ))}
 

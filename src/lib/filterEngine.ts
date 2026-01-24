@@ -4,9 +4,10 @@ export interface Venue {
   id: string;
   name: string;
   category: string;
-  type?: string;
+  type?: 'gym' | 'coaching' | 'library';
   description: string;
   image: string;
+  galleryImages?: string[];
   rating: number;
   reviews: number;
   price: number;
@@ -18,13 +19,19 @@ export interface Venue {
     city: string;
   };
   amenities: string[];
+  equipment?: string[];
+  classTypes?: string[];
+  subjects?: string[];
+  facilities?: string[];
+  collections?: string[];
+  spaceTypes?: string[];
   status: 'available' | 'filling' | 'full';
   occupancy: number;
   capacity: number;
   verified: boolean;
   openNow: boolean;
-  subjects?: string[];
   distance?: number;
+  isRegistered?: boolean;
 }
 
 // Haversine formula for distance calculation
