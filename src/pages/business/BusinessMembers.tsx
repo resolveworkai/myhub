@@ -29,7 +29,6 @@ import { Label } from "@/components/ui/label";
 import {
   Search,
   Plus,
-  Edit,
   Trash2,
   UserPlus,
   Filter,
@@ -37,6 +36,10 @@ import {
   MoreHorizontal,
   Mail,
   Phone,
+  Lock,
+  Calendar,
+  Crown,
+  AlertTriangle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -44,127 +47,127 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { useSubscriptionStore, Subscription } from "@/store/subscriptionStore";
+import { useAuthStore, BusinessUser } from "@/store/authStore";
+import { AssignMembershipModal } from "@/components/business/AssignMembershipModal";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
-interface Member {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  membership: "basic" | "premium" | "vip" | "annual";
-  status: "active" | "expired" | "paused";
-  joinDate: string;
-  expiryDate: string;
-  avatar?: string;
-}
-
-const initialMembers: Member[] = [
-  { id: "m1", name: "Rahul Sharma", email: "rahul@email.com", phone: "+91 98765 43210", membership: "premium", status: "active", joinDate: "2025-10-15", expiryDate: "2026-10-15", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face" },
-  { id: "m2", name: "Priya Patel", email: "priya@email.com", phone: "+91 98765 43211", membership: "vip", status: "active", joinDate: "2025-09-01", expiryDate: "2026-09-01", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face" },
-  { id: "m3", name: "Amit Kumar", email: "amit@email.com", phone: "+91 98765 43212", membership: "basic", status: "expired", joinDate: "2025-01-10", expiryDate: "2026-01-10" },
-  { id: "m4", name: "Sneha Gupta", email: "sneha@email.com", phone: "+91 98765 43213", membership: "annual", status: "active", joinDate: "2025-06-20", expiryDate: "2026-06-20", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face" },
-  { id: "m5", name: "Vikram Singh", email: "vikram@email.com", phone: "+91 98765 43214", membership: "premium", status: "paused", joinDate: "2025-03-05", expiryDate: "2026-03-05" },
-];
-
-const membershipColors = {
-  basic: "bg-muted text-muted-foreground",
-  premium: "bg-primary/10 text-primary",
-  vip: "bg-warning/10 text-warning",
-  annual: "bg-success/10 text-success",
+const typeColors = {
+  daily: "bg-muted text-muted-foreground",
+  weekly: "bg-info/10 text-info",
+  monthly: "bg-primary/10 text-primary",
 };
 
 const statusColors = {
   active: "success",
   expired: "destructive",
-  paused: "warning",
+  cancelled: "warning",
 } as const;
 
 export default function BusinessMembers() {
-  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const { user } = useAuthStore();
+  const businessUser = user as BusinessUser | null;
+  const venueId = businessUser?.id || "g1";
+  const venueName = businessUser?.businessName || "My Business";
+  
+  const {
+    getVenueSubscriptions,
+    getActiveVenueSubscriptions,
+    canDeleteSubscription,
+    cancelSubscription,
+  } = useSubscriptionStore();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterMembership, setFilterMembership] = useState<string>("all");
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [filterType, setFilterType] = useState<string>("all");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    membership: "basic" as Member["membership"],
-  });
+  const [isAssignOpen, setIsAssignOpen] = useState(false);
+  const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
 
-  const filteredMembers = useMemo(() => {
-    return members.filter((member) => {
-      const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.email.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = filterStatus === "all" || member.status === filterStatus;
-      const matchesMembership = filterMembership === "all" || member.membership === filterMembership;
-      return matchesSearch && matchesStatus && matchesMembership;
+  // Get all subscriptions for this venue
+  const allSubscriptions = getVenueSubscriptions(venueId);
+  const activeCount = getActiveVenueSubscriptions(venueId).length;
+
+  const filteredSubscriptions = useMemo(() => {
+    return allSubscriptions.filter((sub) => {
+      const matchesSearch =
+        sub.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        sub.userEmail.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = filterStatus === "all" || sub.status === filterStatus;
+      const matchesType = filterType === "all" || sub.type === filterType;
+      return matchesSearch && matchesStatus && matchesType;
     });
-  }, [members, searchQuery, filterStatus, filterMembership]);
-
-  const handleAdd = () => {
-    if (!formData.name || !formData.email) {
-      toast.error("Please fill required fields");
-      return;
-    }
-    const newMember: Member = {
-      id: `m${Date.now()}`,
-      ...formData,
-      status: "active",
-      joinDate: new Date().toISOString().split("T")[0],
-      expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    };
-    setMembers([...members, newMember]);
-    setFormData({ name: "", email: "", phone: "", membership: "basic" });
-    setIsAddOpen(false);
-    toast.success("Member added successfully");
-  };
-
-  const handleEdit = () => {
-    if (!selectedMember) return;
-    setMembers(members.map((m) => m.id === selectedMember.id ? { ...m, ...formData } : m));
-    setIsEditOpen(false);
-    setSelectedMember(null);
-    toast.success("Member updated successfully");
-  };
+  }, [allSubscriptions, searchQuery, filterStatus, filterType]);
 
   const handleDelete = () => {
-    if (!selectedMember) return;
-    setMembers(members.filter((m) => m.id !== selectedMember.id));
+    if (!selectedSubscription) return;
+    
+    const result = canDeleteSubscription(selectedSubscription.id);
+    if (!result.canDelete) {
+      toast.error(result.reason || "Cannot delete this subscription");
+      setIsDeleteOpen(false);
+      return;
+    }
+    
+    cancelSubscription(selectedSubscription.id);
     setIsDeleteOpen(false);
-    setSelectedMember(null);
-    toast.success("Member deleted successfully");
+    setSelectedSubscription(null);
+    toast.success("Subscription cancelled successfully");
   };
 
-  const openEdit = (member: Member) => {
-    setSelectedMember(member);
-    setFormData({ name: member.name, email: member.email, phone: member.phone, membership: member.membership });
-    setIsEditOpen(true);
-  };
-
-  const openDelete = (member: Member) => {
-    setSelectedMember(member);
+  const openDelete = (sub: Subscription) => {
+    setSelectedSubscription(sub);
     setIsDeleteOpen(true);
   };
 
+  const pricing = {
+    daily: businessUser?.dailyPackagePrice || 299,
+    weekly: businessUser?.weeklyPackagePrice || 1499,
+    monthly: businessUser?.monthlyPackagePrice || 4999,
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold">Members</h1>
-          <p className="text-muted-foreground">Manage your gym members</p>
+          <h1 className="font-display text-xl sm:text-2xl font-bold">Members</h1>
+          <p className="text-sm text-muted-foreground">
+            {activeCount} active subscription{activeCount !== 1 ? "s" : ""}
+          </p>
         </div>
-        <Button variant="gradient" onClick={() => setIsAddOpen(true)}>
+        <Button variant="gradient" onClick={() => setIsAssignOpen(true)} className="w-full sm:w-auto">
           <UserPlus className="h-4 w-4 mr-2" />
-          Add Member
+          Assign Membership
         </Button>
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="p-3 sm:p-4 rounded-xl bg-muted/50 text-center">
+          <p className="text-xl sm:text-2xl font-bold">{allSubscriptions.filter(s => s.type === 'daily').length}</p>
+          <p className="text-xs text-muted-foreground">Daily</p>
+        </div>
+        <div className="p-3 sm:p-4 rounded-xl bg-info/10 text-center">
+          <p className="text-xl sm:text-2xl font-bold text-info">{allSubscriptions.filter(s => s.type === 'weekly').length}</p>
+          <p className="text-xs text-muted-foreground">Weekly</p>
+        </div>
+        <div className="p-3 sm:p-4 rounded-xl bg-primary/10 text-center">
+          <p className="text-xl sm:text-2xl font-bold text-primary">{allSubscriptions.filter(s => s.type === 'monthly').length}</p>
+          <p className="text-xs text-muted-foreground">Monthly</p>
+        </div>
+      </div>
+
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -174,211 +177,258 @@ export default function BusinessMembers() {
             className="pl-10"
           />
         </div>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-[150px]">
-            <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="expired">Expired</SelectItem>
-            <SelectItem value="paused">Paused</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterMembership} onValueChange={setFilterMembership}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Membership" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Plans</SelectItem>
-            <SelectItem value="basic">Basic</SelectItem>
-            <SelectItem value="premium">Premium</SelectItem>
-            <SelectItem value="vip">VIP</SelectItem>
-            <SelectItem value="annual">Annual</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button variant="outline" size="icon">
-          <Download className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-full sm:w-[130px]">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="expired">Expired</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterType} onValueChange={setFilterType}>
+            <SelectTrigger className="w-full sm:w-[130px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="daily">Daily</SelectItem>
+              <SelectItem value="weekly">Weekly</SelectItem>
+              <SelectItem value="monthly">Monthly</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="icon" className="hidden sm:flex">
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Members Table */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Member</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Membership</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Expiry</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredMembers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  No members found
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredMembers.map((member) => (
-                <TableRow key={member.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      {member.avatar ? (
-                        <img src={member.avatar} alt={member.name} className="w-10 h-10 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-primary font-medium">{member.name.charAt(0)}</span>
-                        </div>
-                      )}
-                      <div>
-                        <div className="font-medium">{member.name}</div>
-                        <div className="text-xs text-muted-foreground">Since {member.joinDate}</div>
-                      </div>
+        {/* Mobile Card View */}
+        <div className="sm:hidden space-y-2 p-3">
+          {filteredSubscriptions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No members found. Click "Assign Membership" to add walk-in customers.
+            </div>
+          ) : (
+            filteredSubscriptions.map((sub) => {
+              const deleteCheck = canDeleteSubscription(sub.id);
+              return (
+                <div key={sub.id} className="p-3 rounded-lg bg-muted/30 space-y-2">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium">{sub.userName}</p>
+                      <p className="text-xs text-muted-foreground">{sub.userEmail}</p>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1 text-sm">
-                        <Mail className="h-3 w-3" /> {member.email}
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Phone className="h-3 w-3" /> {member.phone}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${membershipColors[member.membership]}`}>
-                      {member.membership}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusColors[member.status]} className="capitalize">
-                      {member.status}
+                    <Badge variant={statusColors[sub.status]} className="capitalize text-xs">
+                      {sub.status}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{member.expiryDate}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon-sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEdit(member)}>
-                          <Edit className="h-4 w-4 mr-2" /> Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => openDelete(member)} className="text-destructive">
-                          <Trash2 className="h-4 w-4 mr-2" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium capitalize", typeColors[sub.type])}>
+                      {sub.type}
+                    </span>
+                    <span className="text-muted-foreground">₹{sub.price}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      Expires: {format(new Date(sub.endDate), "MMM d, yyyy")}
+                    </span>
+                    {sub.type === 'monthly' && !deleteCheck.canDelete && (
+                      <span className="flex items-center gap-1 text-warning">
+                        <Lock className="h-3 w-3" />
+                        {deleteCheck.daysRemaining}d lock
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2 pt-2 border-t border-border">
+                    {sub.userPhone && (
+                      <Button variant="ghost" size="sm" className="flex-1 text-xs h-8" asChild>
+                        <a href={`tel:${sub.userPhone}`}>
+                          <Phone className="h-3 w-3 mr-1" />
+                          Call
+                        </a>
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={cn("flex-1 text-xs h-8", deleteCheck.canDelete ? "text-destructive" : "text-muted-foreground")}
+                      onClick={() => openDelete(sub)}
+                      disabled={!deleteCheck.canDelete}
+                    >
+                      {deleteCheck.canDelete ? (
+                        <>
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Cancel
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="h-3 w-3 mr-1" />
+                          Locked
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden sm:block overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Member</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Valid Until</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredSubscriptions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No members found. Click "Assign Membership" to add walk-in customers.
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                filteredSubscriptions.map((sub) => {
+                  const deleteCheck = canDeleteSubscription(sub.id);
+                  return (
+                    <TableRow key={sub.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-primary font-medium">
+                              {sub.userName.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="font-medium flex items-center gap-2">
+                              {sub.userName}
+                              {sub.type === 'monthly' && (
+                                <Crown className="h-3 w-3 text-warning" />
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Since {format(new Date(sub.startDate), "MMM d, yyyy")}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-sm">
+                            <Mail className="h-3 w-3" /> {sub.userEmail}
+                          </div>
+                          {sub.userPhone && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Phone className="h-3 w-3" /> {sub.userPhone}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className={cn("px-2 py-1 rounded-full text-xs font-medium capitalize", typeColors[sub.type])}>
+                          {sub.type}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={statusColors[sub.status]} className="capitalize">
+                          {sub.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {format(new Date(sub.endDate), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell className="font-medium">₹{sub.price}</TableCell>
+                      <TableCell className="text-right">
+                        <TooltipProvider>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon-sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {deleteCheck.canDelete ? (
+                                <DropdownMenuItem
+                                  onClick={() => openDelete(sub)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" /> Cancel Subscription
+                                </DropdownMenuItem>
+                              ) : (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <DropdownMenuItem disabled className="text-muted-foreground">
+                                      <Lock className="h-4 w-4 mr-2" />
+                                      Locked ({deleteCheck.daysRemaining}d remaining)
+                                    </DropdownMenuItem>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Monthly members cannot be removed for 30 days</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TooltipProvider>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
-
-      {/* Add Dialog */}
-      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Member</DialogTitle>
-            <DialogDescription>Enter member details below</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Full Name *</Label>
-              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Enter name" />
-            </div>
-            <div className="space-y-2">
-              <Label>Email *</Label>
-              <Input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="member@email.com" />
-            </div>
-            <div className="space-y-2">
-              <Label>Phone</Label>
-              <Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+91 98765 43210" />
-            </div>
-            <div className="space-y-2">
-              <Label>Membership Plan</Label>
-              <Select value={formData.membership} onValueChange={(v: Member["membership"]) => setFormData({ ...formData, membership: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="basic">Basic - ₹999/month</SelectItem>
-                  <SelectItem value="premium">Premium - ₹1,999/month</SelectItem>
-                  <SelectItem value="vip">VIP - ₹3,999/month</SelectItem>
-                  <SelectItem value="annual">Annual - ₹19,999/year</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-            <Button onClick={handleAdd}><Plus className="h-4 w-4 mr-2" />Add Member</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Member</DialogTitle>
-            <DialogDescription>Update member information</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Full Name *</Label>
-              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Email *</Label>
-              <Input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Phone</Label>
-              <Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Membership Plan</Label>
-              <Select value={formData.membership} onValueChange={(v: Member["membership"]) => setFormData({ ...formData, membership: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="basic">Basic</SelectItem>
-                  <SelectItem value="premium">Premium</SelectItem>
-                  <SelectItem value="vip">VIP</SelectItem>
-                  <SelectItem value="annual">Annual</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-            <Button onClick={handleEdit}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Confirmation */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Member</DialogTitle>
-            <DialogDescription>Are you sure you want to delete {selectedMember?.name}? This action cannot be undone.</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Cancel Subscription
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel {selectedSubscription?.userName}'s {selectedSubscription?.type} subscription?
+              This action cannot be undone.
+            </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}><Trash2 className="h-4 w-4 mr-2" />Delete</Button>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteOpen(false)} className="w-full sm:w-auto">
+              Keep Subscription
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} className="w-full sm:w-auto">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Cancel Subscription
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Assign Membership Modal */}
+      <AssignMembershipModal
+        open={isAssignOpen}
+        onOpenChange={setIsAssignOpen}
+        venueId={venueId}
+        venueName={venueName}
+        pricing={pricing}
+      />
     </div>
   );
 }

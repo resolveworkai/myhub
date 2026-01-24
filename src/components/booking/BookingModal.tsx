@@ -1,10 +1,9 @@
 import { useState, useMemo } from "react";
-import { format, addDays, isToday, addHours, isBefore, parseISO } from "date-fns";
+import { format, addDays, isToday, addHours, isBefore } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -31,10 +30,11 @@ import {
 import { cn } from "@/lib/utils";
 import { useSchedules } from "@/hooks/useSchedules";
 import { useAuthStore } from "@/store/authStore";
-import { useMemberStore } from "@/store/memberStore";
+import { useSubscriptionStore } from "@/store/subscriptionStore";
 import { toast } from "@/hooks/use-toast";
 import { GuestAuthPrompt } from "@/components/auth/GuestAuthPrompt";
 import { MonthlyBookingModal } from "@/components/booking/MonthlyBookingModal";
+import { MembershipSelectionModal } from "@/components/booking/MembershipSelectionModal";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -46,6 +46,9 @@ interface BookingModalProps {
     rating: number;
     price: string;
     image?: string;
+    dailyPrice?: number;
+    weeklyPrice?: number;
+    monthlyPrice?: number;
   };
 }
 
@@ -77,7 +80,7 @@ const durations = [
 export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
-  const { members } = useMemberStore();
+  const { getActiveSubscription, hasValidSubscription } = useSubscriptionStore();
   
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -87,26 +90,25 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
   const [showMonthlyBooking, setShowMonthlyBooking] = useState(false);
+  const [showMembershipModal, setShowMembershipModal] = useState(false);
   const [showPaymentStep, setShowPaymentStep] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
-  // Check if current user is a monthly paid member FOR THIS SPECIFIC VENUE
-  const userEmail = user?.email || "";
-  const memberForVenue = useMemo(() => {
-    if (!userEmail) return null;
-    return members.find(
-      (m) =>
-        m.email === userEmail &&
-        m.venueId === venue.id &&
-        m.isMonthlyPaid &&
-        m.status === "active" &&
-        (!m.monthlyPaidUntil || new Date(m.monthlyPaidUntil) >= new Date())
-    );
-  }, [members, userEmail, venue.id]);
-  
-  const isMonthlyPaidUserForVenue = !!memberForVenue;
+  const userId = user?.id || "guest";
+  const userName = user 
+    ? ('name' in user ? user.name : user.businessName) 
+    : "Guest";
 
-  // Calculate price for single session
+  // Check for active subscription using subscription store
+  const activeSubscription = useMemo(() => {
+    if (!user?.id) return null;
+    return getActiveSubscription(user.id, venue.id);
+  }, [user?.id, venue.id, getActiveSubscription]);
+
+  const hasSubscription = !!activeSubscription;
+  const isMonthlySubscriber = activeSubscription?.type === 'monthly';
+
+  // Calculate price for single session (for non-subscribers)
   const sessionPrice = useMemo(() => {
     const pricePerHour = parseInt(venue.price.replace(/[^\d]/g, '')) || 100;
     return Math.round((pricePerHour * selectedDuration) / 60);
@@ -126,10 +128,6 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
     return isBefore(minBookingTime, slotDateTime);
   };
 
-  const userId = user?.id || "guest";
-  const userName = user 
-    ? ('name' in user ? user.name : user.businessName) 
-    : "Guest";
   const { addSchedule } = useSchedules(userId);
 
   const getSlotStatus = (available: number, total: number) => {
@@ -157,13 +155,13 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
     }
     
     // For non-subscribers, show payment step
-    if (!isMonthlyPaidUserForVenue && !showPaymentStep) {
+    if (!hasSubscription && !showPaymentStep) {
       setShowPaymentStep(true);
       return;
     }
     
     // For paid bookings, validate payment method
-    if (!isMonthlyPaidUserForVenue && !selectedPaymentMethod) {
+    if (!hasSubscription && !selectedPaymentMethod) {
       toast({
         title: "Please select a payment method",
         variant: "destructive",
@@ -210,6 +208,15 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
     setStep(2);
   };
 
+  const handleMembershipSelected = (plan: 'daily' | 'weekly' | 'monthly') => {
+    setShowMembershipModal(false);
+    // Subscription is now active, proceed to booking
+    toast({
+      title: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Pass Activated!`,
+      description: "You can now book sessions at this venue.",
+    });
+  };
+
   const resetAndClose = () => {
     setStep(1);
     setSelectedDate(undefined);
@@ -227,86 +234,98 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl sm:text-2xl shrink-0">
                 {venue.type === "gym" ? "🏋️" : venue.type === "library" ? "📚" : "📖"}
               </div>
-              <div>
-                <div className="font-display text-lg">{venue.name}</div>
+              <div className="min-w-0">
+                <div className="font-display text-base sm:text-lg truncate">{venue.name}</div>
                 <div className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
-                  <Star className="h-4 w-4 fill-warning text-warning" />
+                  <Star className="h-4 w-4 fill-warning text-warning shrink-0" />
                   {venue.rating}
                   <span className="text-primary font-medium">{venue.price}</span>
                 </div>
               </div>
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               Book your session in just a few clicks
             </DialogDescription>
           </DialogHeader>
 
-          {/* Monthly Subscription Active Badge */}
-          {isMonthlyPaidUserForVenue && step === 1 && (
-            <div className="p-4 rounded-xl bg-success/5 border border-success/20 mb-4">
-              <div className="flex items-center justify-between">
+          {/* Subscription Status Badge */}
+          {hasSubscription && step === 1 && (
+            <div className="p-3 sm:p-4 rounded-xl bg-success/5 border border-success/20 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <Crown className="h-5 w-5 text-success" />
+                  <Crown className="h-5 w-5 text-success shrink-0" />
                   <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-sm">Monthly Subscription Active</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium text-sm capitalize">{activeSubscription?.type} Pass Active</p>
                       <Badge variant="success" className="text-xs">Active</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Valid until {memberForVenue?.monthlyPaidUntil ? format(new Date(memberForVenue.monthlyPaidUntil), "MMM d, yyyy") : "N/A"}
+                      Valid until {activeSubscription?.endDate ? format(new Date(activeSubscription.endDate), "MMM d, yyyy") : "N/A"}
+                    </p>
+                  </div>
+                </div>
+                {isMonthlySubscriber && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-success text-success hover:bg-success/10 w-full sm:w-auto"
+                    onClick={() => setShowMonthlyBooking(true)}
+                  >
+                    Book 30 Days
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {/* No Subscription - Show options */}
+          {isAuthenticated && !hasSubscription && step === 1 && (
+            <div className="p-3 sm:p-4 rounded-xl bg-info/5 border border-info/20 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center shrink-0">
+                    <CreditCard className="h-5 w-5 text-info" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">No Active Pass</p>
+                    <p className="text-xs text-muted-foreground">
+                      Purchase a pass or pay per session
                     </p>
                   </div>
                 </div>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-success text-success hover:bg-success/10"
-                  onClick={() => setShowMonthlyBooking(true)}
+                  className="border-info text-info hover:bg-info/10 w-full sm:w-auto"
+                  onClick={() => setShowMembershipModal(true)}
                 >
-                  Book 30 Days
+                  Get a Pass
                 </Button>
-              </div>
-            </div>
-          )}
-          
-          {/* Pay Per Session Option for non-subscribers */}
-          {isAuthenticated && !isMonthlyPaidUserForVenue && step === 1 && (
-            <div className="p-4 rounded-xl bg-info/5 border border-info/20 mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center">
-                  <CreditCard className="h-5 w-5 text-info" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-sm">Pay Per Session</p>
-                  <p className="text-xs text-muted-foreground">
-                    Book individual slots starting at {venue.price}/hour
-                  </p>
-                </div>
               </div>
             </div>
           )}
 
           {/* Progress Steps */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center">
                 <div
                   className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all",
+                    "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-all",
                     step >= s
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground"
                   )}
                 >
-                  {step > s ? <CheckCircle2 className="h-5 w-5" /> : s}
+                  {step > s ? <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" /> : s}
                 </div>
                 {s < 3 && (
                   <div
                     className={cn(
-                      "w-16 h-1 mx-2 rounded-full transition-all",
+                      "w-10 sm:w-16 h-1 mx-1 sm:mx-2 rounded-full transition-all",
                       step > s ? "bg-primary" : "bg-muted"
                     )}
                   />
@@ -324,7 +343,7 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal h-12",
+                      "w-full justify-start text-left font-normal h-11 sm:h-12",
                       !selectedDate && "text-muted-foreground"
                     )}
                   >
@@ -345,7 +364,7 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
               </Popover>
               <Button
                 variant="gradient"
-                className="w-full"
+                className="w-full h-11 sm:h-auto"
                 disabled={!selectedDate}
                 onClick={handleDateContinue}
               >
@@ -358,28 +377,28 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
           {step === 2 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-foreground">Select Time Slot</h3>
-                <Button variant="ghost" size="sm" onClick={() => setStep(1)}>
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">Select Time Slot</h3>
+                <Button variant="ghost" size="sm" onClick={() => setStep(1)} className="text-xs sm:text-sm">
                   Change Date
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}
               </p>
 
               {/* Legend */}
-              <div className="flex flex-wrap gap-3 text-xs">
+              <div className="flex flex-wrap gap-2 sm:gap-3 text-xs">
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-success" /> Available
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-success" /> Available
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-info" /> Filling
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-info" /> Filling
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-warning" /> Almost Full
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-warning" /> Almost Full
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-destructive" /> Full
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-destructive" /> Full
                 </div>
               </div>
 
@@ -390,7 +409,7 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-h-48 sm:max-h-64 overflow-y-auto">
                 {timeSlots.map((slot) => {
                   const status = getSlotStatus(slot.available, slot.total);
                   const isFull = status === "full";
@@ -404,18 +423,18 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
                       disabled={isDisabled}
                       onClick={() => setSelectedTime(slot.time)}
                       className={cn(
-                        "p-3 rounded-lg border text-center transition-all",
+                        "p-2 sm:p-3 rounded-lg border text-center transition-all",
                         isDisabled && "opacity-50 cursor-not-allowed",
                         isSelected
-                          ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary ring-offset-2"
+                          ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary ring-offset-1 sm:ring-offset-2"
                           : isTooSoon
                           ? "bg-muted text-muted-foreground border-muted"
                           : getSlotColor(status)
                       )}
                     >
-                      <div className="font-medium">{slot.label}</div>
-                      <div className="text-xs opacity-80">
-                        {isTooSoon ? "Too soon" : `${slot.available}/${slot.total} left`}
+                      <div className="font-medium text-xs sm:text-sm">{slot.label}</div>
+                      <div className="text-[10px] sm:text-xs opacity-80">
+                        {isTooSoon ? "Too soon" : `${slot.available}/${slot.total}`}
                       </div>
                     </button>
                   );
@@ -423,12 +442,12 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>
+                <Button variant="outline" className="flex-1 h-10 sm:h-auto" onClick={() => setStep(1)}>
                   Back
                 </Button>
                 <Button
                   variant="gradient"
-                  className="flex-1"
+                  className="flex-1 h-10 sm:h-auto"
                   disabled={!selectedTime}
                   onClick={() => setStep(3)}
                 >
@@ -442,36 +461,36 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
           {step === 3 && !showPaymentStep && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-foreground">Booking Details</h3>
-                <Button variant="ghost" size="sm" onClick={() => setStep(2)}>
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">Booking Details</h3>
+                <Button variant="ghost" size="sm" onClick={() => setStep(2)} className="text-xs sm:text-sm">
                   Change Time
                 </Button>
               </div>
 
               {/* Summary */}
-              <div className="p-4 rounded-xl bg-muted/50 space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                  {selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}
+              <div className="p-3 sm:p-4 rounded-xl bg-muted/50 space-y-2">
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="truncate">{selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                   {timeSlots.find(s => s.time === selectedTime)?.label}
                 </div>
               </div>
 
               {/* Duration */}
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
+                <label className="text-xs sm:text-sm font-medium text-foreground mb-2 block">
                   Duration
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                   {durations.map((d) => (
                     <button
                       key={d.value}
                       onClick={() => setSelectedDuration(d.value)}
                       className={cn(
-                        "p-2 rounded-lg border text-sm font-medium transition-all",
+                        "p-2 rounded-lg border text-xs sm:text-sm font-medium transition-all",
                         selectedDuration === d.value
                           ? "bg-primary text-primary-foreground border-primary"
                           : "bg-card border-border hover:border-primary/50"
@@ -485,41 +504,42 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
 
               {/* Notes */}
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
+                <label className="text-xs sm:text-sm font-medium text-foreground mb-2 block">
                   Special Requests (Optional)
                 </label>
                 <Textarea
                   placeholder="Any special requirements or notes..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
+                  rows={2}
+                  className="text-sm"
                 />
               </div>
               
               {/* Price Preview for non-subscribers */}
-              {!isMonthlyPaidUserForVenue && (
-                <div className="p-4 rounded-xl bg-info/5 border border-info/20">
+              {!hasSubscription && (
+                <div className="p-3 sm:p-4 rounded-xl bg-info/5 border border-info/20">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Session Cost</span>
-                    <span className="text-lg font-bold text-primary">₹{sessionPrice}</span>
+                    <span className="text-xs sm:text-sm font-medium">Session Cost</span>
+                    <span className="text-lg sm:text-xl font-bold text-primary">₹{sessionPrice}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Pay per session • No monthly commitment
+                    Pay per session • No commitment
                   </p>
                 </div>
               )}
 
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>
+                <Button variant="outline" className="flex-1 h-10 sm:h-auto" onClick={() => setStep(2)}>
                   Back
                 </Button>
                 <Button
                   variant="gradient"
-                  className="flex-1"
+                  className="flex-1 h-10 sm:h-auto"
                   onClick={handleBooking}
                   disabled={isSubmitting}
                 >
-                  {isMonthlyPaidUserForVenue 
+                  {hasSubscription 
                     ? (isSubmitting ? "Booking..." : "Confirm Booking")
                     : `Pay ₹${sessionPrice}`
                   }
@@ -532,37 +552,37 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
           {step === 3 && showPaymentStep && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-foreground">Complete Payment</h3>
-                <Button variant="ghost" size="sm" onClick={() => setShowPaymentStep(false)}>
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">Complete Payment</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowPaymentStep(false)} className="text-xs sm:text-sm">
                   Back
                 </Button>
               </div>
 
               {/* Booking Summary */}
-              <div className="p-4 rounded-xl bg-muted/50 space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <span className="font-medium">{venue.name}</span>
+              <div className="p-3 sm:p-4 rounded-xl bg-muted/50 space-y-2">
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <MapPin className="h-4 w-4 text-primary shrink-0" />
+                  <span className="font-medium truncate">{venue.name}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                  {selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="truncate">{selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                   {timeSlots.find(s => s.time === selectedTime)?.label} ({selectedDuration} min)
                 </div>
               </div>
               
               {/* Amount */}
               <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
-                <p className="text-sm text-muted-foreground">Amount to Pay</p>
-                <p className="text-3xl font-bold text-primary">₹{sessionPrice}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Amount to Pay</p>
+                <p className="text-2xl sm:text-3xl font-bold text-primary">₹{sessionPrice}</p>
               </div>
 
               {/* Payment Methods */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Payment Method</label>
+                <label className="text-xs sm:text-sm font-medium text-foreground">Payment Method</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { id: "card", label: "Card", icon: CreditCard },
@@ -572,10 +592,10 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
                       key={method.id}
                       onClick={() => setSelectedPaymentMethod(method.id)}
                       className={cn(
-                        "p-3 rounded-lg border flex items-center gap-2 transition-all",
+                        "p-3 rounded-lg border-2 flex items-center justify-center gap-2 transition-all",
                         selectedPaymentMethod === method.id
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card border-border hover:border-primary/50"
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
                       )}
                     >
                       <method.icon className="h-4 w-4" />
@@ -586,12 +606,12 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setShowPaymentStep(false)}>
+                <Button variant="outline" className="flex-1 h-10 sm:h-auto" onClick={() => setShowPaymentStep(false)}>
                   Back
                 </Button>
                 <Button
                   variant="gradient"
-                  className="flex-1"
+                  className="flex-1 h-10 sm:h-auto"
                   onClick={handleBooking}
                   disabled={isSubmitting || !selectedPaymentMethod}
                 >
@@ -603,39 +623,39 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
 
           {/* Step 4: Success */}
           {step === 4 && (
-            <div className="text-center py-6 space-y-4">
-              <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="h-10 w-10 text-success" />
+            <div className="text-center py-4 sm:py-6 space-y-4">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-success/10 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-success" />
               </div>
               <div>
-                <h3 className="font-display text-2xl font-bold text-foreground mb-2">
+                <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-2">
                   Booking Confirmed! 🎉
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Your session has been successfully booked
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-muted/50 text-left space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <span className="font-medium">{venue.name}</span>
+              <div className="p-3 sm:p-4 rounded-xl bg-muted/50 text-left space-y-2">
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <MapPin className="h-4 w-4 text-primary shrink-0" />
+                  <span className="font-medium truncate">{venue.name}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                  {selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="truncate">{selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                   {timeSlots.find(s => s.time === selectedTime)?.label} ({selectedDuration} min)
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={resetAndClose}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button variant="outline" className="flex-1 h-10 sm:h-auto" onClick={resetAndClose}>
                   Close
                 </Button>
-                <Button variant="gradient" className="flex-1" onClick={() => {
+                <Button variant="gradient" className="flex-1 h-10 sm:h-auto" onClick={() => {
                   resetAndClose();
                   navigate("/dashboard/appointments");
                 }}>
@@ -657,17 +677,30 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
       />
 
       {/* Monthly Booking Modal */}
-      {isMonthlyPaidUserForVenue && (
+      {isMonthlySubscriber && (
         <MonthlyBookingModal
           isOpen={showMonthlyBooking}
           onClose={() => setShowMonthlyBooking(false)}
           venue={venue}
-          isMonthlyPaidUser={isMonthlyPaidUserForVenue}
+          isMonthlyPaidUser={isMonthlySubscriber}
           userId={userId}
           userName={userName}
         />
       )}
-      
+
+      {/* Membership Selection Modal */}
+      <MembershipSelectionModal
+        isOpen={showMembershipModal}
+        onClose={() => setShowMembershipModal(false)}
+        onSelect={handleMembershipSelected}
+        venue={{
+          id: venue.id,
+          name: venue.name,
+          dailyPrice: venue.dailyPrice,
+          weeklyPrice: venue.weeklyPrice,
+          monthlyPrice: venue.monthlyPrice,
+        }}
+      />
     </>
   );
 }

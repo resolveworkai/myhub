@@ -185,7 +185,12 @@ export const registerBusinessUser = async (userData: {
     businessType: userData.businessType,
     registrationNumber: userData.registrationNumber,
     address: {
-      ...userData.address,
+      street: userData.address.street,
+      city: userData.address.city,
+      state: userData.address.state,
+      country: userData.address.country,
+      zipCode: userData.address.postalCode,
+      postalCode: userData.address.postalCode,
       lat: userData.address.lat || 25.2048,
       lng: userData.address.lng || 55.2708,
     },
@@ -206,11 +211,11 @@ export const registerBusinessUser = async (userData: {
     businessVerified: false,
     lastLogin: null,
     accountStatus: 'pending_verification',
+    failedLoginAttempts: 0,
+    lockedUntil: null,
     locations: [],
     staffMembers: [],
     totalRevenue: 0,
-    failedLoginAttempts: 0,
-    lockedUntil: null,
     password: userData.password,
     
     // New media fields
@@ -223,6 +228,7 @@ export const registerBusinessUser = async (userData: {
     equipment: userData.businessType === 'gym' ? [] : undefined,
     classTypes: userData.businessType === 'gym' ? [] : undefined,
     membershipOptions: [],
+    membershipTypes: [],
     subjects: userData.businessType === 'coaching' ? [] : undefined,
     levels: userData.businessType === 'coaching' ? [] : undefined,
     teachingModes: userData.businessType === 'coaching' ? [] : undefined,
@@ -234,6 +240,11 @@ export const registerBusinessUser = async (userData: {
     // Listing status - not published until they add location/images
     isPublished: false,
     publishedAt: undefined,
+    
+    // Package pricing defaults
+    dailyPackagePrice: 299,
+    weeklyPackagePrice: 1499,
+    monthlyPackagePrice: 4999,
   };
   
   businessUsers.push(newBusinessUser);
