@@ -183,22 +183,22 @@ export default function ForBusiness() {
                   <Building2 className="h-4 w-4 mr-1" />
                   For Business Owners
                 </Badge>
-                <h1 className="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-6">
+                <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-4 sm:mb-6">
                   Grow Your Business with{" "}
                   <span className="text-primary">Portal</span>
                 </h1>
-                <p className="text-lg text-muted-foreground mb-8">
+                <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8">
                   Join 500+ gyms, coaching centers, and libraries that have increased their bookings 
                   and revenue with our powerful management platform.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Link to="/signup/business">
-                    <Button variant="gradient" size="lg">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <Link to="/signup/business" className="w-full sm:w-auto">
+                    <Button variant="gradient" size="lg" className="w-full sm:w-auto h-12 touch-target">
                       Start Free Trial
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                   </Link>
-                  <Button variant="outline" size="lg">
+                  <Button variant="outline" size="lg" className="h-12 touch-target">
                     <Play className="h-5 w-5 mr-2" />
                     Watch Demo
                   </Button>
@@ -262,7 +262,7 @@ export default function ForBusiness() {
               </p>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {features.map((feature, index) => (
                 <motion.div
                   key={feature.title}
@@ -270,7 +270,7 @@ export default function ForBusiness() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-card p-6 rounded-2xl border border-border hover:border-primary/30 hover:shadow-lg transition-all group"
+                  className="bg-card p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-border hover:border-primary/30 hover:shadow-lg transition-all group"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
@@ -335,7 +335,7 @@ export default function ForBusiness() {
               </div>
             </motion.div>
 
-            <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
               {pricingPlans.map((plan, index) => (
                 <motion.div
                   key={plan.name}
@@ -343,9 +343,9 @@ export default function ForBusiness() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className={`relative bg-card rounded-3xl border-2 p-8 ${
+                  className={`relative bg-card rounded-2xl sm:rounded-3xl border-2 p-6 sm:p-8 ${
                     plan.popular
-                      ? "border-primary shadow-xl scale-105"
+                      ? "border-primary shadow-xl lg:scale-105"
                       : "border-border"
                   }`}
                 >

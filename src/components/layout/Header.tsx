@@ -11,6 +11,7 @@ import {
   BookOpen,
   GraduationCap,
   HelpCircle,
+  Check,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -76,17 +77,17 @@ export function Header() {
           <div className="flex h-16 lg:h-20 items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-glow transition-shadow ${
+              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-glow transition-shadow ${
                 isHomePage && !isScrolled 
                   ? "bg-primary-foreground/20 backdrop-blur-sm" 
                   : "gradient-primary"
               }`}>
-                <span className="text-primary-foreground font-display font-bold text-xl">
+                <span className="text-primary-foreground font-display font-bold text-lg sm:text-xl">
                   P
                 </span>
               </div>
               <span
-                className={`font-display font-bold text-xl ${
+                className={`font-display font-bold text-lg sm:text-xl ${
                   isHomePage ? "text-primary-foreground" : "text-foreground"
                 }`}
               >
@@ -181,7 +182,7 @@ export function Header() {
             {/* Mobile Menu Button */}
             <button
               type="button"
-              className={`lg:hidden p-2 rounded-lg ${
+              className={`lg:hidden p-2 rounded-lg touch-target flex items-center justify-center ${
                 isHomePage
                   ? "text-primary-foreground hover:bg-primary-foreground/10"
                   : "text-foreground hover:bg-muted"
@@ -208,7 +209,7 @@ export function Header() {
 
       {/* Mobile Menu Panel */}
       <div
-        className={`fixed top-0 right-0 z-50 h-full w-80 max-w-[85vw] bg-background shadow-xl transform transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed top-0 right-0 z-50 h-full w-[85vw] max-w-80 bg-background shadow-xl transform transition-transform duration-300 ease-in-out lg:hidden ${
           mobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -218,67 +219,68 @@ export function Header() {
             className="flex items-center gap-2"
             onClick={closeMobileMenu}
           >
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-display font-bold text-xl">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl gradient-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-display font-bold text-lg sm:text-xl">
                 P
               </span>
             </div>
-            <span className="font-display font-bold text-xl text-foreground">
+            <span className="font-display font-bold text-lg sm:text-xl text-foreground">
               Portal
             </span>
           </Link>
           <button
             type="button"
-            className="p-2 rounded-lg text-foreground hover:bg-muted"
+            className="p-2 rounded-lg text-foreground hover:bg-muted touch-target flex items-center justify-center"
             onClick={closeMobileMenu}
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="p-4 space-y-2 overflow-y-auto h-[calc(100%-80px)]">
+        <div className="p-4 space-y-2 overflow-y-auto h-[calc(100%-80px)] pb-safe">
           {navigation.map((item) => (
             <Link
               key={item.nameKey}
               to={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors touch-target ${
                 location.pathname === item.href
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
               onClick={closeMobileMenu}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-5 w-5 flex-shrink-0" />
               {t(item.nameKey)}
             </Link>
           ))}
           
-          <div className="pt-4 mt-4 border-t border-border space-y-2">
+          <div className="pt-4 mt-4 border-t border-border space-y-3">
             {isAuthenticated ? (
               <>
                 <Link 
                   to={accountType === 'business' ? '/business-dashboard' : '/dashboard'} 
                   onClick={closeMobileMenu}
+                  className="block"
                 >
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full h-12 touch-target">
                     {t('common.dashboard')}
                   </Button>
                 </Link>
-                <Link to="/settings" onClick={closeMobileMenu}>
-                  <Button variant="ghost" className="w-full">
+                <Link to="/settings" onClick={closeMobileMenu} className="block">
+                  <Button variant="ghost" className="w-full h-12 touch-target">
                     {t('common.settings')}
                   </Button>
                 </Link>
               </>
             ) : (
               <>
-                <Link to="/signin" onClick={closeMobileMenu}>
-                  <Button variant="outline" className="w-full">
+                <Link to="/signin" onClick={closeMobileMenu} className="block">
+                  <Button variant="outline" className="w-full h-12 touch-target">
                     {t('common.signIn')}
                   </Button>
                 </Link>
-                <Link to="/signup" onClick={closeMobileMenu}>
-                  <Button variant="gradient" className="w-full">
+                <Link to="/signup" onClick={closeMobileMenu} className="block">
+                  <Button variant="gradient" className="w-full h-12 touch-target">
                     {t('common.signUp')}
                   </Button>
                 </Link>
@@ -287,20 +289,23 @@ export function Header() {
           </div>
 
           <div className="pt-4 border-t border-border">
-            <p className="text-xs text-muted-foreground mb-2 px-4">Language</p>
-            <div className="grid grid-cols-3 gap-2">
+            <p className="text-xs text-muted-foreground mb-3 px-4">Language</p>
+            <div className="space-y-1">
               {languages.map((lang) => (
                 <button
                   key={lang.code}
                   onClick={() => handleLanguageChange(lang.code)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-colors touch-target ${
                     currentLang.code === lang.code
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted"
                   }`}
                 >
-                  <span>{lang.flag}</span>
-                  {lang.name}
+                  <span className="text-lg">{lang.flag}</span>
+                  <span className="flex-1 text-left">{lang.name}</span>
+                  {currentLang.code === lang.code && (
+                    <Check className="h-4 w-4" />
+                  )}
                 </button>
               ))}
             </div>
@@ -308,24 +313,24 @@ export function Header() {
 
           {/* Additional Links in Mobile */}
           <div className="pt-4 border-t border-border">
-            <p className="text-xs text-muted-foreground mb-2 px-4">More</p>
+            <p className="text-xs text-muted-foreground mb-3 px-4">More</p>
             <Link
               to="/about"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-muted touch-target"
               onClick={closeMobileMenu}
             >
               About Us
             </Link>
             <Link
               to="/contact"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-muted touch-target"
               onClick={closeMobileMenu}
             >
               Contact
             </Link>
             <Link
               to="/faq"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-muted touch-target"
               onClick={closeMobileMenu}
             >
               FAQ

@@ -140,16 +140,54 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-x: hidden;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   #root {
     overflow-x: hidden;
     min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Responsive images */
+  img {
+    max-width: 100%;
+    height: auto;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-bold tracking-tight;
   }
+}
+
+/* Safe area padding for notched devices */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.px-safe {
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Minimum touch target */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 @layer utilities {

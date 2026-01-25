@@ -310,15 +310,15 @@ export default function Explore() {
               <ActiveFilters />
 
               {/* Results Header */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
                 <div>
-                  <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
+                  <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
                     {isPending && (
-                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-muted-foreground" />
                     )}
                     {totalItems} Businesses Found
                   </h1>
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     {userLocation
                       ? `Near ${userLocation.city}`
                       : "Across all locations"}
@@ -333,25 +333,25 @@ export default function Explore() {
                 {/* Saved Searches + Sort */}
                 <div className="flex items-center gap-2">
                   <SavedSearches currentFilters={currentFilters} />
-                <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
-                  <SelectTrigger className="w-48 bg-muted border-0">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sortOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+                    <SelectTrigger className="w-full sm:w-48 bg-muted border-0">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sortOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               {/* Results */}
               {viewMode === "list" ? (
                 <>
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                     {paginatedData.map((business: Venue) => (
                       <div
                         key={business.id}
