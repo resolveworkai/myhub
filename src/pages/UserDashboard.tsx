@@ -10,7 +10,6 @@ import {
   LogOut,
   Menu,
   X,
-  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
@@ -57,15 +56,15 @@ export default function UserDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-card border-b border-border flex items-center justify-between px-4 z-50">
-        <button onClick={() => setSidebarOpen(true)} className="p-2">
-          <Menu className="h-6 w-6" />
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-14 sm:h-16 bg-card border-b border-border flex items-center justify-between px-3 sm:px-4 z-50">
+        <button onClick={() => setSidebarOpen(true)} className="p-2 touch-target flex items-center justify-center">
+          <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-display font-bold">P</span>
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg gradient-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-display font-bold text-sm sm:text-base">P</span>
           </div>
-          <span className="font-display font-bold">Portal</span>
+          <span className="font-display font-bold text-sm sm:text-base">Portal</span>
         </Link>
         <NotificationDropdown />
       </header>
@@ -81,66 +80,66 @@ export default function UserDashboard() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 h-full w-72 bg-card border-r border-border z-50 transform transition-transform duration-300 lg:translate-x-0",
+          "fixed top-0 left-0 h-full w-64 sm:w-72 bg-card border-r border-border z-50 transform transition-transform duration-300 lg:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="h-16 flex items-center justify-between px-4 border-b border-border">
+          <div className="h-14 sm:h-16 flex items-center justify-between px-3 sm:px-4 border-b border-border">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
-                <span className="text-primary-foreground font-display font-bold text-xl">P</span>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
+                <span className="text-primary-foreground font-display font-bold text-lg sm:text-xl">P</span>
               </div>
-              <span className="font-display font-bold text-xl">Portal</span>
+              <span className="font-display font-bold text-lg sm:text-xl">Portal</span>
             </Link>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2">
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 touch-target flex items-center justify-center">
               <X className="h-5 w-5" />
             </button>
           </div>
 
           {/* User Info */}
-          <div className="p-4 border-b border-border">
+          <div className="p-3 sm:p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <img
                 src={userAvatar}
                 alt="User"
-                className="w-12 h-12 rounded-full object-cover"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
               />
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold truncate">{userName}</h3>
-                <p className="text-sm text-muted-foreground truncate">{userEmail}</p>
+                <h3 className="font-semibold text-sm sm:text-base truncate">{userName}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{userEmail}</p>
               </div>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 p-3 sm:p-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-3 px-3 py-2.5 sm:py-3 rounded-xl text-sm font-medium transition-colors touch-target",
                   isActiveRoute(item.href)
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <item.icon className="h-5 w-5" />
+                <item.icon className="h-5 w-5 flex-shrink-0" />
                 {item.name}
               </Link>
             ))}
           </nav>
 
           {/* Logout */}
-          <div className="p-4 border-t border-border">
+          <div className="p-3 sm:p-4 border-t border-border pb-safe">
             <button 
               onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 w-full transition-colors"
+              className="flex items-center gap-3 px-3 py-2.5 sm:py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 w-full transition-colors touch-target"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-5 w-5 flex-shrink-0" />
               Logout
             </button>
           </div>
@@ -148,32 +147,34 @@ export default function UserDashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-72 pt-16 lg:pt-0 min-h-screen">
+      <main className="lg:ml-72 pt-14 sm:pt-16 lg:pt-0 min-h-screen">
         {/* Desktop Header */}
-        <header className="hidden lg:flex h-16 items-center justify-between px-8 border-b border-border bg-card">
+        <header className="hidden lg:flex h-16 items-center justify-between px-6 lg:px-8 border-b border-border bg-card">
           <div>
-            <h1 className="font-display text-xl font-semibold">Welcome back, {userName}! 👋</h1>
-            <p className="text-sm text-muted-foreground">Here's what's happening with your activities</p>
+            <h1 className="font-display text-lg lg:text-xl font-semibold">Welcome back, {userName}! 👋</h1>
+            <p className="text-xs lg:text-sm text-muted-foreground">Here's what's happening with your activities</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 lg:gap-4">
             <NotificationDropdown />
             <Link to="/dashboard/profile">
               <img
                 src={userAvatar}
                 alt="User"
-                className="w-10 h-10 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                className="w-9 h-9 lg:w-10 lg:h-10 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-primary transition-all"
               />
             </Link>
           </div>
         </header>
 
         {/* Dashboard Routes */}
-        <Routes>
-          <Route index element={<DashboardHome userName={userName} />} />
-          <Route path="appointments" element={<MyAppointments />} />
-          <Route path="fees" element={<FeesPayments />} />
-          <Route path="profile" element={<DashboardProfile />} />
-        </Routes>
+        <div className="p-4 sm:p-6 lg:p-8">
+          <Routes>
+            <Route index element={<DashboardHome userName={userName} />} />
+            <Route path="appointments" element={<MyAppointments />} />
+            <Route path="fees" element={<FeesPayments />} />
+            <Route path="profile" element={<DashboardProfile />} />
+          </Routes>
+        </div>
       </main>
     </div>
   );

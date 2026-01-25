@@ -170,18 +170,18 @@ export default function BusinessDashboard() {
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-card border-b border-border flex items-center justify-between px-4 z-50">
-        <button onClick={() => setSidebarOpen(true)} className="p-2">
-          <Menu className="h-6 w-6" />
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-14 sm:h-16 bg-card border-b border-border flex items-center justify-between px-3 sm:px-4 z-50">
+        <button onClick={() => setSidebarOpen(true)} className="p-2 touch-target flex items-center justify-center">
+          <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-display font-bold">P</span>
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg gradient-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-display font-bold text-sm sm:text-base">P</span>
           </div>
-          <span className="font-display font-bold">Portal</span>
+          <span className="font-display font-bold text-sm sm:text-base">Portal</span>
         </Link>
-        <button className="p-2 relative">
-          <Bell className="h-6 w-6" />
+        <button className="p-2 relative touch-target flex items-center justify-center">
+          <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
         </button>
       </header>
@@ -197,7 +197,7 @@ export default function BusinessDashboard() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 h-full w-72 bg-card border-r border-border z-50 transform transition-transform duration-300 lg:translate-x-0",
+          "fixed top-0 left-0 h-full w-64 sm:w-72 bg-card border-r border-border z-50 transform transition-transform duration-300 lg:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -280,59 +280,59 @@ export default function BusinessDashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-72 pt-16 lg:pt-0 min-h-screen">
+      <main className="lg:ml-72 pt-14 sm:pt-16 lg:pt-0 min-h-screen">
         {/* Desktop Header */}
-        <header className="hidden lg:flex h-16 items-center justify-end px-8 border-b border-border bg-card">
-          <div className="flex items-center gap-4">
+        <header className="hidden lg:flex h-16 items-center justify-end px-6 lg:px-8 border-b border-border bg-card">
+          <div className="flex items-center gap-3 lg:gap-4">
             <Button variant="gradient" onClick={() => setAddMemberOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add Member
             </Button>
-            <button className="p-2 rounded-lg hover:bg-muted relative">
+            <button className="p-2 rounded-lg hover:bg-muted relative touch-target flex items-center justify-center">
               <Bell className="h-5 w-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
             </button>
             <img
               src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
               alt="User"
-              className="w-10 h-10 rounded-full object-cover cursor-pointer"
+              className="w-9 h-9 lg:w-10 lg:h-10 rounded-full object-cover cursor-pointer"
             />
           </div>
         </header>
 
         {/* Dashboard Content */}
-        <div className="p-4 lg:p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
           {/* Render nested routes or dashboard home */}
           {location.pathname === "/business-dashboard" ? (
             <>
               {/* Page Header */}
-              <div className="mb-8">
-                <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">Dashboard</h1>
-                <p className="text-muted-foreground">Overview of your business performance</p>
+              <div className="mb-6 sm:mb-8">
+                <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Dashboard</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">Overview of your business performance</p>
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
                 {stats.map((stat) => (
-                  <div key={stat.name} className="p-6 rounded-2xl bg-card border border-border">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", stat.bgColor)}>
-                        <stat.icon className={cn("h-6 w-6", stat.color)} />
+                  <div key={stat.name} className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-card border border-border">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center", stat.bgColor)}>
+                        <stat.icon className={cn("h-5 w-5 sm:h-6 sm:w-6", stat.color)} />
                       </div>
                       <div className={cn(
-                        "flex items-center gap-1 text-sm font-medium",
+                        "flex items-center gap-1 text-xs sm:text-sm font-medium",
                         stat.trend === "up" ? "text-success" : "text-destructive"
                       )}>
                         {stat.trend === "up" ? (
-                          <TrendingUp className="h-4 w-4" />
+                          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
                         ) : (
-                          <TrendingDown className="h-4 w-4" />
+                          <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4" />
                         )}
                         {stat.change}
                       </div>
                     </div>
-                    <div className="text-2xl font-bold mb-1">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.name}</div>
+                    <div className="text-lg sm:text-2xl font-bold mb-1">{stat.value}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">{stat.name}</div>
                   </div>
                 ))}
               </div>

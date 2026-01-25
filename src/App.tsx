@@ -31,6 +31,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsConditions = lazy(() => import("./pages/TermsConditions"));
 const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
 const Favorites = lazy(() => import("./pages/Favorites"));
+const Install = lazy(() => import("./pages/Install"));
 
 // Business Dashboard Pages
 const BusinessMembers = lazy(() => import("./pages/business/BusinessMembers"));
@@ -130,6 +131,7 @@ const App = () => (
               <Route path="/faq" element={<FAQ />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-conditions" element={<TermsConditions />} />
+              <Route path="/install" element={<Install />} />
               
               {/* Discovery Pages */}
               <Route path="/explore" element={<Explore />} />
