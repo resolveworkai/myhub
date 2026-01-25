@@ -16,7 +16,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { loginSchema } from "@/lib/authValidation";
-import { login } from "@/lib/mockAuthService";
+import { login } from "@/lib/apiService";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/hooks/use-toast";
 import { z } from "zod";

@@ -38,7 +38,7 @@ import { cn } from '@/lib/utils';
 import { StepIndicator } from './StepIndicator';
 import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
 import { useAuthStore } from '@/store/authStore';
-import { registerBusinessUser, checkEmailExists } from '@/lib/mockAuthService';
+import { registerBusinessUser, checkEmailExists } from '@/lib/apiService';
 import { formatPhoneNumber } from '@/lib/authValidation';
 
 const businessSchema = z.object({

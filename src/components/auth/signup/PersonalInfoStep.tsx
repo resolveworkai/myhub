@@ -21,7 +21,7 @@ import {
   Navigation,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { checkEmailExists, checkPhoneExists } from '@/lib/mockAuthService';
+import { checkEmailExists, checkPhoneExists } from '@/lib/apiService';
 import { formatPhoneNumber } from '@/lib/authValidation';
 
 const countryCodes = [

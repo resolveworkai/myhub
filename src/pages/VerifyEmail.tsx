@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { OTPInput } from "@/components/auth/OTPInput";
-import { verifyOTP, resendOTP } from "@/lib/mockAuthService";
+import { verifyOTP, resendOTP } from "@/lib/apiService";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/hooks/use-toast";
 import { Mail, Loader2, CheckCircle2, ArrowRight } from "lucide-react";

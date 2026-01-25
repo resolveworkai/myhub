@@ -181,7 +181,7 @@ export default function AdminDashboard() {
                 <Shield className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <span className="font-display font-bold text-lg">MyHub</span>
+                <span className="font-display font-bold text-lg">Portal</span>
                 <Badge className="ml-2 bg-accent text-accent-foreground">Admin</Badge>
               </div>
             </div>

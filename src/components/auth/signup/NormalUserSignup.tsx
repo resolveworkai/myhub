@@ -9,7 +9,7 @@ import { PersonalInfoStep } from './PersonalInfoStep';
 import { SecurityStep } from './SecurityStep';
 import { PreferencesStep } from './PreferencesStep';
 import { useAuthStore } from '@/store/authStore';
-import { registerUser } from '@/lib/mockAuthService';
+import { registerUser } from '@/lib/apiService';
 
 const normalUserSchema = z.object({
   fullName: z
