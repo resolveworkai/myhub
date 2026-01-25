@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import notificationsData from '@/data/mock/notifications.json';
+import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification as deleteNotificationApi } from '@/lib/apiService';
 
 export type NotificationType = 
   | 'booking_confirmation' 
@@ -122,7 +122,7 @@ interface NotificationState {
   unreadCount: number;
   
   // Actions
-  fetchNotifications: (userId: string, userType: 'normal' | 'business') => void;
+      fetchNotifications: (userId: string, userType: 'normal' | 'business') => Promise<void>;
   markAsRead: (notificationId: string) => void;
   markAllAsRead: () => void;
   deleteNotification: (notificationId: string) => void;
@@ -138,46 +138,79 @@ export const useNotificationStore = create<NotificationState>()(
       preferences: defaultPreferences,
       unreadCount: 0,
 
-      fetchNotifications: (userId, userType) => {
-        const userNotifications = (notificationsData as Notification[])
-          .filter(n => n.userId === userId || (userType === 'normal' && n.userId.startsWith('u')) || (userType === 'business' && n.userId.startsWith('bu')))
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        
-        const unread = userNotifications.filter(n => !n.read).length;
-        
-        set({ 
-          notifications: userNotifications.slice(0, 20), 
-          unreadCount: unread 
-        });
+      fetchNotifications: async (userId, userType) => {
+        try {
+          const result = await getNotifications({});
+          const transformed = result.notifications.map((n: any) => ({
+            id: n.id,
+            userId: n.userId,
+            userType: n.userType,
+            type: n.type,
+            title: n.title,
+            message: n.message,
+            relatedEntity: n.relatedEntity || {},
+            actionUrl: n.actionUrl,
+            actionLabel: n.actionLabel,
+            priority: n.priority,
+            read: n.read,
+            createdAt: n.createdAt,
+            scheduledFor: n.scheduledFor,
+            deliveredAt: n.deliveredAt,
+            deliveryChannels: n.deliveryChannels || [],
+            deliveryStatus: n.deliveryStatus || {},
+          }));
+          
+          set({ 
+            notifications: transformed, 
+            unreadCount: result.unreadCount || 0 
+          });
+        } catch (error) {
+          console.error('Failed to fetch notifications:', error);
+        }
       },
 
-      markAsRead: (notificationId) => {
-        set((state) => {
-          const updated = state.notifications.map(n =>
-            n.id === notificationId ? { ...n, read: true } : n
-          );
-          return {
-            notifications: updated,
-            unreadCount: updated.filter(n => !n.read).length,
-          };
-        });
+      markAsRead: async (notificationId) => {
+        try {
+          await markNotificationAsRead(notificationId);
+          set((state) => {
+            const updated = state.notifications.map(n =>
+              n.id === notificationId ? { ...n, read: true } : n
+            );
+            return {
+              notifications: updated,
+              unreadCount: updated.filter(n => !n.read).length,
+            };
+          });
+        } catch (error) {
+          console.error('Failed to mark notification as read:', error);
+        }
       },
 
-      markAllAsRead: () => {
-        set((state) => ({
-          notifications: state.notifications.map(n => ({ ...n, read: true })),
-          unreadCount: 0,
-        }));
+      markAllAsRead: async () => {
+        try {
+          await markAllNotificationsAsRead();
+          set((state) => ({
+            notifications: state.notifications.map(n => ({ ...n, read: true })),
+            unreadCount: 0,
+          }));
+        } catch (error) {
+          console.error('Failed to mark all as read:', error);
+        }
       },
 
-      deleteNotification: (notificationId) => {
-        set((state) => {
-          const updated = state.notifications.filter(n => n.id !== notificationId);
-          return {
-            notifications: updated,
-            unreadCount: updated.filter(n => !n.read).length,
-          };
-        });
+      deleteNotification: async (notificationId) => {
+        try {
+          await deleteNotificationApi(notificationId);
+          set((state) => {
+            const updated = state.notifications.filter(n => n.id !== notificationId);
+            return {
+              notifications: updated,
+              unreadCount: updated.filter(n => !n.read).length,
+            };
+          });
+        } catch (error) {
+          console.error('Failed to delete notification:', error);
+        }
       },
 
       addNotification: (notification) => {

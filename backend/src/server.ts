@@ -8,6 +8,12 @@ import { securityMiddleware, requestLogger } from './middleware/security';
 import { generalRateLimiter } from './middleware/rateLimiter';
 import authRoutes from './routes/authRoutes';
 import healthRoutes from './routes/healthRoutes';
+import venueRoutes from './routes/venueRoutes';
+import bookingRoutes from './routes/bookingRoutes';
+import reviewRoutes from './routes/reviewRoutes';
+import userRoutes from './routes/userRoutes';
+import businessRoutes from './routes/businessRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 
 const app: Express = express();
 
@@ -41,6 +47,12 @@ app.use('/ready', healthRoutes);
 
 // API routes
 app.use(`${config.apiPrefix}/auth`, authRoutes);
+app.use(`${config.apiPrefix}/venues`, venueRoutes);
+app.use(`${config.apiPrefix}/bookings`, bookingRoutes);
+app.use(`${config.apiPrefix}/reviews`, reviewRoutes);
+app.use(`${config.apiPrefix}/users`, userRoutes);
+app.use(`${config.apiPrefix}/business`, businessRoutes);
+app.use(`${config.apiPrefix}/notifications`, notificationRoutes);
 
 // 404 handler
 app.use((req, res) => {

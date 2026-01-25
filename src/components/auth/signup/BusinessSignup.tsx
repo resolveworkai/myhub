@@ -197,6 +197,8 @@ export function BusinessSignup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
   const navigate = useNavigate();
   const { login, setPendingVerification } = useAuthStore();
 
@@ -316,8 +318,9 @@ export function BusinessSignup() {
           email: data.email,
         });
         
-        toast.success('Business account created! Your account is pending verification.');
-        navigate('/business-dashboard/pending');
+        toast.success('Business account created! Please verify your email.');
+        // Redirect to OTP verification page for business users
+        navigate(`/verify-email?email=${encodeURIComponent(data.email)}&type=business`);
       } else {
         toast.error(result.error || 'Failed to create account');
       }
@@ -438,13 +441,49 @@ export function BusinessSignup() {
               <Input
                 id="email"
                 type="email"
-                {...register('email')}
+                {...register('email', {
+                  onBlur: async (e) => {
+                    const emailValue = e.target.value;
+                    if (emailValue && !errors.email) {
+                      setIsCheckingEmail(true);
+                      setEmailExists(false);
+                      try {
+                        const exists = await checkEmailExists(emailValue);
+                        if (exists) {
+                          setEmailExists(true);
+                          form.setError('email', {
+                            type: 'manual',
+                            message: 'This email is already registered',
+                          });
+                        } else {
+                          setEmailExists(false);
+                          form.clearErrors('email');
+                        }
+                      } catch (error) {
+                        console.error('Email check error:', error);
+                      } finally {
+                        setIsCheckingEmail(false);
+                      }
+                    }
+                  },
+                })}
                 placeholder="business@example.com"
-                className={cn('pl-10', errors.email && 'border-destructive')}
+                className={cn(
+                  'pl-10',
+                  errors.email && 'border-destructive',
+                  emailExists && 'border-destructive'
+                )}
+                disabled={isCheckingEmail}
               />
+              {isCheckingEmail && (
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+              )}
             </div>
             {errors.email && (
               <p className="text-xs text-destructive">{String(errors.email.message)}</p>
+            )}
+            {emailExists && !errors.email && (
+              <p className="text-xs text-destructive">This email is already registered</p>
             )}
           </div>
 

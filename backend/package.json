@@ -11,6 +11,11 @@
     "migrate:up": "node-pg-migrate up",
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create",
+    "seed": "tsx scripts/seed-mock-data.ts all",
+    "seed:users": "tsx scripts/seed-mock-data.ts users",
+    "seed:business": "tsx scripts/seed-mock-data.ts business",
+    "seed:venues": "tsx scripts/seed-mock-data.ts venues",
+    "seed:clean": "tsx scripts/seed-mock-data.ts clean",
     "lint": "eslint src --ext .ts",
     "test": "jest",
     "test:watch": "jest --watch"

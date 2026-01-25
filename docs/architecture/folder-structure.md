@@ -39,6 +39,31 @@ backend/
 ├── package.json
 ├── tsconfig.json
 └── README.md
+
+src/                          # Frontend source code
+├── api/                      # API configuration
+│   └── axios.config.ts      # Axios instance with retry logic
+├── components/              # React components
+│   ├── auth/                # Authentication components
+│   │   ├── BusinessSignup.tsx
+│   │   ├── NormalUserSignup.tsx
+│   │   ├── OTPInput.tsx
+│   │   └── ProtectedRoute.tsx
+│   ├── business/            # Business-specific components
+│   ├── layout/              # Layout components
+│   └── ui/                  # UI component library
+├── lib/                     # Utility libraries
+│   ├── apiService.ts        # API service functions (uses axios)
+│   └── authValidation.ts   # Validation schemas
+├── pages/                   # Page components
+│   ├── Login.tsx
+│   ├── Signup.tsx
+│   ├── VerifyEmail.tsx
+│   ├── UserDashboard.tsx
+│   └── BusinessDashboard.tsx
+├── store/                   # State management (Zustand)
+│   └── authStore.ts        # Authentication state
+└── App.tsx                  # Main app component
 ```
 
 ## Layer Architecture
@@ -147,6 +172,27 @@ Response ← Routes ← Controllers ← Services ← Database
 - OTP generation
 - OTP storage and verification
 - Expiry management
+
+### Frontend Files
+
+#### api/axios.config.ts
+- Axios instance configuration
+- Request/response interceptors
+- Retry logic with exponential backoff
+- Automatic token attachment
+- Error handling and logging
+
+#### lib/apiService.ts
+- API service functions
+- Uses axios wrapper for all HTTP requests
+- Type-safe API calls
+- Error handling
+
+#### components/auth/BusinessSignup.tsx
+- Multi-step business signup form
+- Real-time email duplicate check
+- OTP verification step integration
+- Form validation with Zod
 
 ### utils/errors.ts
 - Custom error classes

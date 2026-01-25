@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, memo, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -54,8 +55,27 @@ export default function Explore() {
   // Use persisted favorites store instead of local state
   const { favorites, toggleFavorite, isFavorite } = useFavoriteStore();
 
-  // Use venue store to get all venues (mock + registered)
-  const { getAllVenues } = useVenueStore();
+  // Use venue store to get all venues from API
+  const { getAllVenues, fetchVenues, loading: venuesLoading } = useVenueStore();
+  
+  // Fetch venues on mount and when filters change
+  useEffect(() => {
+    const filters: any = {
+      category: routeCategory || (activeCategory === 'all' ? undefined : activeCategory),
+      city: userLocation?.city,
+      minRating: minRating || undefined,
+      priceRange: priceRange || undefined,
+      radius: radiusKm || undefined,
+      userLat: userLocation?.lat,
+      userLng: userLocation?.lng,
+      search: searchQuery || undefined,
+      amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
+      status: availability || undefined,
+    };
+    
+    fetchVenues(filters);
+  }, [routeCategory, activeCategory, userLocation?.city, userLocation?.lat, userLocation?.lng, minRating, priceRange, radiusKm, searchQuery, selectedAmenities, availability, fetchVenues]);
+  
   const allBusinesses = useMemo(() => getAllVenues(), [getAllVenues]);
 
   // Filter store
@@ -349,7 +369,12 @@ export default function Explore() {
               </div>
 
               {/* Results */}
-              {viewMode === "list" ? (
+              {venuesLoading ? (
+                <div className="text-center py-16">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Loading venues...</p>
+                </div>
+              ) : viewMode === "list" ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                     {paginatedData.map((business: Venue) => (

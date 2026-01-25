@@ -175,3 +175,31 @@ export const checkPhone = asyncHandler(async (req: Request, res: Response) => {
     data: { exists },
   });
 });
+
+/**
+ * Business email verification OTP
+ */
+export const businessVerifyEmail = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+
+  await authService.verifyEmail(email, otp);
+
+  res.json({
+    success: true,
+    message: 'Business email verified successfully',
+  });
+});
+
+/**
+ * Business resend OTP
+ */
+export const businessResendOTP = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  await authService.resendOTP(email);
+
+  res.json({
+    success: true,
+    message: 'A new verification code has been sent to your business email.',
+  });
+});

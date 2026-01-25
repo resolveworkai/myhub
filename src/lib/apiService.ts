@@ -1,17 +1,5 @@
 import type { User, BusinessUser, AuthUser } from '@/store/authStore';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
-
-interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data?: T;
-  error?: {
-    message: string;
-    code?: string;
-  };
-  requiresVerification?: boolean;
-}
+import { api } from '@/api/axios.config';
 
 class ApiError extends Error {
   constructor(
@@ -24,37 +12,10 @@ class ApiError extends Error {
   }
 }
 
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
-  
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-  const data: ApiResponse<T> = await response.json();
-
-  if (!data.success) {
-    throw new ApiError(
-      data.error?.message || 'An error occurred',
-      data.error?.code,
-      data.requiresVerification
-    );
-  }
-
-  return data.data as T;
-}
-
 // Check if email exists
 export const checkEmailExists = async (email: string): Promise<boolean> => {
   try {
-    const result = await apiRequest<{ exists: boolean }>(
+    const result = await api.get<{ exists: boolean }>(
       `/auth/check-email?email=${encodeURIComponent(email)}`
     );
     return result.exists;
@@ -67,7 +28,7 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
 // Check if phone exists
 export const checkPhoneExists = async (phone: string): Promise<boolean> => {
   try {
-    const result = await apiRequest<{ exists: boolean }>(
+    const result = await api.get<{ exists: boolean }>(
       `/auth/check-phone?phone=${encodeURIComponent(phone)}`
     );
     return result.exists;
@@ -88,22 +49,19 @@ export const registerUser = async (userData: {
   marketingConsent: boolean;
 }): Promise<{ success: boolean; user?: User; error?: string }> => {
   try {
-    const result = await apiRequest<{ userId: string; email: string }>(
+    const result = await api.post<{ userId: string; email: string }>(
       '/auth/member/signup',
       {
-        method: 'POST',
-        body: JSON.stringify({
-          fullName: userData.fullName,
-          email: userData.email,
-          phone: userData.phone,
-          password: userData.password,
-          confirmPassword: userData.password,
-          location: userData.location,
-          categories: userData.categories,
-          marketingConsent: userData.marketingConsent,
-          acceptTerms: true,
-          acceptPrivacy: true,
-        }),
+        fullName: userData.fullName,
+        email: userData.email,
+        phone: userData.phone,
+        password: userData.password,
+        confirmPassword: userData.password,
+        location: userData.location,
+        categories: userData.categories,
+        marketingConsent: userData.marketingConsent,
+        acceptTerms: true,
+        acceptPrivacy: true,
       }
     );
 
@@ -133,11 +91,11 @@ export const registerUser = async (userData: {
     };
 
     return { success: true, user };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: 'Failed to create account' };
+  } catch (error: any) {
+    return { 
+      success: false, 
+      error: error.message || 'Failed to create account' 
+    };
   }
 };
 
@@ -169,32 +127,29 @@ export const registerBusinessUser = async (userData: {
   subscriptionTier: 'starter' | 'growth' | 'enterprise';
 }): Promise<{ success: boolean; user?: BusinessUser; error?: string }> => {
   try {
-    const result = await apiRequest<{ userId: string; email: string }>(
+    const result = await api.post<{ userId: string; email: string }>(
       '/auth/business/signup',
       {
-        method: 'POST',
-        body: JSON.stringify({
-          businessName: userData.businessName,
-          businessType: userData.businessType,
-          registrationNumber: userData.registrationNumber,
-          yearsInOperation: userData.yearsInOperation,
-          ownerName: userData.ownerName,
-          email: userData.email,
-          phone: userData.phone,
-          website: userData.website,
-          address: userData.address,
-          numberOfLocations: userData.numberOfLocations,
-          totalCapacity: userData.totalCapacity,
-          specialties: userData.specialties,
-          serviceAreas: userData.serviceAreas,
-          password: userData.password,
-          confirmPassword: userData.password,
-          accountManagerEmail: userData.accountManagerEmail,
-          subscriptionTier: userData.subscriptionTier,
-          acceptTerms: true,
-          acceptPrivacy: true,
-          verificationConsent: true,
-        }),
+        businessName: userData.businessName,
+        businessType: userData.businessType,
+        registrationNumber: userData.registrationNumber,
+        yearsInOperation: userData.yearsInOperation,
+        ownerName: userData.ownerName,
+        email: userData.email,
+        phone: userData.phone,
+        website: userData.website,
+        address: userData.address,
+        numberOfLocations: userData.numberOfLocations,
+        totalCapacity: userData.totalCapacity,
+        specialties: userData.specialties,
+        serviceAreas: userData.serviceAreas,
+        password: userData.password,
+        confirmPassword: userData.password,
+        accountManagerEmail: userData.accountManagerEmail,
+        subscriptionTier: userData.subscriptionTier,
+        acceptTerms: true,
+        acceptPrivacy: true,
+        verificationConsent: true,
       }
     );
 
@@ -245,11 +200,11 @@ export const registerBusinessUser = async (userData: {
     };
 
     return { success: true, user: businessUser };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: 'Failed to create account' };
+  } catch (error: any) {
+    return { 
+      success: false, 
+      error: error.message || 'Failed to create account' 
+    };
   }
 };
 
@@ -259,18 +214,15 @@ export const login = async (
   password: string
 ): Promise<{ success: boolean; user?: AuthUser; error?: string; requiresVerification?: boolean }> => {
   try {
-    const result = await apiRequest<{
+    const result = await api.post<{
       user: any;
       tokens: { accessToken: string; refreshToken: string };
     }>(
       '/auth/login',
       {
-        method: 'POST',
-        body: JSON.stringify({
-          identifier,
-          password,
-          rememberMe: false,
-        }),
+        identifier,
+        password,
+        rememberMe: false,
       }
     );
 
@@ -348,16 +300,19 @@ export const login = async (
           monthlyPackagePrice: result.user.monthly_package_price || 4999,
         };
 
-    return { success: true, user };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return {
-        success: false,
-        error: error.message,
-        requiresVerification: error.requiresVerification,
-      };
+    // Store tokens
+    if (result.tokens) {
+      localStorage.setItem('accessToken', result.tokens.accessToken);
+      localStorage.setItem('refreshToken', result.tokens.refreshToken);
     }
-    return { success: false, error: 'Login failed' };
+
+    return { success: true, user };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || 'Login failed',
+      requiresVerification: error.requiresVerification,
+    };
   }
 };
 
@@ -367,69 +322,444 @@ export const verifyOTP = async (
   otp: string
 ): Promise<{ success: boolean; error?: string }> => {
   try {
-    await apiRequest(
-      '/auth/verify-email',
-      {
-        method: 'POST',
-        body: JSON.stringify({ email, otp }),
-      }
-    );
+    await api.post('/auth/verify-email', { email, otp });
     return { success: true };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: 'Verification failed' };
+  } catch (error: any) {
+    return { 
+      success: false, 
+      error: error.message || 'Verification failed' 
+    };
   }
 };
 
 // Resend OTP
 export const resendOTP = async (email: string): Promise<{ success: boolean; error?: string }> => {
   try {
-    await apiRequest(
-      '/auth/resend-otp',
-      {
-        method: 'POST',
-        body: JSON.stringify({ email }),
-      }
-    );
+    await api.post('/auth/resend-otp', { email });
     return { success: true };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: 'Failed to resend code' };
+  } catch (error: any) {
+    return { 
+      success: false, 
+      error: error.message || 'Failed to resend code' 
+    };
   }
 };
 
-// Request password reset
-export const requestPasswordReset = async (
-  email: string
-): Promise<{ success: boolean; error?: string }> => {
-  // TODO: Implement when password reset endpoint is added
-  return { success: false, error: 'Not implemented yet' };
+// ========== VENUE API ==========
+
+export interface Venue {
+  id: string;
+  name: string;
+  category: 'gym' | 'coaching' | 'library';
+  description: string;
+  image: string;
+  rating: number;
+  reviews: number;
+  price: number;
+  priceLabel: string;
+  location: {
+    lat: number;
+    lng: number;
+    address: string;
+    city: string;
+  };
+  amenities: string[];
+  status: 'available' | 'filling' | 'full';
+  occupancy: number;
+  capacity: number;
+  verified: boolean;
+  openNow: boolean;
+  distance?: number;
+}
+
+export interface VenueFilters {
+  category?: 'gym' | 'coaching' | 'library' | 'all';
+  city?: string;
+  minRating?: number;
+  priceRange?: '$' | '$$' | '$$$';
+  radius?: number;
+  userLat?: number;
+  userLng?: number;
+  search?: string;
+  amenities?: string[];
+  status?: string;
+  page?: number;
+  limit?: number;
+}
+
+// List venues
+export const listVenues = async (filters: VenueFilters = {}): Promise<{
+  venues: Venue[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> => {
+  const params = new URLSearchParams();
+  if (filters.category) params.append('category', filters.category);
+  if (filters.city) params.append('city', filters.city);
+  if (filters.minRating) params.append('minRating', filters.minRating.toString());
+  if (filters.priceRange) params.append('priceRange', filters.priceRange);
+  if (filters.radius) params.append('radius', filters.radius.toString());
+  if (filters.userLat) params.append('userLat', filters.userLat.toString());
+  if (filters.userLng) params.append('userLng', filters.userLng.toString());
+  if (filters.search) params.append('search', filters.search);
+  if (filters.amenities) params.append('amenities', filters.amenities.join(','));
+  if (filters.status) params.append('status', filters.status);
+  if (filters.page) params.append('page', filters.page.toString());
+  if (filters.limit) params.append('limit', filters.limit.toString());
+
+  const result = await api.get<{ venues: Venue[]; pagination: any }>(
+    `/venues?${params.toString()}`
+  );
+  return result;
 };
 
-// Verify reset OTP
-export const verifyResetOTP = async (
-  email: string,
-  otp: string
-): Promise<{ success: boolean; error?: string }> => {
-  // TODO: Implement when password reset endpoint is added
-  return { success: false, error: 'Not implemented yet' };
+// Get venue by ID
+export const getVenueById = async (id: string): Promise<Venue> => {
+  const result = await api.get<Venue>(`/venues/${id}`);
+  return result;
 };
 
-// Reset password
-export const resetPassword = async (
-  email: string,
+// Get venue schedule
+export const getVenueSchedule = async (venueId: string, date?: string): Promise<any[]> => {
+  const params = date ? `?date=${date}` : '';
+  const result = await api.get<any[]>(`/venues/${venueId}/schedule${params}`);
+  return result;
+};
+
+// Get venue reviews
+export const getVenueReviews = async (
+  venueId: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<{ reviews: any[]; pagination: any }> => {
+  const result = await api.get<{ reviews: any[]; pagination: any }>(
+    `/venues/${venueId}/reviews?page=${page}&limit=${limit}`
+  );
+  return result;
+};
+
+// Check venue availability
+export const checkVenueAvailability = async (
+  venueId: string,
+  date: string,
+  time: string
+): Promise<{ available: boolean; availableSlots: number; totalSlots: number; status: string }> => {
+  const result = await api.get<{ available: boolean; availableSlots: number; totalSlots: number; status: string }>(
+    `/venues/${venueId}/availability?date=${date}&time=${time}`
+  );
+  return result;
+};
+
+// ========== BOOKING API ==========
+
+export interface Booking {
+  id: string;
+  userId: string;
+  venueId: string;
+  venueType: 'gym' | 'coaching' | 'library';
+  date: string;
+  time: string;
+  duration: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  totalPrice: number;
+  attendees: number;
+  specialRequests?: string;
+  venueName?: string;
+  venueImage?: string;
+}
+
+// Create booking
+export const createBooking = async (bookingData: {
+  venueId: string;
+  date: string;
+  time: string;
+  duration?: number;
+  attendees?: number;
+  specialRequests?: string;
+  bookingType?: 'one_time' | 'monthly' | 'membership';
+}): Promise<Booking> => {
+  const result = await api.post<Booking>('/bookings', bookingData);
+  return result;
+};
+
+// Get user bookings
+export const getUserBookings = async (filters: {
+  status?: string;
+  page?: number;
+  limit?: number;
+} = {}): Promise<{ bookings: Booking[]; pagination: any }> => {
+  const params = new URLSearchParams();
+  if (filters.status) params.append('status', filters.status);
+  if (filters.page) params.append('page', filters.page.toString());
+  if (filters.limit) params.append('limit', filters.limit.toString());
+
+  const result = await api.get<{ bookings: Booking[]; pagination: any }>(
+    `/bookings?${params.toString()}`
+  );
+  return result;
+};
+
+// Get booking by ID
+export const getBookingById = async (bookingId: string): Promise<Booking> => {
+  const result = await api.get<Booking>(`/bookings/${bookingId}`);
+  return result;
+};
+
+// Update booking
+export const updateBooking = async (
+  bookingId: string,
+  updates: {
+    date?: string;
+    time?: string;
+    duration?: number;
+    attendees?: number;
+    specialRequests?: string;
+  }
+): Promise<Booking> => {
+  const result = await api.patch<Booking>(`/bookings/${bookingId}`, updates);
+  return result;
+};
+
+// Cancel booking
+export const cancelBooking = async (bookingId: string, reason?: string): Promise<void> => {
+  await api.delete(`/bookings/${bookingId}`, { data: { reason } });
+};
+
+// ========== REVIEW API ==========
+
+export interface Review {
+  id: string;
+  userId: string;
+  venueId: string;
+  rating: number;
+  comment: string;
+  helpfulCount: number;
+  businessReply?: string;
+  businessReplyDate?: string;
+  date: string;
+  userName?: string;
+  userAvatar?: string;
+}
+
+// Create review
+export const createReview = async (reviewData: {
+  venueId: string;
+  bookingId?: string;
+  rating: number;
+  comment: string;
+}): Promise<Review> => {
+  const result = await api.post<Review>('/reviews', reviewData);
+  return result;
+};
+
+// Update review
+export const updateReview = async (
+  reviewId: string,
+  updates: { rating?: number; comment?: string }
+): Promise<Review> => {
+  const result = await api.patch<Review>(`/reviews/${reviewId}`, updates);
+  return result;
+};
+
+// Delete review
+export const deleteReview = async (reviewId: string): Promise<void> => {
+  await api.delete(`/reviews/${reviewId}`);
+};
+
+// Add business reply
+export const addBusinessReply = async (
+  reviewId: string,
+  reply: string
+): Promise<Review> => {
+  const result = await api.post<Review>(`/reviews/${reviewId}/reply`, { reply });
+  return result;
+};
+
+// ========== USER API ==========
+
+// Get current user
+export const getCurrentUser = async (): Promise<User> => {
+  const result = await api.get<User>('/users/me');
+  return result;
+};
+
+// Update user profile
+export const updateUserProfile = async (updates: {
+  name?: string;
+  phone?: string;
+  location?: { lat: number; lng: number; address: string };
+  preferences?: { categories?: string[]; priceRange?: string };
+  marketingConsent?: boolean;
+  avatar?: string;
+}): Promise<User> => {
+  const result = await api.patch<User>('/users/me', updates);
+  return result;
+};
+
+// Get user favorites
+export const getUserFavorites = async (): Promise<Venue[]> => {
+  const result = await api.get<Venue[]>('/users/me/favorites');
+  return result;
+};
+
+// Add favorite
+export const addFavorite = async (venueId: string): Promise<void> => {
+  await api.post(`/users/me/favorites/${venueId}`);
+};
+
+// Remove favorite
+export const removeFavorite = async (venueId: string): Promise<void> => {
+  await api.delete(`/users/me/favorites/${venueId}`);
+};
+
+// Get user payments
+export const getUserPayments = async (page: number = 1, limit: number = 20): Promise<{
+  payments: any[];
+  pagination: any;
+}> => {
+  const result = await api.get<{ payments: any[]; pagination: any }>(
+    `/users/me/payments?page=${page}&limit=${limit}`
+  );
+  return result;
+};
+
+// Change password
+export const changePassword = async (
+  currentPassword: string,
   newPassword: string
-): Promise<{ success: boolean; error?: string }> => {
-  // TODO: Implement when password reset endpoint is added
-  return { success: false, error: 'Not implemented yet' };
+): Promise<void> => {
+  await api.post('/users/me/change-password', { currentPassword, newPassword });
 };
 
-// Get user by ID
-export const getUserById = (userId: string): AuthUser | null => {
-  // TODO: Implement when user endpoint is added
-  return null;
+// ========== BUSINESS API ==========
+
+// Get business profile
+export const getBusinessProfile = async (): Promise<BusinessUser> => {
+  const result = await api.get<BusinessUser>('/business/me');
+  return result;
+};
+
+// Update business profile
+export const updateBusinessProfile = async (updates: {
+  businessName?: string;
+  ownerName?: string;
+  phone?: string;
+  website?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+    lat?: number;
+    lng?: number;
+  };
+  specialties?: string[];
+  serviceAreas?: string;
+  dailyPackagePrice?: number;
+  weeklyPackagePrice?: number;
+  monthlyPackagePrice?: number;
+}): Promise<BusinessUser> => {
+  const result = await api.patch<BusinessUser>('/business/me', updates);
+  return result;
+};
+
+// Get business members
+export const getBusinessMembers = async (page: number = 1, limit: number = 20): Promise<{
+  members: any[];
+  pagination: any;
+}> => {
+  const result = await api.get<{ members: any[]; pagination: any }>(
+    `/business/members?page=${page}&limit=${limit}`
+  );
+  return result;
+};
+
+// Add business member
+export const addBusinessMember = async (userId: string, notes?: string): Promise<void> => {
+  await api.post('/business/members', { userId, notes });
+};
+
+// Get business analytics
+export const getBusinessAnalytics = async (period: 'week' | 'month' | 'year' = 'month'): Promise<{
+  bookings: { total: number; revenue: number };
+  members: { total: number };
+  venues: { total: number };
+  reviews: { averageRating: number; total: number };
+  occupancy: { average: number };
+}> => {
+  const result = await api.get<any>(`/business/analytics?period=${period}`);
+  return result;
+};
+
+// Send announcement
+export const sendAnnouncement = async (data: {
+  title: string;
+  message: string;
+  memberIds?: string[];
+}): Promise<void> => {
+  await api.post('/business/announcements', data);
+};
+
+// ========== NOTIFICATION API ==========
+
+export interface Notification {
+  id: string;
+  userId: string;
+  userType: 'normal' | 'business';
+  type: string;
+  title: string;
+  message: string;
+  relatedEntity: any;
+  actionUrl: string;
+  actionLabel: string;
+  priority: 'high' | 'medium' | 'low';
+  read: boolean;
+  deliveryChannels: string[];
+  deliveryStatus: any;
+  createdAt: string;
+  readAt?: string;
+}
+
+// Get notifications
+export const getNotifications = async (filters: {
+  read?: boolean;
+  page?: number;
+  limit?: number;
+} = {}): Promise<{
+  notifications: Notification[];
+  pagination: any;
+  unreadCount?: number;
+}> => {
+  const params = new URLSearchParams();
+  if (filters.read !== undefined) params.append('read', filters.read.toString());
+  if (filters.page) params.append('page', filters.page.toString());
+  if (filters.limit) params.append('limit', filters.limit.toString());
+
+  const result = await api.get<{
+    notifications: Notification[];
+    pagination: any;
+    unreadCount?: number;
+  }>(`/notifications?${params.toString()}`);
+  return result;
+};
+
+// Mark notification as read
+export const markNotificationAsRead = async (notificationId: string): Promise<Notification> => {
+  const result = await api.patch<Notification>(`/notifications/${notificationId}/read`);
+  return result;
+};
+
+// Mark all as read
+export const markAllNotificationsAsRead = async (): Promise<void> => {
+  await api.patch('/notifications/read-all');
+};
+
+// Delete notification
+export const deleteNotification = async (notificationId: string): Promise<void> => {
+  await api.delete(`/notifications/${notificationId}`);
 };

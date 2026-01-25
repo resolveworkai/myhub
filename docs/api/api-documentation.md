@@ -2,6 +2,13 @@
 
 **Last Updated:** January 25, 2026
 
+## Changelog
+
+### January 25, 2026
+- Added business-specific OTP verification endpoints (`/business/verify-email`, `/business/resend-otp`)
+- Enhanced email duplicate check for business signup
+- Updated login response to include user role for dashboard routing
+
 ## Base URL
 
 - Development: `http://localhost:3001/api`
@@ -279,6 +286,77 @@ Check if email exists.
   }
 }
 ```
+
+---
+
+#### POST /api/auth/business/verify-email
+
+Verify business email with OTP code. Business-specific endpoint for email verification.
+
+**Authentication:** Not required
+
+**Request Body:**
+```json
+{
+  "email": "business@example.com",
+  "otp": "123456"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Business email verified successfully"
+}
+```
+
+**Error Responses:**
+- `400` - Invalid OTP or expired
+- `404` - OTP not found
+- `429` - Rate limit exceeded
+
+**Rate Limiting:** 5 requests per 15 minutes
+
+**Notes:**
+- Works for business users only
+- After verification, business account remains in 'pending_verification' status until admin approval
+- OTP expires after 10 minutes
+- Maximum 3 verification attempts per OTP
+
+---
+
+#### POST /api/auth/business/resend-otp
+
+Resend verification OTP for business email. Business-specific endpoint.
+
+**Authentication:** Not required
+
+**Request Body:**
+```json
+{
+  "email": "business@example.com"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "A new verification code has been sent to your business email."
+}
+```
+
+**Error Responses:**
+- `400` - Validation error
+- `429` - Rate limit exceeded
+
+**Rate Limiting:** 5 requests per 15 minutes
+
+**Notes:**
+- Rate limited to prevent abuse
+- New OTP invalidates previous unverified OTPs for the same email
+- OTP expiry: 10 minutes
 
 ---
 

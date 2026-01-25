@@ -97,7 +97,9 @@ export default function Login() {
         if (result.user.accountType === 'business') {
           navigate('/business-dashboard');
         } else {
-          navigate(redirectUrl);
+          // Redirect normal users to dashboard, or use redirectUrl if it's not the home page
+          const targetUrl = redirectUrl === '/' ? '/dashboard' : redirectUrl;
+          navigate(targetUrl);
         }
       }
     } catch (error) {

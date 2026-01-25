@@ -5,30 +5,11 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFavoriteStore } from "@/store/favoriteStore";
-import { Heart, Star, MapPin, Trash2, ExternalLink } from "lucide-react";
+import { Heart, Star, MapPin, Trash2, ExternalLink, Loader2 } from "lucide-react";
 
-import gymsData from "@/data/mock/gyms.json";
-import coachingData from "@/data/mock/coaching.json";
-import librariesData from "@/data/mock/libraries.json";
-
-interface Venue {
-  id: string;
-  name: string;
-  type: string;
-  rating: number;
-  reviews: number;
-  image: string;
-  location: { city: string };
-  priceLabel: string;
-  verified?: boolean;
-}
-
-// Combine all venues
-const allVenues: Venue[] = [
-  ...gymsData.map((g) => ({ ...g, type: "gym" } as Venue)),
-  ...coachingData.map((c) => ({ ...c, type: "coaching" } as Venue)),
-  ...librariesData.map((l) => ({ ...l, type: "library" } as Venue)),
-];
+import { getUserFavorites, removeFavorite as removeFavoriteApi } from "@/lib/apiService";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/store/authStore";
 
 const getTypeEmoji = (type: string) => {
   switch (type) {
@@ -97,11 +78,27 @@ const FavoriteCard = memo(({ venue, onRemove }: { venue: Venue; onRemove: (id: s
 FavoriteCard.displayName = "FavoriteCard";
 
 export default function Favorites() {
-  const { favorites, removeFavorite } = useFavoriteStore();
-
-  const favoriteVenues = useMemo(() => {
-    return allVenues.filter((v) => favorites.includes(v.id));
-  }, [favorites]);
+  const { user } = useAuthStore();
+  const queryClient = useQueryClient();
+  
+  // Fetch favorites from API
+  const { data: favoriteVenues = [], isLoading, error } = useQuery({
+    queryKey: ['user-favorites'],
+    queryFn: getUserFavorites,
+    enabled: !!user && user.accountType === 'normal',
+  });
+  
+  // Remove favorite mutation
+  const removeFavoriteMutation = useMutation({
+    mutationFn: (venueId: string) => removeFavoriteApi(venueId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-favorites'] });
+    },
+  });
+  
+  const handleRemoveFavorite = (venueId: string) => {
+    removeFavoriteMutation.mutate(venueId);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -119,13 +116,35 @@ export default function Favorites() {
             </p>
           </div>
 
-          {favoriteVenues.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading favorites...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <p className="text-destructive mb-4">Failed to load favorites</p>
+              <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['user-favorites'] })}>
+                Retry
+              </Button>
+            </div>
+          ) : favoriteVenues.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {favoriteVenues.map((venue) => (
                 <FavoriteCard 
                   key={venue.id} 
-                  venue={venue} 
-                  onRemove={removeFavorite} 
+                  venue={{
+                    id: venue.id,
+                    name: venue.name,
+                    type: venue.category,
+                    rating: venue.rating,
+                    reviews: venue.reviews,
+                    image: venue.image,
+                    location: { city: venue.location.city },
+                    priceLabel: venue.priceLabel,
+                    verified: venue.verified,
+                  }} 
+                  onRemove={handleRemoveFavorite} 
                 />
               ))}
             </div>

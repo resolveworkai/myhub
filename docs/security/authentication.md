@@ -23,13 +23,15 @@ The backend uses JWT (JSON Web Tokens) for authentication with access and refres
 
 1. Business submits signup form (5 steps)
 2. Backend validates input
-3. Password is hashed with bcrypt (12 rounds)
-4. Business user record created with pending_verification status
-5. OTP generated and sent via email
-6. Admin notification sent
-7. User redirected to pending verification page
-8. User verifies email with OTP
-9. Account remains pending until admin approval
+3. Email duplicate check (real-time validation on frontend)
+4. Password is hashed with bcrypt (12 rounds)
+5. Business user record created with pending_verification status
+6. OTP generated and sent via email
+7. Admin notification sent
+8. **User redirected to OTP verification page** (new step)
+9. User verifies email with OTP
+10. After OTP verification, user redirected to Business Verification Pending page
+11. Account remains pending until admin approval
 
 ### Login Flow
 
@@ -40,7 +42,10 @@ The backend uses JWT (JSON Web Tokens) for authentication with access and refres
 5. Checks account status
 6. For normal users, verifies email is verified
 7. Generates JWT access and refresh tokens
-8. Returns user data and tokens
+8. Returns user data and tokens (including account_type for role-based routing)
+9. Frontend redirects based on account type:
+   - Member/User → `/dashboard` or `/user-dashboard`
+   - Business Owner → `/business-dashboard`
 
 ## JWT Tokens
 
@@ -77,6 +82,19 @@ The backend uses JWT (JSON Web Tokens) for authentication with access and refres
 - Length: 6 digits
 - Expiry: 10 minutes
 - Max Attempts: 3
+
+### OTP Verification Endpoints
+- **Generic:** `/api/auth/verify-email` - Works for both member and business users
+- **Business-specific:** `/api/auth/business/verify-email` - Business-specific endpoint
+- **Resend OTP:** `/api/auth/resend-otp` (generic) or `/api/auth/business/resend-otp` (business)
+
+### Business OTP Flow
+1. Business account created → OTP sent to email
+2. User redirected to `/verify-email?email=...&type=business`
+3. User enters 6-digit OTP
+4. OTP verified → Email marked as verified
+5. User redirected to `/business-dashboard/pending` (verification pending page)
+6. Account remains in `pending_verification` status until admin approval
 
 ## Security Measures
 

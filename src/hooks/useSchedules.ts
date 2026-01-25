@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import schedulesData from '@/data/mock/schedules.json';
+import { getVenueSchedule } from '@/lib/apiService';
 
 export interface Schedule {
   id: string;
@@ -15,23 +15,45 @@ export interface Schedule {
   notes?: string;
 }
 
-// In-memory storage that simulates JSON file
-let schedules: Schedule[] = [...schedulesData] as Schedule[];
-
 export function useSchedules(userId?: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
 
   const getSchedules = useCallback(() => {
     if (userId) {
       return schedules.filter(s => s.userId === userId);
     }
     return schedules;
-  }, [userId]);
+  }, [userId, schedules]);
 
-  const getSchedulesByVenue = useCallback((venueId: string) => {
-    return schedules.filter(s => s.venueId === venueId);
-  }, []);
+  const getSchedulesByVenue = useCallback(async (venueId: string, date?: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await getVenueSchedule(venueId, date);
+      const transformed = result.map((s: any) => ({
+        id: s.id || `s${Date.now()}`,
+        userId: s.user_id || userId || '',
+        venueId: s.venue_id || venueId,
+        venueName: s.venue_name || '',
+        venueType: s.venue_type || 'gym',
+        date: s.date,
+        time: s.time_slot,
+        duration: s.duration || 60,
+        status: 'confirmed' as const,
+        createdAt: s.created_at || new Date().toISOString(),
+        notes: s.notes,
+      }));
+      setSchedules(transformed);
+      setLoading(false);
+      return transformed;
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch schedules');
+      setLoading(false);
+      return [];
+    }
+  }, [userId]);
 
   const getSchedulesByDate = useCallback((date: string, venueId?: string) => {
     return schedules.filter(s => {
@@ -39,7 +61,7 @@ export function useSchedules(userId?: string) {
       const matchesVenue = venueId ? s.venueId === venueId : true;
       return matchesDate && matchesVenue;
     });
-  }, []);
+  }, [schedules]);
 
   const addSchedule = useCallback((schedule: Omit<Schedule, 'id' | 'createdAt'>) => {
     setLoading(true);
@@ -49,7 +71,7 @@ export function useSchedules(userId?: string) {
         id: `s${Date.now()}`,
         createdAt: new Date().toISOString(),
       };
-      schedules = [...schedules, newSchedule];
+      setSchedules(prev => [...prev, newSchedule]);
       setLoading(false);
       return newSchedule;
     } catch (err) {
@@ -62,9 +84,9 @@ export function useSchedules(userId?: string) {
   const updateSchedule = useCallback((id: string, updates: Partial<Schedule>) => {
     setLoading(true);
     try {
-      schedules = schedules.map(s => 
+      setSchedules(prev => prev.map(s => 
         s.id === id ? { ...s, ...updates } : s
-      );
+      ));
       setLoading(false);
       return schedules.find(s => s.id === id);
     } catch (err) {
@@ -72,7 +94,7 @@ export function useSchedules(userId?: string) {
       setLoading(false);
       return null;
     }
-  }, []);
+  }, [schedules]);
 
   const cancelSchedule = useCallback((id: string) => {
     return updateSchedule(id, { status: 'cancelled' });
@@ -81,7 +103,7 @@ export function useSchedules(userId?: string) {
   const deleteSchedule = useCallback((id: string) => {
     setLoading(true);
     try {
-      schedules = schedules.filter(s => s.id !== id);
+      setSchedules(prev => prev.filter(s => s.id !== id));
       setLoading(false);
       return true;
     } catch (err) {
@@ -101,7 +123,7 @@ export function useSchedules(userId?: string) {
         if (dateCompare !== 0) return dateCompare;
         return a.time.localeCompare(b.time);
       });
-  }, [userId]);
+  }, [userId, schedules]);
 
   const getPastSchedules = useCallback(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -109,7 +131,7 @@ export function useSchedules(userId?: string) {
     return userSchedules
       .filter(s => s.date < today || s.status === 'completed')
       .sort((a, b) => b.date.localeCompare(a.date));
-  }, [userId]);
+  }, [userId, schedules]);
 
   return {
     schedules: getSchedules(),
@@ -129,20 +151,40 @@ export function useSchedules(userId?: string) {
 // Export for business dashboard use
 export function useBusinessSchedules(venueId?: string) {
   const [loading, setLoading] = useState(false);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
 
-  const getVenueSchedules = useCallback(() => {
-    if (venueId) {
-      return schedules.filter(s => s.venueId === venueId);
+  const getVenueSchedules = useCallback(async () => {
+    if (!venueId) return [];
+    setLoading(true);
+    try {
+      const result = await getVenueSchedule(venueId);
+      const transformed = result.map((s: any) => ({
+        id: s.id || `s${Date.now()}`,
+        userId: s.user_id || '',
+        venueId: s.venue_id || venueId,
+        venueName: s.venue_name || '',
+        venueType: s.venue_type || 'gym',
+        date: s.date,
+        time: s.time_slot,
+        duration: s.duration || 60,
+        status: 'confirmed' as const,
+        createdAt: s.created_at || new Date().toISOString(),
+        notes: s.notes,
+      }));
+      setSchedules(transformed);
+      setLoading(false);
+      return transformed;
+    } catch (error) {
+      setLoading(false);
+      return [];
     }
-    // For demo, return all schedules for business dashboard
-    return schedules;
   }, [venueId]);
 
   const getTodaySchedules = useCallback(() => {
     const today = new Date().toISOString().split('T')[0];
     const venueSchedules = venueId ? schedules.filter(s => s.venueId === venueId) : schedules;
     return venueSchedules.filter(s => s.date === today);
-  }, [venueId]);
+  }, [venueId, schedules]);
 
   const getWeekSchedules = useCallback(() => {
     const today = new Date();
@@ -154,18 +196,19 @@ export function useBusinessSchedules(venueId?: string) {
     
     const venueSchedules = venueId ? schedules.filter(s => s.venueId === venueId) : schedules;
     return venueSchedules.filter(s => s.date >= todayStr && s.date <= weekStr);
-  }, [venueId]);
+  }, [venueId, schedules]);
 
   const confirmSchedule = useCallback((id: string) => {
-    schedules = schedules.map(s => 
+    setSchedules(prev => prev.map(s => 
       s.id === id ? { ...s, status: 'confirmed' as const } : s
-    );
+    ));
     return schedules.find(s => s.id === id);
-  }, []);
+  }, [schedules]);
 
   return {
-    schedules: getVenueSchedules(),
+    schedules,
     loading,
+    getVenueSchedules,
     getTodaySchedules,
     getWeekSchedules,
     confirmSchedule,

@@ -1,9 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { BusinessUser } from './authStore';
-import gymsData from '@/data/mock/gyms.json';
-import coachingData from '@/data/mock/coaching.json';
-import librariesData from '@/data/mock/libraries.json';
+import { listVenues, type Venue as ApiVenue } from '@/lib/apiService';
 
 export interface Venue {
   id: string;
@@ -41,11 +39,15 @@ export interface Venue {
 
 interface VenueStore {
   registeredVenues: Venue[];
+  apiVenues: Venue[];
+  loading: boolean;
+  error: string | null;
   
   // Actions
   publishVenue: (business: BusinessUser) => void;
   unpublishVenue: (businessId: string) => void;
   updateVenue: (businessId: string, updates: Partial<Venue>) => void;
+  fetchVenues: (filters?: any) => Promise<void>;
   
   // Getters
   getAllVenues: () => Venue[];
@@ -87,32 +89,47 @@ const createVenueFromBusiness = (business: BusinessUser): Venue => ({
   isRegistered: true,
 });
 
-// Get mock venues
-const getMockVenues = (): Venue[] => [
-  ...gymsData.map((g) => ({ 
-    ...g, 
-    type: 'gym' as const, 
-    status: g.status as 'available' | 'filling' | 'full',
-    isRegistered: false 
-  })),
-  ...coachingData.map((c) => ({ 
-    ...c, 
-    type: 'coaching' as const, 
-    status: c.status as 'available' | 'filling' | 'full',
-    isRegistered: false 
-  })),
-  ...librariesData.map((l) => ({ 
-    ...l, 
-    type: 'library' as const, 
-    status: l.status as 'available' | 'filling' | 'full',
-    isRegistered: false 
-  })),
-];
+// Transform API venue to store venue
+const transformApiVenue = (apiVenue: ApiVenue): Venue => ({
+  id: apiVenue.id,
+  name: apiVenue.name,
+  type: apiVenue.category as 'gym' | 'coaching' | 'library',
+  category: apiVenue.category,
+  description: apiVenue.description || '',
+  image: apiVenue.image || '/placeholder.svg',
+  rating: apiVenue.rating || 0,
+  reviews: apiVenue.reviews || 0,
+  price: apiVenue.price || 0,
+  priceLabel: apiVenue.priceLabel || `₹${apiVenue.price}`,
+  location: apiVenue.location,
+  amenities: apiVenue.amenities || [],
+  status: apiVenue.status,
+  occupancy: apiVenue.occupancy || 0,
+  capacity: apiVenue.capacity || 100,
+  verified: apiVenue.verified || false,
+  openNow: apiVenue.openNow || false,
+  distance: apiVenue.distance,
+  isRegistered: false,
+});
 
 export const useVenueStore = create<VenueStore>()(
   persist(
     (set, get) => ({
       registeredVenues: [],
+      apiVenues: [],
+      loading: false,
+      error: null,
+
+      fetchVenues: async (filters = {}) => {
+        set({ loading: true, error: null });
+        try {
+          const result = await listVenues(filters);
+          const transformed = result.venues.map(transformApiVenue);
+          set({ apiVenues: transformed, loading: false });
+        } catch (error: any) {
+          set({ error: error.message || 'Failed to fetch venues', loading: false });
+        }
+      },
 
       publishVenue: (business: BusinessUser) => {
         const venue = createVenueFromBusiness(business);
@@ -149,14 +166,13 @@ export const useVenueStore = create<VenueStore>()(
       },
 
       getAllVenues: () => {
-        const { registeredVenues } = get();
-        const mockVenues = getMockVenues();
+        const { registeredVenues, apiVenues } = get();
         
-        // Merge registered venues with mock (registered venues take precedence by ID)
+        // Merge API venues with registered venues (registered venues take precedence by ID)
         const registeredIds = new Set(registeredVenues.map((v) => v.id));
-        const filteredMock = mockVenues.filter((v) => !registeredIds.has(v.id));
+        const filteredApi = apiVenues.filter((v) => !registeredIds.has(v.id));
         
-        return [...filteredMock, ...registeredVenues];
+        return [...filteredApi, ...registeredVenues];
       },
 
       getVenueById: (id: string) => {

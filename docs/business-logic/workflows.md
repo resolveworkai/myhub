@@ -42,7 +42,8 @@
 ### Step 2: Contact Information
 - Collect: ownerName, email, phone, website, address
 - Validate: Email format, address completeness
-- Check: Email uniqueness
+- Check: Email uniqueness (real-time validation on email field blur)
+- Frontend: Shows error if email already exists, prevents form submission
 
 ### Step 3: Business Details
 - Collect: numberOfLocations, totalCapacity, specialties, serviceAreas
@@ -65,11 +66,18 @@
 - Notify: Admin of new business registration
 - Audit: Log signup event
 - Commit: Transaction
+- Frontend: Redirect to OTP verification page (`/verify-email?email=...&type=business`)
 
-### Step 7: Email Verification
-- User verifies email with OTP
-- Account remains in 'pending_verification' status
-- Admin reviews and approves/rejects
+### Step 7: Email Verification (OTP Page)
+- User redirected to OTP verification page
+- User enters 6-digit OTP code
+- Frontend calls: `POST /api/auth/business/verify-email` or `/api/auth/verify-email`
+- Backend validates OTP (checks expiry, attempts, code match)
+- Updates: email_verified = TRUE in business_users table
+- Frontend: Redirects to Business Verification Pending page (`/business-dashboard/pending`)
+- Account remains in 'pending_verification' status (admin approval still required)
+
+### Step 8: Admin Verification
 
 ### Step 8: Admin Verification
 - Admin reviews business details
@@ -104,8 +112,12 @@
 - Reset: Failed attempts counter
 - Update: last_login timestamp
 - Generate: JWT access and refresh tokens
-- Return: User data and tokens
+- Return: User data and tokens (including account_type: 'user' or 'business_user')
 - Audit: Log login event
+- Frontend: Store tokens in localStorage
+- Frontend: Redirect based on account_type:
+  - Member/User → `/dashboard` or `/user-dashboard`
+  - Business Owner → `/business-dashboard`
 
 ## OTP Verification Workflow
 

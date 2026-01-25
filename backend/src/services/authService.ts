@@ -95,13 +95,13 @@ class AuthService {
     const accessToken = jwt.sign(
       { userId, email, accountType },
       config.jwt.secret,
-      { expiresIn: config.jwt.accessExpiry }
+      { expiresIn: config.jwt.accessExpiry || '1h' }
     );
 
     const refreshToken = jwt.sign(
       { userId, email, accountType },
       config.jwt.refreshSecret,
-      { expiresIn: config.jwt.refreshExpiry }
+      { expiresIn: config.jwt.refreshExpiry || '30d' }
     );
 
     return { accessToken, refreshToken };

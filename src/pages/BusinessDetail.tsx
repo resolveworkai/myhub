@@ -33,23 +33,9 @@ import {
   CreditCard,
 } from "lucide-react";
 
-import gymsData from "@/data/mock/gyms.json";
-import coachingData from "@/data/mock/coaching.json";
-import librariesData from "@/data/mock/libraries.json";
-import businessUsersData from "@/data/mock/businessUsers.json";
-
-// Combine all venue data
-const allVenues = [
-  ...gymsData.map((g) => ({ ...g, type: "gym" as const })),
-  ...coachingData.map((c) => ({ ...c, type: "coaching" as const })),
-  ...librariesData.map((l) => ({ ...l, type: "library" as const })),
-];
-
-// Create a mapping from business user ID to their venue locations
-const businessUserVenueMap: Record<string, string[]> = {};
-businessUsersData.forEach((bu: any) => {
-  businessUserVenueMap[bu.id] = bu.locations || [];
-});
+import { getVenueById, getVenueReviews, getVenueSchedule } from "@/lib/apiService";
+import { useQuery } from "@tanstack/react-query";
+import { useFavoriteStore } from "@/store/favoriteStore";
 
 // Icon mapping for amenities
 const amenityIcons: Record<string, any> = {
@@ -179,9 +165,32 @@ export default function BusinessDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isMembershipOpen, setIsMembershipOpen] = useState(false);
+  const { isFavorite: checkIsFavorite, toggleFavorite } = useFavoriteStore();
+  
+  // Fetch venue data from API
+  const { data: venue, isLoading: venueLoading, error: venueError } = useQuery({
+    queryKey: ['venue', id],
+    queryFn: () => id ? getVenueById(id) : null,
+    enabled: !!id,
+  });
+  
+  // Fetch reviews
+  const { data: reviewsData } = useQuery({
+    queryKey: ['venue-reviews', id],
+    queryFn: () => id ? getVenueReviews(id, 1, 10) : { reviews: [], pagination: { total: 0 } },
+    enabled: !!id,
+  });
+  
+  // Fetch schedule
+  const { data: scheduleData } = useQuery({
+    queryKey: ['venue-schedule', id],
+    queryFn: () => id ? getVenueSchedule(id) : [],
+    enabled: !!id,
+  });
+  
+  const isFavorite = venue ? checkIsFavorite(venue.id) : false;
 
   // Membership plans for the venue
   const membershipPlans = [
@@ -211,25 +220,24 @@ export default function BusinessDetail() {
     },
   ];
 
-  // Find the venue by ID from combined data
-  // First check if ID is a venue ID, then check if it's a business user ID
-  const venue = useMemo(() => {
-    // Direct venue ID match
-    let foundVenue = allVenues.find((v) => v.id === id);
-    
-    // If not found, check if it's a business user ID
-    if (!foundVenue && id) {
-      const venueIds = businessUserVenueMap[id];
-      if (venueIds && venueIds.length > 0) {
-        // Get the first venue associated with this business user
-        foundVenue = allVenues.find((v) => venueIds.includes(v.id));
-      }
-    }
-    
-    return foundVenue;
-  }, [id]);
-
-  if (!venue) {
+  // Loading state
+  if (venueLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-20">
+          <div className="container mx-auto px-4 py-16 text-center">
+            <Loader2 className="h-10 w-10 text-muted-foreground animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading venue details...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+  
+  // Error or not found state
+  if (venueError || !venue) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -256,13 +264,24 @@ export default function BusinessDetail() {
   }
 
   // Derived data
-  const images = getAdditionalImages(venue.type, venue.image);
+  const images = getAdditionalImages(venue.category, venue.image);
   const pricing = getDefaultPricing(venue.price);
   const amenities = (venue.amenities || []).map((a: string) => ({
     id: a,
     name: a.charAt(0).toUpperCase() + a.slice(1),
     icon: amenityIcons[a] || Wifi,
   }));
+  
+  // Transform schedule data
+  const schedule = scheduleData || [];
+  const transformedSchedule = schedule.map((s: any) => ({
+    time: s.time_slot,
+    slots: s.total_slots || s.available_slots + s.booked_slots || 15,
+    booked: s.booked_slots || 0,
+  }));
+  
+  // Transform reviews data
+  const reviews = reviewsData?.reviews || [];
 
   const nextImage = () => {
     setCurrentImage((prev) => (prev + 1) % images.length);
@@ -321,7 +340,7 @@ export default function BusinessDetail() {
           {/* Action Buttons */}
           <div className="absolute top-4 right-4 flex gap-2">
             <button
-              onClick={() => setIsFavorite(!isFavorite)}
+              onClick={() => venue && toggleFavorite(venue.id)}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                 isFavorite ? "bg-accent text-accent-foreground" : "bg-card/80 backdrop-blur-sm"
               }`}
@@ -361,8 +380,8 @@ export default function BusinessDetail() {
               {/* Header */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl">{getTypeEmoji(venue.type)}</span>
-                  <Badge variant="default" className="capitalize">{venue.type}</Badge>
+                  <span className="text-2xl">{getTypeEmoji(venue.category)}</span>
+                  <Badge variant="default" className="capitalize">{venue.category}</Badge>
                   <Badge 
                     variant={venue.status === "available" ? "default" : venue.status === "filling" ? "secondary" : "destructive"}
                     className={venue.status === "available" ? "bg-success text-success-foreground" : ""}
@@ -530,7 +549,41 @@ export default function BusinessDetail() {
                       </Button>
                     </div>
                     <div className="grid gap-3">
-                      {defaultSchedule.map((slot) => {
+                      {transformedSchedule.length > 0 ? transformedSchedule.map((slot: any) => {
+                        const availability = slot.slots - slot.booked;
+                        const isFull = availability === 0;
+                        return (
+                          <div
+                            key={slot.time}
+                            className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-primary/50 transition-colors"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="text-lg font-semibold w-24">{slot.time}</div>
+                              <div className="flex items-center gap-2">
+                                <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full ${
+                                      isFull ? "bg-destructive" : availability < 5 ? "bg-warning" : "bg-success"
+                                    }`}
+                                    style={{ width: `${(slot.booked / slot.slots) * 100}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm text-muted-foreground">
+                                  {slot.booked}/{slot.slots} booked
+                                </span>
+                              </div>
+                            </div>
+                            <Button
+                              variant={isFull ? "outline" : "default"}
+                              size="sm"
+                              disabled={isFull}
+                              onClick={() => setIsBookingOpen(true)}
+                            >
+                              {isFull ? "Full" : "Book"}
+                            </Button>
+                          </div>
+                        );
+                      }) : defaultSchedule.map((slot) => {
                         const availability = slot.slots - slot.booked;
                         const isFull = availability === 0;
                         return (
@@ -600,18 +653,20 @@ export default function BusinessDetail() {
 
                   {/* Reviews List */}
                   <div className="space-y-4">
-                    {defaultReviews.map((review) => (
+                    {reviews.map((review: any) => (
                       <div key={review.id} className="p-4 rounded-xl border border-border">
                         <div className="flex items-start gap-4">
                           <img
-                            src={review.avatar}
-                            alt={review.user}
+                            src={review.userAvatar || `https://ui-avatars.com/api/?name=${review.userName || 'User'}`}
+                            alt={review.userName || 'User'}
                             className="w-12 h-12 rounded-full object-cover"
                           />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <h4 className="font-semibold text-foreground">{review.user}</h4>
-                              <span className="text-sm text-muted-foreground">{review.date}</span>
+                              <h4 className="font-semibold text-foreground">{review.userName || 'Anonymous'}</h4>
+                              <span className="text-sm text-muted-foreground">
+                                {new Date(review.date || review.createdAt).toLocaleDateString()}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1 mb-2">
                               {[1, 2, 3, 4, 5].map((star) => (
@@ -626,9 +681,15 @@ export default function BusinessDetail() {
                               ))}
                             </div>
                             <p className="text-muted-foreground">{review.comment}</p>
+                            {review.businessReply && (
+                              <div className="mt-3 p-3 bg-muted rounded-lg">
+                                <p className="text-sm font-medium mb-1">Business Reply:</p>
+                                <p className="text-sm text-muted-foreground">{review.businessReply}</p>
+                              </div>
+                            )}
                             <div className="mt-3">
                               <Button variant="ghost" size="sm" className="text-xs">
-                                👍 Helpful ({review.helpful})
+                                👍 Helpful ({review.helpfulCount || 0})
                               </Button>
                             </div>
                           </div>
@@ -725,7 +786,7 @@ export default function BusinessDetail() {
         venue={{
           id: venue.id,
           name: venue.name,
-          type: venue.type,
+          type: venue.category as "gym" | "library" | "coaching",
           rating: venue.rating,
           price: venue.priceLabel,
           image: venue.image,
