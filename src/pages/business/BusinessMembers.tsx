@@ -56,6 +56,7 @@ import {
 import { toast } from "sonner";
 import { useSubscriptionStore, Subscription } from "@/store/subscriptionStore";
 import { useAuthStore, BusinessUser } from "@/store/authStore";
+import { cancelMembership as cancelMembershipAPI } from "@/lib/apiService";
 import { AssignMembershipModal } from "@/components/business/AssignMembershipModal";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -107,7 +108,7 @@ export default function BusinessMembers() {
     });
   }, [allSubscriptions, searchQuery, filterStatus, filterType]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!selectedSubscription) return;
     
     const result = canDeleteSubscription(selectedSubscription.id);
@@ -117,10 +118,20 @@ export default function BusinessMembers() {
       return;
     }
     
-    cancelSubscription(selectedSubscription.id);
-    setIsDeleteOpen(false);
-    setSelectedSubscription(null);
-    toast.success("Subscription cancelled successfully");
+    try {
+      // Call API to cancel membership
+      await cancelMembershipAPI(selectedSubscription.id);
+      
+      // Update local store
+      cancelSubscription(selectedSubscription.id);
+      
+      setIsDeleteOpen(false);
+      setSelectedSubscription(null);
+      toast.success("Subscription cancelled successfully");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to cancel subscription");
+      setIsDeleteOpen(false);
+    }
   };
 
   const openDelete = (sub: Subscription) => {

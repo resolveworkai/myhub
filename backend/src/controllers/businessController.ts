@@ -102,20 +102,65 @@ export const addBusinessMember = asyncHandler(async (req: AuthRequest, res: Resp
     });
   }
 
-  const { userId, notes } = req.body;
+  const { userName, userEmail, userPhone, membershipType, price, notes } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({
-      success: false,
-      error: { message: 'User ID is required', code: 'VALIDATION_ERROR' },
-    });
-  }
-
-  await businessService.addBusinessMember(businessUserId, userId, notes);
+  const result = await businessService.addBusinessMember(businessUserId, {
+    userName,
+    userEmail,
+    userPhone,
+    membershipType,
+    price,
+    notes,
+  });
 
   res.status(201).json({
     success: true,
     message: 'Member added successfully',
+    data: result,
+  });
+});
+
+/**
+ * Cancel membership
+ */
+export const cancelMembership = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const { id } = req.params;
+
+  await businessService.cancelMembership(id, businessUserId);
+
+  res.json({
+    success: true,
+    message: 'Membership cancelled successfully',
+  });
+});
+
+/**
+ * Get dashboard stats
+ */
+export const getDashboardStats = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const stats = await businessService.getDashboardStats(businessUserId);
+
+  res.json({
+    success: true,
+    data: stats,
   });
 });
 
@@ -169,5 +214,183 @@ export const sendAnnouncement = asyncHandler(async (req: AuthRequest, res: Respo
   res.json({
     success: true,
     message: 'Announcement sent successfully',
+  });
+});
+
+/**
+ * Update business information
+ */
+export const updateBusinessInfo = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const business = await businessService.updateBusinessInfo(businessUserId, req.body);
+
+  res.json({
+    success: true,
+    message: 'Business information updated successfully',
+    data: business,
+  });
+});
+
+/**
+ * Update location and media
+ */
+export const updateLocationAndMedia = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const business = await businessService.updateLocationAndMedia(businessUserId, req.body);
+
+  res.json({
+    success: true,
+    message: 'Location and media updated successfully',
+    data: business,
+  });
+});
+
+/**
+ * Update business attributes
+ */
+export const updateBusinessAttributes = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const business = await businessService.updateBusinessAttributes(businessUserId, req.body);
+
+  res.json({
+    success: true,
+    message: 'Business attributes updated successfully',
+    data: business,
+  });
+});
+
+/**
+ * Update pricing packages
+ */
+export const updatePricing = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const business = await businessService.updatePricing(businessUserId, req.body);
+
+  res.json({
+    success: true,
+    message: 'Pricing updated successfully',
+    data: business,
+  });
+});
+
+/**
+ * Update operating hours
+ */
+export const updateOperatingHours = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const business = await businessService.updateOperatingHours(businessUserId, req.body);
+
+  res.json({
+    success: true,
+    message: 'Operating hours updated successfully',
+    data: business,
+  });
+});
+
+/**
+ * Update notification preferences
+ */
+export const updateNotificationPreferences = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const business = await businessService.updateNotificationPreferences(businessUserId, req.body);
+
+  res.json({
+    success: true,
+    message: 'Notification preferences updated successfully',
+    data: business,
+  });
+});
+
+/**
+ * Update security settings
+ */
+export const updateSecuritySettings = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const business = await businessService.updateSecuritySettings(businessUserId, req.body);
+
+  res.json({
+    success: true,
+    message: 'Security settings updated successfully',
+    data: business,
+  });
+});
+
+/**
+ * Toggle publish status
+ */
+export const togglePublishStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const { isPublished } = req.body;
+
+  const business = await businessService.togglePublishStatus(businessUserId, isPublished);
+
+  res.json({
+    success: true,
+    message: isPublished ? 'Business published successfully' : 'Business unpublished successfully',
+    data: business,
   });
 });

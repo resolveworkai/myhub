@@ -452,8 +452,8 @@ class AuthService {
       // Get full user data
       const fullUserQuery =
         userRecord.account_type === 'user'
-          ? `SELECT * FROM users WHERE id = $1`
-          : `SELECT * FROM business_users WHERE id = $1`;
+          ? `SELECT *, 'user' as account_type FROM users WHERE id = $1`
+          : `SELECT *, 'business_user' as account_type FROM business_users WHERE id = $1`;
 
       const fullUserResult = await client.query(fullUserQuery, [userRecord.id]);
       const fullUser = fullUserResult.rows[0];
@@ -534,6 +534,109 @@ class AuthService {
    */
   async resendOTP(email: string): Promise<void> {
     await otpService.resendOTP(email, 'email_verification');
+  }
+
+  /**
+   * Request password reset
+   */
+  async requestPasswordReset(email: string): Promise<void> {
+    const client = await pool.connect();
+
+    try {
+      // Check if user exists (either normal or business)
+      const userResult = await client.query(
+        `SELECT id, email, account_type FROM users WHERE email = $1 AND deleted_at IS NULL
+         UNION ALL
+         SELECT id, email, 'business_user' as account_type FROM business_users WHERE email = $1 AND deleted_at IS NULL`,
+        [email.toLowerCase()]
+      );
+
+      if (userResult.rows.length === 0) {
+        // Don't reveal if email exists for security
+        logger.info('Password reset requested for non-existent email', { email });
+        return;
+      }
+
+      // Generate and send OTP
+      await otpService.createAndSendOTP(email.toLowerCase(), 'password_reset');
+
+      logger.info('Password reset OTP sent', { email });
+    } catch (error) {
+      logger.error('Password reset request failed', { error, email });
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Verify password reset OTP
+   */
+  async verifyPasswordResetOTP(email: string, otp: string): Promise<void> {
+    await otpService.verifyOTP(email.toLowerCase(), otp, 'password_reset');
+  }
+
+  /**
+   * Reset password
+   */
+  async resetPassword(email: string, otp: string, newPassword: string): Promise<void> {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // Verify OTP first
+      await otpService.verifyOTP(email.toLowerCase(), otp, 'password_reset');
+
+      // Hash new password
+      const passwordHash = await bcrypt.hash(newPassword, config.security.bcryptRounds);
+
+      // Update password in both tables
+      const userResult = await client.query(
+        `UPDATE users SET password_hash = $1, updated_at = NOW() WHERE email = $2 AND deleted_at IS NULL RETURNING id`,
+        [passwordHash, email.toLowerCase()]
+      );
+
+      if (userResult.rows.length === 0) {
+        const businessResult = await client.query(
+          `UPDATE business_users SET password_hash = $1, updated_at = NOW() WHERE email = $2 AND deleted_at IS NULL RETURNING id`,
+          [passwordHash, email.toLowerCase()]
+        );
+
+        if (businessResult.rows.length === 0) {
+          throw new NotFoundError('User not found');
+        }
+
+        // Audit log
+        await client.query(
+          `INSERT INTO audit_logs (user_id, user_type, action, resource_type)
+           VALUES ($1, 'business_user', 'password_reset', 'business_user')`,
+          [businessResult.rows[0].id]
+        );
+      } else {
+        // Audit log
+        await client.query(
+          `INSERT INTO audit_logs (user_id, user_type, action, resource_type)
+           VALUES ($1, 'user', 'password_reset', 'user')`,
+          [userResult.rows[0].id]
+        );
+      }
+
+      // Delete OTP after successful reset
+      await client.query(
+        `DELETE FROM otps WHERE email = $1 AND otp_type = 'password_reset'`,
+        [email.toLowerCase()]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Password reset successful', { email });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 }
 

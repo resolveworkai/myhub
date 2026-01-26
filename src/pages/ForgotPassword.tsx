@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { OTPInput } from "@/components/auth/OTPInput";
 import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
 import { forgotPasswordSchema, resetPasswordSchema } from "@/lib/authValidation";
-import { requestPasswordReset, verifyResetOTP, resetPassword } from "@/lib/mockAuthService";
+import { requestPasswordReset, verifyResetOTP, resetPassword } from "@/lib/apiService";
 import { toast } from "@/hooks/use-toast";
 import { Mail, Lock, Eye, EyeOff, Loader2, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
 import { z } from "zod";
@@ -47,6 +47,11 @@ export default function ForgotPassword() {
       
       if (!result.success) {
         setError(result.error || 'Failed to send reset code');
+        toast({
+          title: "Error",
+          description: result.error || 'Failed to send reset code',
+          variant: "destructive",
+        });
         return;
       }
       
@@ -55,8 +60,10 @@ export default function ForgotPassword() {
       setResendCooldown(60);
       toast({
         title: "Reset Code Sent",
-        description: "Check your email for the verification code.",
+        description: "If an account exists with this email, a reset code has been sent.",
       });
+    } catch (err) {
+      setError('An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -77,10 +84,21 @@ export default function ForgotPassword() {
       
       if (!result.success) {
         setError(result.error || 'Invalid code');
+        toast({
+          title: "Verification Failed",
+          description: result.error || 'Invalid code',
+          variant: "destructive",
+        });
         return;
       }
       
       setStep('reset');
+      toast({
+        title: "Code Verified",
+        description: "Please enter your new password.",
+      });
+    } catch (err) {
+      setError('An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -92,10 +110,26 @@ export default function ForgotPassword() {
     setError(null);
     
     try {
-      const result = await resetPassword(email, data.password);
+      // Get OTP from state (it was verified in previous step)
+      // For now, we'll need to store it or re-verify
+      // Actually, we should verify OTP again or store it
+      // Let's use a stored OTP approach - but for simplicity, we'll verify again
+      const verifyResult = await verifyResetOTP(email, otp);
+      if (!verifyResult.success) {
+        setError('Verification code expired. Please start over.');
+        setStep('email');
+        return;
+      }
+      
+      const result = await resetPassword(email, otp, data.password);
       
       if (!result.success) {
         setError(result.error || 'Failed to reset password');
+        toast({
+          title: "Reset Failed",
+          description: result.error || 'Failed to reset password',
+          variant: "destructive",
+        });
         return;
       }
       
@@ -104,6 +138,8 @@ export default function ForgotPassword() {
         title: "Password Reset Successful! 🎉",
         description: "You can now sign in with your new password.",
       });
+    } catch (err) {
+      setError('An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -113,13 +149,30 @@ export default function ForgotPassword() {
   const handleResend = async () => {
     if (resendCooldown > 0) return;
     
-    const result = await requestPasswordReset(email);
-    if (result.success) {
-      setResendCooldown(60);
+    setIsSubmitting(true);
+    try {
+      const result = await requestPasswordReset(email);
+      if (result.success) {
+        setResendCooldown(60);
+        toast({
+          title: "Code Sent",
+          description: "A new reset code has been sent to your email.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || 'Failed to resend code',
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
       toast({
-        title: "Code Sent",
-        description: "A new reset code has been sent to your email.",
+        title: "Error",
+        description: "Failed to resend code",
+        variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

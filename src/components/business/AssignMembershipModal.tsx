@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSubscriptionStore } from "@/store/subscriptionStore";
 import { useAuthStore } from "@/store/authStore";
+import { addBusinessMember } from "@/lib/apiService";
 
 interface AssignMembershipModalProps {
   open: boolean;
@@ -66,9 +67,16 @@ export function AssignMembershipModal({
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await addBusinessMember({
+        userName: formData.name,
+        userEmail: formData.email || undefined,
+        userPhone: formData.phone || undefined,
+        membershipType: selectedType,
+        price: getPrice(selectedType),
+        notes: `Assigned via business dashboard`,
+      });
       
+      // Also update local store for immediate UI update
       assignSubscription(user?.id || '', {
         userName: formData.name,
         userEmail: formData.email || `${formData.name.toLowerCase().replace(/\s+/g, '.')}@guest.local`,
@@ -82,8 +90,8 @@ export function AssignMembershipModal({
       toast.success(`${selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} membership assigned to ${formData.name}`);
       resetForm();
       onOpenChange(false);
-    } catch (error) {
-      toast.error("Failed to assign membership");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to assign membership");
     } finally {
       setIsLoading(false);
     }

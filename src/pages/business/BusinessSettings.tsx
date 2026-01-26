@@ -37,6 +37,17 @@ import { LocationPicker } from "@/components/business/LocationPicker";
 import { BusinessImageUpload } from "@/components/business/BusinessImageUpload";
 import { BusinessAttributesEditor } from "@/components/business/BusinessAttributesEditor";
 import { cn } from "@/lib/utils";
+import {
+  updateBusinessInfo,
+  updateLocationAndMedia,
+  updateBusinessAttributes,
+  updatePricing,
+  updateOperatingHours,
+  updateNotificationPreferences,
+  updateSecuritySettings,
+  togglePublishStatus,
+} from "@/lib/apiService";
+import { Console } from "console";
 
 export default function BusinessSettings() {
   const { user, updateUser } = useAuthStore();
@@ -45,6 +56,7 @@ export default function BusinessSettings() {
   const businessUser = user as BusinessUser | null;
   
   // Local state for form fields
+  console.log('user', user, businessUser)
   const [businessInfo, setBusinessInfo] = useState({
     name: businessUser?.businessName || "",
     email: businessUser?.email || "",
@@ -162,113 +174,147 @@ export default function BusinessSettings() {
     subjects.length > 0 || 
     facilities.length > 0;
 
-  const handleSaveBusinessInfo = () => {
-    updateUser({
-      businessName: businessInfo.name,
-      email: businessInfo.email,
-      phone: businessInfo.phone,
-      website: businessInfo.website,
-      serviceAreas: businessInfo.description,
-      address: {
-        ...businessUser?.address,
-        street: businessInfo.address,
-      },
-    } as Partial<BusinessUser>);
-    toast.success("Business information updated");
+  const handleSaveBusinessInfo = async () => {
+    try {
+      const updated = await updateBusinessInfo({
+        businessName: businessInfo.name,
+        email: businessInfo.email,
+        phone: businessInfo.phone,
+        website: businessInfo.website,
+        address: businessInfo.address,
+        description: businessInfo.description,
+      });
+      updateUser(updated as Partial<BusinessUser>);
+      toast.success("Business information updated");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to update business information");
+    }
   };
 
-  const handleSaveHours = () => {
-    updateUser({ operatingHours } as Partial<BusinessUser>);
-    toast.success("Operating hours updated");
+  const handleSaveHours = async () => {
+    try {
+      const updated = await updateOperatingHours(operatingHours);
+      updateUser(updated as Partial<BusinessUser>);
+      toast.success("Operating hours updated");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to update operating hours");
+    }
   };
 
-  const handleSaveNotifications = () => {
-    toast.success("Notification preferences saved");
+  const handleSaveNotifications = async () => {
+    try {
+      const updated = await updateNotificationPreferences(notifications);
+      updateUser(updated as Partial<BusinessUser>);
+      toast.success("Notification preferences saved");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to update notification preferences");
+    }
   };
 
-  const handleSaveSecurity = () => {
-    toast.success("Security settings updated");
+  const handleSaveSecurity = async () => {
+    try {
+      const updated = await updateSecuritySettings(security);
+      updateUser(updated as Partial<BusinessUser>);
+      toast.success("Security settings updated");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to update security settings");
+    }
   };
 
-  const handleSaveLocation = () => {
+  const handleSaveLocation = async () => {
     if (!location) {
       toast.error("Please select a location on the map");
       return;
     }
-    updateUser({
-      address: {
-        ...businessUser?.address,
+    try {
+      const updated = await updateLocationAndMedia({
         lat: location.lat,
         lng: location.lng,
-      },
-      logo,
-      coverImage,
-      galleryImages,
-    } as Partial<BusinessUser>);
-    toast.success("Location and media updated");
+        logo,
+        coverImage,
+        galleryImages,
+      });
+      updateUser(updated as Partial<BusinessUser>);
+      toast.success("Location and media updated");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to update location and media");
+    }
   };
 
-  const handleSaveAttributes = () => {
-    updateUser({
-      amenities,
-      equipment: businessUser?.businessType === 'gym' ? equipment : undefined,
-      classTypes: businessUser?.businessType === 'gym' ? classTypes : undefined,
-      membershipOptions,
-      subjects: businessUser?.businessType === 'coaching' ? subjects : undefined,
-      levels: businessUser?.businessType === 'coaching' ? levels : undefined,
-      teachingModes: businessUser?.businessType === 'coaching' ? teachingModes : undefined,
-      batchSizes: businessUser?.businessType === 'coaching' ? batchSizes : undefined,
-      facilities: businessUser?.businessType === 'library' ? facilities : undefined,
-      collections: businessUser?.businessType === 'library' ? collections : undefined,
-      spaceTypes: businessUser?.businessType === 'library' ? spaceTypes : undefined,
-    } as Partial<BusinessUser>);
-    toast.success("Business attributes updated");
+  const handleSaveAttributes = async () => {
+    try {
+      const attributes: Record<string, any> = {
+        amenities,
+        membershipOptions,
+      };
+      
+      if (businessUser?.businessType === 'gym') {
+        attributes.equipment = equipment;
+        attributes.classTypes = classTypes;
+      } else if (businessUser?.businessType === 'coaching') {
+        attributes.subjects = subjects;
+        attributes.levels = levels;
+        attributes.teachingModes = teachingModes;
+        attributes.batchSizes = batchSizes;
+      } else if (businessUser?.businessType === 'library') {
+        attributes.facilities = facilities;
+        attributes.collections = collections;
+        attributes.spaceTypes = spaceTypes;
+      }
+      
+      const updated = await updateBusinessAttributes(attributes);
+      updateUser(updated as Partial<BusinessUser>);
+      toast.success("Business attributes updated");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to update business attributes");
+    }
   };
 
-  const handleTogglePublish = () => {
+  const handleTogglePublish = async () => {
     if (!isPublished && !canPublish) {
       toast.error("Please add location and at least one image before publishing");
       return;
     }
 
     const newPublishState = !isPublished;
-    setIsPublished(newPublishState);
     
-    // Update auth store
-    updateUser({
-      isPublished: newPublishState,
-      publishedAt: newPublishState ? new Date().toISOString() : undefined,
-    } as Partial<BusinessUser>);
+    try {
+      const updated = await togglePublishStatus(newPublishState);
+      setIsPublished(newPublishState);
+      updateUser(updated as Partial<BusinessUser>);
 
-    // Update venue store
-    if (newPublishState && businessUser) {
-      publishVenue({
-        ...businessUser,
-        isPublished: true,
-        address: {
-          ...businessUser.address,
-          lat: location?.lat || businessUser.address.lat,
-          lng: location?.lng || businessUser.address.lng,
-        },
-        logo,
-        coverImage,
-        galleryImages,
-        amenities,
-        equipment,
-        classTypes,
-        membershipOptions,
-        subjects,
-        levels,
-        teachingModes,
-        batchSizes,
-        facilities,
-        collections,
-        spaceTypes,
-      } as BusinessUser);
-      toast.success("🎉 Your business is now live on Explore!");
-    } else if (businessUser) {
-      unpublishVenue(businessUser.id);
-      toast.info("Your business has been unpublished");
+      // Update venue store
+      if (newPublishState && businessUser) {
+        publishVenue({
+          ...businessUser,
+          isPublished: true,
+          address: {
+            ...businessUser.address,
+            lat: location?.lat || businessUser.address.lat,
+            lng: location?.lng || businessUser.address.lng,
+          },
+          logo,
+          coverImage,
+          galleryImages,
+          amenities,
+          equipment,
+          classTypes,
+          membershipOptions,
+          subjects,
+          levels,
+          teachingModes,
+          batchSizes,
+          facilities,
+          collections,
+          spaceTypes,
+        } as BusinessUser);
+        toast.success("🎉 Your business is now live on Explore!");
+      } else if (businessUser) {
+        unpublishVenue(businessUser.id);
+        toast.info("Your business has been unpublished");
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to update publish status");
     }
   };
 
@@ -653,13 +699,18 @@ export default function BusinessSettings() {
                 <p><strong>Note:</strong> Monthly members who pay in cash cannot be removed for 30 days after assignment. This ensures commitment from both parties.</p>
               </div>
 
-              <Button onClick={() => {
-                updateUser({
-                  dailyPackagePrice: pricing.daily,
-                  weeklyPackagePrice: pricing.weekly,
-                  monthlyPackagePrice: pricing.monthly,
-                } as Partial<BusinessUser>);
-                toast.success("Pricing updated successfully");
+              <Button onClick={async () => {
+                try {
+                  const updated = await updatePricing({
+                    dailyPackagePrice: pricing.daily,
+                    weeklyPackagePrice: pricing.weekly,
+                    monthlyPackagePrice: pricing.monthly,
+                  });
+                  updateUser(updated as Partial<BusinessUser>);
+                  toast.success("Pricing updated successfully");
+                } catch (error: any) {
+                  toast.error(error.response?.data?.error?.message || "Failed to update pricing");
+                }
               }}>
                 <Save className="h-4 w-4 mr-2" />
                 Save Pricing

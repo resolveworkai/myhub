@@ -4,13 +4,16 @@ export const listVenuesSchema = Joi.object({
   category: Joi.string().valid('all', 'gym', 'coaching', 'library').optional(),
   city: Joi.string().optional(),
   minRating: Joi.number().min(0).max(5).optional(),
-  priceRange: Joi.string().valid('$', '$$', '$$$').optional(),
+  priceRange: Joi.alternatives().try(
+    Joi.string().valid('$', '$$', '$$$'),
+    Joi.string().pattern(/^\d+,\d+$/) // Accept numeric range like "0,50000"
+  ).optional(),
   radius: Joi.number().min(0).optional(),
   userLat: Joi.number().min(-90).max(90).optional(),
   userLng: Joi.number().min(-180).max(180).optional(),
   search: Joi.string().max(200).optional(),
   amenities: Joi.string().optional(),
-  status: Joi.string().valid('available', 'filling', 'full').optional(),
+  status: Joi.string().valid('available', 'filling', 'full', 'all').optional(),
   page: Joi.number().integer().min(1).optional(),
   limit: Joi.number().integer().min(1).max(100).optional(),
 });

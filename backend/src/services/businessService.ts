@@ -224,27 +224,216 @@ class BusinessService {
   }
 
   /**
-   * Add business member
+   * Add business member with membership
    */
-  async addBusinessMember(businessUserId: string, userId: string, notes?: string) {
-    // Verify user exists
-    const userResult = await pool.query(
-      `SELECT id FROM users WHERE id = $1 AND deleted_at IS NULL`,
-      [userId]
-    );
-
-    if (userResult.rows.length === 0) {
-      throw new NotFoundError('User not found');
+  async addBusinessMember(
+    businessUserId: string,
+    data: {
+      userName: string;
+      userEmail?: string;
+      userPhone?: string;
+      membershipType: 'daily' | 'weekly' | 'monthly';
+      price: number;
+      notes?: string;
     }
+  ) {
+    const client = await pool.connect();
 
-    await pool.query(
-      `INSERT INTO business_members (business_user_id, user_id, notes)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (business_user_id, user_id) DO UPDATE SET notes = $3`,
-      [businessUserId, userId, notes || null]
+    try {
+      await client.query('BEGIN');
+
+      // Get business venue (assuming one venue per business for now)
+      const venueResult = await client.query(
+        `SELECT id FROM venues WHERE business_user_id = $1 AND deleted_at IS NULL LIMIT 1`,
+        [businessUserId]
+      );
+
+      if (venueResult.rows.length === 0) {
+        throw new NotFoundError('No venue found for this business');
+      }
+
+      const venueId = venueResult.rows[0].id;
+
+      // Check if user exists by email, otherwise create a guest user
+      let userId: string;
+      if (data.userEmail) {
+        const userResult = await client.query(
+          `SELECT id FROM users WHERE email = $1 AND deleted_at IS NULL`,
+          [data.userEmail.toLowerCase()]
+        );
+
+        if (userResult.rows.length > 0) {
+          userId = userResult.rows[0].id;
+        } else {
+          // Create guest user
+          const newUserResult = await client.query(
+            `INSERT INTO users (name, email, phone, account_status, email_verified)
+             VALUES ($1, $2, $3, 'active', FALSE)
+             RETURNING id`,
+            [data.userName, data.userEmail.toLowerCase(), data.userPhone || null]
+          );
+          userId = newUserResult.rows[0].id;
+        }
+      } else {
+        // Create guest user without email
+        const newUserResult = await client.query(
+          `INSERT INTO users (name, phone, account_status, email_verified)
+           VALUES ($1, $2, 'active', FALSE)
+           RETURNING id`,
+          [data.userName, data.userPhone || null]
+        );
+        userId = newUserResult.rows[0].id;
+      }
+
+      // Calculate membership dates
+      const startDate = new Date();
+      const endDate = new Date();
+      if (data.membershipType === 'daily') {
+        endDate.setDate(endDate.getDate() + 1);
+      } else if (data.membershipType === 'weekly') {
+        endDate.setDate(endDate.getDate() + 7);
+      } else if (data.membershipType === 'monthly') {
+        endDate.setMonth(endDate.getMonth() + 1);
+      }
+
+      // Create membership
+      const membershipResult = await client.query(
+        `INSERT INTO memberships (user_id, venue_id, business_user_id, membership_type, start_date, end_date, price, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'active')
+         RETURNING id`,
+        [userId, venueId, businessUserId, data.membershipType, startDate, endDate, data.price]
+      );
+
+      const membershipId = membershipResult.rows[0].id;
+
+      // Add to business_members
+      await client.query(
+        `INSERT INTO business_members (business_user_id, user_id, membership_id, notes)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (business_user_id, user_id) DO UPDATE SET membership_id = $3, notes = $4`,
+        [businessUserId, userId, membershipId, data.notes || null]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Business member added with membership', { businessUserId, userId, membershipId });
+
+      return { userId, membershipId };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Cancel membership
+   */
+  async cancelMembership(membershipId: string, businessUserId: string) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // Verify membership belongs to business
+      const membershipResult = await client.query(
+        `SELECT id, status, start_date, membership_type
+         FROM memberships
+         WHERE id = $1 AND business_user_id = $2`,
+        [membershipId, businessUserId]
+      );
+
+      if (membershipResult.rows.length === 0) {
+        throw new NotFoundError('Membership not found');
+      }
+
+      const membership = membershipResult.rows[0];
+
+      // Check if monthly membership can be cancelled (30-day lock)
+      if (membership.membership_type === 'monthly') {
+        const startDate = new Date(membership.start_date);
+        const daysSinceStart = Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysSinceStart < 30) {
+          throw new ValidationError(`Monthly memberships cannot be cancelled within 30 days. ${30 - daysSinceStart} days remaining.`);
+        }
+      }
+
+      if (membership.status === 'cancelled') {
+        throw new ValidationError('Membership is already cancelled');
+      }
+
+      // Cancel membership
+      await client.query(
+        `UPDATE memberships SET status = 'cancelled', updated_at = NOW() WHERE id = $1`,
+        [membershipId]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Membership cancelled', { membershipId, businessUserId });
+
+      return { success: true };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Get dashboard stats
+   */
+  async getDashboardStats(businessUserId: string) {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get total members
+    const membersResult = await pool.query(
+      `SELECT COUNT(*) as total FROM business_members WHERE business_user_id = $1`,
+      [businessUserId]
     );
 
-    logger.info('Business member added', { businessUserId, userId });
+    // Get revenue this month
+    const revenueResult = await pool.query(
+      `SELECT COALESCE(SUM(total_price), 0) as revenue
+       FROM bookings b
+       JOIN venues v ON b.venue_id = v.id
+       WHERE v.business_user_id = $1
+       AND b.status = 'confirmed'
+       AND DATE_TRUNC('month', b.created_at) = DATE_TRUNC('month', CURRENT_DATE)`,
+      [businessUserId]
+    );
+
+    // Get appointments today
+    const appointmentsResult = await pool.query(
+      `SELECT COUNT(*) as total
+       FROM bookings b
+       JOIN venues v ON b.venue_id = v.id
+       WHERE v.business_user_id = $1
+       AND b.booking_date = $2
+       AND b.status IN ('confirmed', 'pending')`,
+      [businessUserId, today]
+    );
+
+    // Get pending payments
+    const paymentsResult = await pool.query(
+      `SELECT COALESCE(SUM(amount), 0) as total
+       FROM payments p
+       JOIN bookings b ON p.booking_id = b.id
+       JOIN venues v ON b.venue_id = v.id
+       WHERE v.business_user_id = $1
+       AND p.payment_status = 'pending'`,
+      [businessUserId]
+    );
+
+    return {
+      totalMembers: parseInt(membersResult.rows[0].total),
+      revenueThisMonth: parseFloat(revenueResult.rows[0].revenue) || 0,
+      appointmentsToday: parseInt(appointmentsResult.rows[0].total),
+      pendingPayments: parseFloat(paymentsResult.rows[0].total) || 0,
+    };
   }
 
   /**
@@ -393,9 +582,439 @@ class BusinessService {
   }
 
   /**
+   * Update business information
+   */
+  async updateBusinessInfo(
+    businessUserId: string,
+    data: {
+      businessName?: string;
+      email?: string;
+      phone?: string;
+      website?: string;
+      address?: string;
+      description?: string;
+    }
+  ) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      const updates: string[] = [];
+      const params: any[] = [];
+      let paramCount = 0;
+
+      if (data.businessName !== undefined) {
+        paramCount++;
+        updates.push(`business_name = $${paramCount}`);
+        params.push(data.businessName);
+      }
+
+      if (data.email !== undefined) {
+        paramCount++;
+        updates.push(`email = $${paramCount}`);
+        params.push(data.email.toLowerCase());
+      }
+
+      if (data.phone !== undefined) {
+        paramCount++;
+        updates.push(`phone = $${paramCount}`);
+        params.push(data.phone);
+      }
+
+      if (data.website !== undefined) {
+        paramCount++;
+        updates.push(`website = $${paramCount}`);
+        params.push(data.website);
+      }
+
+      if (data.address !== undefined) {
+        paramCount++;
+        updates.push(`address_street = $${paramCount}`);
+        params.push(data.address);
+      }
+
+      if (data.description !== undefined) {
+        paramCount++;
+        updates.push(`description = $${paramCount}`);
+        params.push(data.description);
+      }
+
+      if (updates.length === 0) {
+        throw new ValidationError('No fields to update');
+      }
+
+      paramCount++;
+      updates.push(`updated_at = NOW()`);
+      params.push(businessUserId);
+
+      await client.query(
+        `UPDATE business_users SET ${updates.join(', ')} WHERE id = $${paramCount} AND deleted_at IS NULL`,
+        params
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Business info updated', { businessUserId });
+
+      return await this.getBusinessProfile(businessUserId);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Update location and media
+   */
+  async updateLocationAndMedia(
+    businessUserId: string,
+    data: {
+      lat?: number;
+      lng?: number;
+      logo?: string;
+      coverImage?: string;
+      galleryImages?: string[];
+    }
+  ) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      const updates: string[] = [];
+      const params: any[] = [];
+      let paramCount = 0;
+
+      if (data.lat !== undefined) {
+        paramCount++;
+        updates.push(`address_lat = $${paramCount}`);
+        params.push(data.lat);
+      }
+
+      if (data.lng !== undefined) {
+        paramCount++;
+        updates.push(`address_lng = $${paramCount}`);
+        params.push(data.lng);
+      }
+
+      if (data.logo !== undefined) {
+        paramCount++;
+        updates.push(`logo = $${paramCount}`);
+        params.push(data.logo);
+      }
+
+      if (data.coverImage !== undefined) {
+        paramCount++;
+        updates.push(`cover_image = $${paramCount}`);
+        params.push(data.coverImage);
+      }
+
+      if (data.galleryImages !== undefined) {
+        paramCount++;
+        updates.push(`gallery_images = $${paramCount}`);
+        params.push(data.galleryImages);
+      }
+
+      if (updates.length === 0) {
+        throw new ValidationError('No fields to update');
+      }
+
+      paramCount++;
+      updates.push(`updated_at = NOW()`);
+      params.push(businessUserId);
+
+      await client.query(
+        `UPDATE business_users SET ${updates.join(', ')} WHERE id = $${paramCount} AND deleted_at IS NULL`,
+        params
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Location and media updated', { businessUserId });
+
+      return await this.getBusinessProfile(businessUserId);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Update business attributes
+   */
+  async updateBusinessAttributes(
+    businessUserId: string,
+    attributes: Record<string, any>
+  ) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // Get current attributes
+      const currentResult = await client.query(
+        `SELECT business_attributes FROM business_users WHERE id = $1 AND deleted_at IS NULL`,
+        [businessUserId]
+      );
+
+      if (currentResult.rows.length === 0) {
+        throw new NotFoundError('Business not found');
+      }
+
+      const currentAttributes = currentResult.rows[0].business_attributes || {};
+      const mergedAttributes = { ...currentAttributes, ...attributes };
+
+      await client.query(
+        `UPDATE business_users 
+         SET business_attributes = $1, updated_at = NOW()
+         WHERE id = $2 AND deleted_at IS NULL`,
+        [JSON.stringify(mergedAttributes), businessUserId]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Business attributes updated', { businessUserId });
+
+      return await this.getBusinessProfile(businessUserId);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Update pricing packages
+   */
+  async updatePricing(
+    businessUserId: string,
+    data: {
+      dailyPackagePrice?: number;
+      weeklyPackagePrice?: number;
+      monthlyPackagePrice?: number;
+    }
+  ) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      const updates: string[] = [];
+      const params: any[] = [];
+      let paramCount = 0;
+
+      if (data.dailyPackagePrice !== undefined) {
+        paramCount++;
+        updates.push(`daily_package_price = $${paramCount}`);
+        params.push(data.dailyPackagePrice);
+      }
+
+      if (data.weeklyPackagePrice !== undefined) {
+        paramCount++;
+        updates.push(`weekly_package_price = $${paramCount}`);
+        params.push(data.weeklyPackagePrice);
+      }
+
+      if (data.monthlyPackagePrice !== undefined) {
+        paramCount++;
+        updates.push(`monthly_package_price = $${paramCount}`);
+        params.push(data.monthlyPackagePrice);
+      }
+
+      if (updates.length === 0) {
+        throw new ValidationError('No pricing fields to update');
+      }
+
+      paramCount++;
+      updates.push(`updated_at = NOW()`);
+      params.push(businessUserId);
+
+      await client.query(
+        `UPDATE business_users SET ${updates.join(', ')} WHERE id = $${paramCount} AND deleted_at IS NULL`,
+        params
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Pricing updated', { businessUserId });
+
+      return await this.getBusinessProfile(businessUserId);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Update operating hours
+   */
+  async updateOperatingHours(
+    businessUserId: string,
+    operatingHours: Record<string, any>
+  ) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      await client.query(
+        `UPDATE business_users 
+         SET operating_hours = $1, updated_at = NOW()
+         WHERE id = $2 AND deleted_at IS NULL`,
+        [JSON.stringify(operatingHours), businessUserId]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Operating hours updated', { businessUserId });
+
+      return await this.getBusinessProfile(businessUserId);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Update notification preferences
+   */
+  async updateNotificationPreferences(
+    businessUserId: string,
+    preferences: Record<string, any>
+  ) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // Get current preferences
+      const currentResult = await client.query(
+        `SELECT notification_preferences FROM business_users WHERE id = $1 AND deleted_at IS NULL`,
+        [businessUserId]
+      );
+
+      if (currentResult.rows.length === 0) {
+        throw new NotFoundError('Business not found');
+      }
+
+      const currentPreferences = currentResult.rows[0].notification_preferences || {};
+      const mergedPreferences = { ...currentPreferences, ...preferences };
+
+      await client.query(
+        `UPDATE business_users 
+         SET notification_preferences = $1, updated_at = NOW()
+         WHERE id = $2 AND deleted_at IS NULL`,
+        [JSON.stringify(mergedPreferences), businessUserId]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Notification preferences updated', { businessUserId });
+
+      return await this.getBusinessProfile(businessUserId);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Update security settings
+   */
+  async updateSecuritySettings(
+    businessUserId: string,
+    settings: Record<string, any>
+  ) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // Get current settings
+      const currentResult = await client.query(
+        `SELECT security_settings FROM business_users WHERE id = $1 AND deleted_at IS NULL`,
+        [businessUserId]
+      );
+
+      if (currentResult.rows.length === 0) {
+        throw new NotFoundError('Business not found');
+      }
+
+      const currentSettings = currentResult.rows[0].security_settings || {};
+      const mergedSettings = { ...currentSettings, ...settings };
+
+      await client.query(
+        `UPDATE business_users 
+         SET security_settings = $1, updated_at = NOW()
+         WHERE id = $2 AND deleted_at IS NULL`,
+        [JSON.stringify(mergedSettings), businessUserId]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Security settings updated', { businessUserId });
+
+      return await this.getBusinessProfile(businessUserId);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Toggle publish status
+   */
+  async togglePublishStatus(businessUserId: string, isPublished: boolean) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      await client.query(
+        `UPDATE business_users 
+         SET is_published = $1, 
+             published_at = CASE WHEN $1 = TRUE THEN NOW() ELSE NULL END,
+             updated_at = NOW()
+         WHERE id = $2 AND deleted_at IS NULL`,
+        [isPublished, businessUserId]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Publish status toggled', { businessUserId, isPublished });
+
+      return await this.getBusinessProfile(businessUserId);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
    * Format business for response
    */
   private formatBusiness(row: any) {
+    const operatingHours = row.operating_hours ? JSON.parse(JSON.stringify(row.operating_hours)) : {};
+    const notificationPreferences = row.notification_preferences ? JSON.parse(JSON.stringify(row.notification_preferences)) : {};
+    const securitySettings = row.security_settings ? JSON.parse(JSON.stringify(row.security_settings)) : {};
+    const businessAttributes = row.business_attributes ? JSON.parse(JSON.stringify(row.business_attributes)) : {};
+
     return {
       id: row.id,
       email: row.email,
@@ -413,6 +1032,8 @@ class BusinessService {
         lat: parseFloat(row.address_lat) || null,
         lng: parseFloat(row.address_lng) || null,
       },
+      website: row.website,
+      description: row.description,
       subscriptionTier: row.subscription_tier,
       subscriptionStatus: row.subscription_status,
       emailVerified: row.email_verified,
@@ -420,9 +1041,17 @@ class BusinessService {
       verificationStatus: row.verification_status,
       accountStatus: row.account_status,
       isPublished: row.is_published,
+      publishedAt: row.published_at,
       dailyPackagePrice: parseFloat(row.daily_package_price) || 0,
       weeklyPackagePrice: parseFloat(row.weekly_package_price) || 0,
       monthlyPackagePrice: parseFloat(row.monthly_package_price) || 0,
+      operatingHours,
+      logo: row.logo,
+      coverImage: row.cover_image,
+      galleryImages: row.gallery_images || [],
+      notificationPreferences,
+      securitySettings,
+      businessAttributes,
       createdAt: row.created_at,
     };
   }

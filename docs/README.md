@@ -30,6 +30,18 @@
 - ✅ ERD diagram with Mermaid
 - ✅ Complete deployment guide
 - ✅ Production-ready configuration
+- ✅ **Bug Fixes (January 26, 2026):**
+  - Fixed venue API validation to accept numeric price ranges (e.g., "0,50000") in addition to symbolic ranges ($, $$, $$$)
+  - Fixed venue API to accept "all" status filter
+  - Fixed SQL distance column error in venue listing with location filters
+  - Fixed login redirect issue - added `account_type` field to user response for proper role-based routing
+  - Fixed business dashboard stats SQL error (p.status → p.payment_status)
+- ✅ **Business Settings Implementation (January 26, 2026):**
+  - Complete business settings flow with 7 sections: Business Information, Location & Media, Business Attributes, Membership Packages, Operating Hours, Notification Preferences, Security Settings
+  - Database migration for settings columns (operating_hours, logo, cover_image, gallery_images, notification_preferences, security_settings, business_attributes, description)
+  - Backend API endpoints for all settings sections
+  - Frontend integration with backend APIs
+  - Full CRUD operations for business settings
 
 ## Overview
 

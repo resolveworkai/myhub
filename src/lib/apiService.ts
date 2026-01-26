@@ -208,6 +208,48 @@ export const registerBusinessUser = async (userData: {
   }
 };
 
+// Password Reset
+export const requestPasswordReset = async (email: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    await api.post('/auth/forgot-password', { email });
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || 'Failed to send reset code',
+    };
+  }
+};
+
+export const verifyResetOTP = async (email: string, otp: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    await api.post('/auth/verify-reset-otp', { email, otp });
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || 'Invalid verification code',
+    };
+  }
+};
+
+export const resetPassword = async (email: string, otp: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    await api.post('/auth/reset-password', {
+      email,
+      otp,
+      newPassword,
+      confirmPassword: newPassword,
+    });
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || 'Failed to reset password',
+    };
+  }
+};
+
 // Login
 export const login = async (
   identifier: string,
@@ -503,6 +545,25 @@ export const getUserBookings = async (filters: {
   return result;
 };
 
+// Get business bookings
+export const getBusinessBookings = async (filters: {
+  status?: string;
+  date?: string;
+  page?: number;
+  limit?: number;
+} = {}): Promise<{ bookings: Booking[]; pagination: any }> => {
+  const params = new URLSearchParams();
+  if (filters.status) params.append('status', filters.status);
+  if (filters.date) params.append('date', filters.date);
+  if (filters.page) params.append('page', filters.page.toString());
+  if (filters.limit) params.append('limit', filters.limit.toString());
+
+  const result = await api.get<{ bookings: Booking[]; pagination: any }>(
+    `/bookings/business/all?${params.toString()}`
+  );
+  return result;
+};
+
 // Get booking by ID
 export const getBookingById = async (bookingId: string): Promise<Booking> => {
   const result = await api.get<Booking>(`/bookings/${bookingId}`);
@@ -679,9 +740,33 @@ export const getBusinessMembers = async (page: number = 1, limit: number = 20): 
   return result;
 };
 
-// Add business member
-export const addBusinessMember = async (userId: string, notes?: string): Promise<void> => {
-  await api.post('/business/members', { userId, notes });
+// Add business member with membership
+export const addBusinessMember = async (data: {
+  userName: string;
+  userEmail?: string;
+  userPhone?: string;
+  membershipType: 'daily' | 'weekly' | 'monthly';
+  price: number;
+  notes?: string;
+}): Promise<{ userId: string; membershipId: string }> => {
+  const result = await api.post<{ userId: string; membershipId: string }>('/business/members', data);
+  return result;
+};
+
+// Cancel membership
+export const cancelMembership = async (membershipId: string, reason?: string): Promise<void> => {
+  await api.delete(`/business/memberships/${membershipId}`, { data: { reason } });
+};
+
+// Get dashboard stats
+export const getBusinessDashboardStats = async (): Promise<{
+  totalMembers: number;
+  revenueThisMonth: number;
+  appointmentsToday: number;
+  pendingPayments: number;
+}> => {
+  const result = await api.get<any>('/business/dashboard/stats');
+  return result;
 };
 
 // Get business analytics
@@ -703,6 +788,74 @@ export const sendAnnouncement = async (data: {
   memberIds?: string[];
 }): Promise<void> => {
   await api.post('/business/announcements', data);
+};
+
+// Business Settings API
+export const updateBusinessInfo = async (data: {
+  businessName?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  address?: string;
+  description?: string;
+}): Promise<BusinessUser> => {
+  const result = await api.patch<{ data: BusinessUser }>('/business/settings/business-info', data);
+  return result.data;
+};
+
+export const updateLocationAndMedia = async (data: {
+  lat?: number;
+  lng?: number;
+  logo?: string;
+  coverImage?: string;
+  galleryImages?: string[];
+}): Promise<BusinessUser> => {
+  const result = await api.patch<{ data: BusinessUser }>('/business/settings/location-media', data);
+  return result.data;
+};
+
+export const updateBusinessAttributes = async (attributes: Record<string, any>): Promise<BusinessUser> => {
+  const result = await api.patch<{ data: BusinessUser }>('/business/settings/attributes', attributes);
+  return result.data;
+};
+
+export const updatePricing = async (data: {
+  dailyPackagePrice?: number;
+  weeklyPackagePrice?: number;
+  monthlyPackagePrice?: number;
+}): Promise<BusinessUser> => {
+  const result = await api.patch<{ data: BusinessUser }>('/business/settings/pricing', data);
+  return result.data;
+};
+
+export const updateOperatingHours = async (operatingHours: Record<string, any>): Promise<BusinessUser> => {
+  const result = await api.patch<{ data: BusinessUser }>('/business/settings/operating-hours', operatingHours);
+  return result.data;
+};
+
+export const updateNotificationPreferences = async (preferences: {
+  emailBookings?: boolean;
+  emailPayments?: boolean;
+  emailReminders?: boolean;
+  smsBookings?: boolean;
+  smsPayments?: boolean;
+  pushNotifications?: boolean;
+}): Promise<BusinessUser> => {
+  const result = await api.patch<{ data: BusinessUser }>('/business/settings/notifications', preferences);
+  return result.data;
+};
+
+export const updateSecuritySettings = async (settings: {
+  twoFactor?: boolean;
+  sessionTimeout?: string;
+}): Promise<BusinessUser> => {
+  const result = await api.patch<{ data: BusinessUser }>('/business/settings/security', settings);
+  return result.data;
+};
+
+export const togglePublishStatus = async (isPublished: boolean): Promise<BusinessUser> => {
+  const result = await api.patch<{ data: BusinessUser }>('/business/settings/publish', { isPublished });
+  return result.data;
 };
 
 // ========== NOTIFICATION API ==========

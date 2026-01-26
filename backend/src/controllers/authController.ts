@@ -203,3 +203,52 @@ export const businessResendOTP = asyncHandler(async (req: Request, res: Response
     message: 'A new verification code has been sent to your business email.',
   });
 });
+
+/**
+ * Request password reset
+ */
+export const requestPasswordReset = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  await authService.requestPasswordReset(email);
+
+  res.json({
+    success: true,
+    message: 'If an account exists with this email, a password reset code has been sent.',
+  });
+});
+
+/**
+ * Verify password reset OTP
+ */
+export const verifyPasswordResetOTP = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+
+  await authService.verifyPasswordResetOTP(email, otp);
+
+  res.json({
+    success: true,
+    message: 'Verification code is valid.',
+  });
+});
+
+/**
+ * Reset password
+ */
+export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp, newPassword, confirmPassword } = req.body;
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      error: { message: 'Passwords do not match', code: 'VALIDATION_ERROR' },
+    });
+  }
+
+  await authService.resetPassword(email, otp, newPassword);
+
+  res.json({
+    success: true,
+    message: 'Password reset successfully. You can now sign in with your new password.',
+  });
+});

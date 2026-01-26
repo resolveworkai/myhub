@@ -199,3 +199,12 @@ WHERE email IN (
 
 COMMIT;
 
+-- Reactivate a specific business user for testing purposes  
+
+UPDATE business_users
+SET
+  business_verified = TRUE,
+  verification_status = 'verified',
+  account_status = 'active',
+  updated_at = CURRENT_TIMESTAMP
+WHERE email = 'test@gmail.com'

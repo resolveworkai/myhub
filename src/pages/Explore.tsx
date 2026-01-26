@@ -52,29 +52,22 @@ export default function Explore() {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);
 
+  // Auto-select category based on route
+  const routePath = location.pathname.replace("/", "");
+
   // Use persisted favorites store instead of local state
   const { favorites, toggleFavorite, isFavorite } = useFavoriteStore();
+   const routeCategory: VenueCategory | null =
+    routePath === "gyms"
+      ? "gym"
+      : routePath === "coaching"
+      ? "coaching"
+      : routePath === "libraries"
+      ? "library"
+      : null;
 
   // Use venue store to get all venues from API
   const { getAllVenues, fetchVenues, loading: venuesLoading } = useVenueStore();
-  
-  // Fetch venues on mount and when filters change
-  useEffect(() => {
-    const filters: any = {
-      category: routeCategory || (activeCategory === 'all' ? undefined : activeCategory),
-      city: userLocation?.city,
-      minRating: minRating || undefined,
-      priceRange: priceRange || undefined,
-      radius: radiusKm || undefined,
-      userLat: userLocation?.lat,
-      userLng: userLocation?.lng,
-      search: searchQuery || undefined,
-      amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
-      status: availability || undefined,
-    };
-    
-    fetchVenues(filters);
-  }, [routeCategory, activeCategory, userLocation?.city, userLocation?.lat, userLocation?.lng, minRating, priceRange, radiusKm, searchQuery, selectedAmenities, availability, fetchVenues]);
   
   const allBusinesses = useMemo(() => getAllVenues(), [getAllVenues]);
 
@@ -102,26 +95,6 @@ export default function Explore() {
   // Geolocation hook
   const { location: geoLocation, loading: geoLoading, requestLocation, setManualLocation, availableCities } = useGeolocation();
 
-  // Auto-select category based on route
-  const routePath = location.pathname.replace("/", "");
-  const routeCategory: VenueCategory | null =
-    routePath === "gyms"
-      ? "gym"
-      : routePath === "coaching"
-      ? "coaching"
-      : routePath === "libraries"
-      ? "library"
-      : null;
-
-  // Sync route category with store
-  useEffect(() => {
-    if (routeCategory && routeCategory !== activeCategory) {
-      setActiveCategory(routeCategory);
-    } else if (!routeCategory && activeCategory !== "all") {
-      // On /explore, show all
-      setActiveCategory("all");
-    }
-  }, [routePath, routeCategory, activeCategory, setActiveCategory]);
 
   // Create filter state object for debouncing
   const currentFilters = useMemo(
@@ -201,6 +174,35 @@ export default function Explore() {
         return null;
     }
   };
+
+  // Fetch venues on mount and when filters change
+  useEffect(() => {
+    const filters: any = {
+      category: routeCategory || (activeCategory === 'all' ? undefined : activeCategory),
+      city: userLocation?.city,
+      minRating: minRating || undefined,
+      priceRange: priceRange || undefined,
+      radius: radiusKm || undefined,
+      userLat: userLocation?.lat,
+      userLng: userLocation?.lng,
+      search: searchQuery || undefined,
+      amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
+      status: availability || undefined,
+    };
+    
+    fetchVenues(filters);
+  }, [routeCategory, activeCategory, userLocation?.city, userLocation?.lat, userLocation?.lng, minRating, priceRange, radiusKm, searchQuery, selectedAmenities, availability, fetchVenues]);
+  
+
+  // Sync route category with store
+  useEffect(() => {
+    if (routeCategory && routeCategory !== activeCategory) {
+      setActiveCategory(routeCategory);
+    } else if (!routeCategory && activeCategory !== "all") {
+      // On /explore, show all
+      setActiveCategory("all");
+    }
+  }, [routePath, routeCategory, activeCategory, setActiveCategory]);
 
   const activeFiltersCount = getActiveFilterCount();
   const effectiveCategory = routeCategory || activeCategory;

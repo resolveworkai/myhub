@@ -9,6 +9,9 @@ import {
   checkPhone,
   businessVerifyEmail,
   businessResendOTP,
+  requestPasswordReset,
+  verifyPasswordResetOTP,
+  resetPassword,
 } from '../controllers/authController';
 import {
   memberSignupSchema,
@@ -16,6 +19,8 @@ import {
   loginSchema,
   verifyOTPSchema,
   resendOTPSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from '../validators/authValidators';
 import { validate } from '../middleware/validation';
 import { authRateLimiter } from '../middleware/rateLimiter';
@@ -32,5 +37,10 @@ router.post('/business/verify-email', authRateLimiter, validate(verifyOTPSchema)
 router.post('/business/resend-otp', authRateLimiter, validate(resendOTPSchema), businessResendOTP);
 router.get('/check-email', checkEmail);
 router.get('/check-phone', checkPhone);
+
+// Password reset routes
+router.post('/forgot-password', authRateLimiter, validate(forgotPasswordSchema), requestPasswordReset);
+router.post('/verify-reset-otp', authRateLimiter, validate(verifyOTPSchema), verifyPasswordResetOTP);
+router.post('/reset-password', authRateLimiter, validate(resetPasswordSchema), resetPassword);
 
 export default router;

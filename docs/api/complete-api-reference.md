@@ -220,13 +220,13 @@ List venues with filters and pagination.
 - `category` - gym, coaching, library, or all
 - `city` - Filter by city
 - `minRating` - Minimum rating (0-5)
-- `priceRange` - $, $$, or $$$
+- `priceRange` - Symbolic: $, $$, or $$$ | Numeric range: "min,max" (e.g., "0,50000")
 - `radius` - Distance in km (requires userLat/userLng)
 - `userLat` - User latitude
 - `userLng` - User longitude
 - `search` - Search query
 - `amenities` - Comma-separated amenities
-- `status` - available, filling, or full
+- `status` - available, filling, full, or all
 - `page` - Page number (default: 1)
 - `limit` - Items per page (default: 12, max: 100)
 
@@ -528,6 +528,24 @@ Add business member. **Requires Business Account**
 
 ---
 
+### GET /api/business/dashboard/stats
+Get business dashboard statistics. **Requires Business Account**
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalMembers": 45,
+    "revenueThisMonth": 12500.00,
+    "appointmentsToday": 8,
+    "pendingPayments": 500.00
+  }
+}
+```
+
+---
+
 ### GET /api/business/analytics?period=month
 Get business analytics. **Requires Business Account**
 
@@ -571,6 +589,139 @@ Send announcement to members. **Requires Business Account**
   "title": "Special Offer",
   "message": "Get 20% off this month!",
   "memberIds": ["uuid1", "uuid2"] // Optional - sends to all if omitted
+}
+```
+
+---
+
+## Business Settings Endpoints
+
+### PATCH /api/business/settings/business-info
+Update business information. **Requires Business Account**
+
+**Request:**
+```json
+{
+  "businessName": "Fitness Center",
+  "email": "business@example.com",
+  "phone": "+971501234567",
+  "website": "https://fitness.com",
+  "address": "123 Business St",
+  "description": "Premium fitness center with state-of-the-art equipment"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Business information updated successfully",
+  "data": { /* business object */ }
+}
+```
+
+---
+
+### PATCH /api/business/settings/location-media
+Update location and media. **Requires Business Account**
+
+**Request:**
+```json
+{
+  "lat": 25.2048,
+  "lng": 55.2708,
+  "logo": "https://example.com/logo.jpg",
+  "coverImage": "https://example.com/cover.jpg",
+  "galleryImages": ["https://example.com/img1.jpg", "https://example.com/img2.jpg"]
+}
+```
+
+---
+
+### PATCH /api/business/settings/attributes
+Update business attributes. **Requires Business Account**
+
+**Request:**
+```json
+{
+  "amenities": ["wifi", "parking", "ac"],
+  "equipment": ["treadmill", "weights", "yoga mats"],
+  "classTypes": ["hiit", "yoga", "pilates"],
+  "membershipOptions": ["daily", "weekly", "monthly"]
+}
+```
+
+---
+
+### PATCH /api/business/settings/pricing
+Update membership package pricing. **Requires Business Account**
+
+**Request:**
+```json
+{
+  "dailyPackagePrice": 299,
+  "weeklyPackagePrice": 1499,
+  "monthlyPackagePrice": 4999
+}
+```
+
+---
+
+### PATCH /api/business/settings/operating-hours
+Update operating hours. **Requires Business Account**
+
+**Request:**
+```json
+{
+  "monday": { "open": "06:00", "close": "22:00", "closed": false },
+  "tuesday": { "open": "06:00", "close": "22:00", "closed": false },
+  "wednesday": { "open": "06:00", "close": "22:00", "closed": false },
+  "thursday": { "open": "06:00", "close": "22:00", "closed": false },
+  "friday": { "open": "06:00", "close": "22:00", "closed": false },
+  "saturday": { "open": "08:00", "close": "20:00", "closed": false },
+  "sunday": { "open": "08:00", "close": "18:00", "closed": false }
+}
+```
+
+---
+
+### PATCH /api/business/settings/notifications
+Update notification preferences. **Requires Business Account**
+
+**Request:**
+```json
+{
+  "emailBookings": true,
+  "emailPayments": true,
+  "emailReminders": true,
+  "smsBookings": false,
+  "smsPayments": true,
+  "pushNotifications": true
+}
+```
+
+---
+
+### PATCH /api/business/settings/security
+Update security settings. **Requires Business Account**
+
+**Request:**
+```json
+{
+  "twoFactor": false,
+  "sessionTimeout": "30"
+}
+```
+
+---
+
+### PATCH /api/business/settings/publish
+Toggle publish status. **Requires Business Account**
+
+**Request:**
+```json
+{
+  "isPublished": true
 }
 ```
 

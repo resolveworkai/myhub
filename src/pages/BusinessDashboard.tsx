@@ -1,4 +1,4 @@
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,10 +33,12 @@ import {
   Sparkles,
   Crown,
   HelpCircle,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
+import { getBusinessDashboardStats, getBusinessBookings, getBusinessMembers } from "@/lib/apiService";
 import { AddMemberModal } from "@/components/business/AddMemberModal";
 import { CreateAppointmentModal } from "@/components/business/CreateAppointmentModal";
 import { ExportReportsModal } from "@/components/business/ExportReportsModal";
@@ -58,88 +60,7 @@ const navigation = [
   { name: "Settings", href: "/business-dashboard/settings", icon: Settings },
 ];
 
-const stats = [
-  {
-    name: "Total Members",
-    value: "256",
-    change: "+12%",
-    trend: "up",
-    icon: Users,
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-  },
-  {
-    name: "Revenue This Month",
-    value: "₹4,52,500",
-    change: "+8%",
-    trend: "up",
-    icon: DollarSign,
-    color: "text-success",
-    bgColor: "bg-success/10",
-  },
-  {
-    name: "Appointments Today",
-    value: "42",
-    change: "+5",
-    trend: "up",
-    icon: Calendar,
-    color: "text-info",
-    bgColor: "bg-info/10",
-  },
-  {
-    name: "Pending Payments",
-    value: "₹78,500",
-    change: "-15%",
-    trend: "down",
-    icon: AlertCircle,
-    color: "text-warning",
-    bgColor: "bg-warning/10",
-  },
-];
-
-const recentMembers = [
-  {
-    id: 1,
-    name: "John Smith",
-    email: "john@example.com",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    membership: "Premium",
-    joinDate: "Jan 20, 2026",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Emily Johnson",
-    email: "emily@example.com",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
-    membership: "Basic",
-    joinDate: "Jan 19, 2026",
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Michael Brown",
-    email: "michael@example.com",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-    membership: "VIP",
-    joinDate: "Jan 18, 2026",
-    status: "active",
-  },
-];
-
-const todayAppointments = [
-  { id: 1, member: "Sarah Chen", time: "9:00 AM", type: "Personal Training", status: "completed" },
-  { id: 2, member: "Mike Rodriguez", time: "10:30 AM", type: "Yoga Class", status: "completed" },
-  { id: 3, member: "Emily Watson", time: "2:00 PM", type: "Gym Session", status: "upcoming" },
-  { id: 4, member: "David Park", time: "4:00 PM", type: "Personal Training", status: "upcoming" },
-  { id: 5, member: "Lisa Thompson", time: "6:00 PM", type: "Gym Session", status: "upcoming" },
-];
-
-const pendingPayments = [
-  { id: 1, member: "Alex Wilson", amount: "₹2,500", dueDate: "Jan 25", daysOverdue: 0 },
-  { id: 2, member: "James Lee", amount: "₹5,000", dueDate: "Jan 20", daysOverdue: 2 },
-  { id: 3, member: "Anna Kim", amount: "₹1,500", dueDate: "Jan 18", daysOverdue: 4 },
-];
+// Stats will be fetched from API
 
 export default function BusinessDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -156,6 +77,67 @@ export default function BusinessDashboard() {
   const [upgradePlanOpen, setUpgradePlanOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
   const [walkInOpen, setWalkInOpen] = useState(false);
+
+  // Data states
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    revenueThisMonth: 0,
+    appointmentsToday: 0,
+    pendingPayments: 0,
+  });
+  const [todayAppointments, setTodayAppointments] = useState<any[]>([]);
+  const [recentMembers, setRecentMembers] = useState<any[]>([]);
+  const [pendingPayments, setPendingPayments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (location.pathname !== "/business-dashboard") return;
+      
+      setLoading(true);
+      try {
+        // Fetch stats
+        const statsData = await getBusinessDashboardStats();
+        setStats(statsData);
+
+        // Fetch today's appointments
+        const today = new Date().toISOString().split('T')[0];
+        const bookingsData = await getBusinessBookings({ date: today, limit: 5 });
+        const formattedAppointments = (bookingsData.bookings || []).map((booking: any) => ({
+          id: booking.id,
+          member: booking.userName || 'Guest',
+          time: booking.time || booking.booking_time,
+          type: booking.venueType || 'Service',
+          status: booking.status === 'completed' ? 'completed' : 'upcoming',
+        }));
+        setTodayAppointments(formattedAppointments);
+
+        // Fetch recent members
+        const membersData = await getBusinessMembers(1, 5);
+        const formattedMembers = (membersData.members || []).map((member: any) => ({
+          id: member.id || member.userId,
+          name: member.name,
+          email: member.email,
+          avatar: member.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random`,
+          membership: member.membershipStatus === 'active' ? 'Active' : 'Inactive',
+          joinDate: new Date(member.assignedAt || member.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          status: member.status || 'active',
+        }));
+        setRecentMembers(formattedMembers);
+
+        // TODO: Fetch pending payments when endpoint is available
+        setPendingPayments([]);
+      } catch (error: any) {
+        toast.error("Failed to load dashboard data");
+        console.error("Dashboard data error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -312,30 +294,56 @@ export default function BusinessDashboard() {
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-                {stats.map((stat) => (
-                  <div key={stat.name} className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-card border border-border">
+              {loading ? (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-card border border-border animate-pulse">
+                      <div className="h-12 bg-muted rounded-lg mb-4" />
+                      <div className="h-8 bg-muted rounded mb-2" />
+                      <div className="h-4 bg-muted rounded" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                  <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-card border border-border">
                     <div className="flex items-center justify-between mb-3 sm:mb-4">
-                      <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center", stat.bgColor)}>
-                        <stat.icon className={cn("h-5 w-5 sm:h-6 sm:w-6", stat.color)} />
-                      </div>
-                      <div className={cn(
-                        "flex items-center gap-1 text-xs sm:text-sm font-medium",
-                        stat.trend === "up" ? "text-success" : "text-destructive"
-                      )}>
-                        {stat.trend === "up" ? (
-                          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                        ) : (
-                          <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4" />
-                        )}
-                        {stat.change}
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center bg-primary/10">
+                        <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                       </div>
                     </div>
-                    <div className="text-lg sm:text-2xl font-bold mb-1">{stat.value}</div>
-                    <div className="text-xs sm:text-sm text-muted-foreground">{stat.name}</div>
+                    <div className="text-lg sm:text-2xl font-bold mb-1">{stats.totalMembers}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Total Members</div>
                   </div>
-                ))}
-              </div>
+                  <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-card border border-border">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center bg-success/10">
+                        <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-success" />
+                      </div>
+                    </div>
+                    <div className="text-lg sm:text-2xl font-bold mb-1">₹{stats.revenueThisMonth.toLocaleString()}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Revenue This Month</div>
+                  </div>
+                  <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-card border border-border">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center bg-info/10">
+                        <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-info" />
+                      </div>
+                    </div>
+                    <div className="text-lg sm:text-2xl font-bold mb-1">{stats.appointmentsToday}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Appointments Today</div>
+                  </div>
+                  <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-card border border-border">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center bg-warning/10">
+                        <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-warning" />
+                      </div>
+                    </div>
+                    <div className="text-lg sm:text-2xl font-bold mb-1">₹{stats.pendingPayments.toLocaleString()}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Pending Payments</div>
+                  </div>
+                </div>
+              )}
 
               <div className="grid lg:grid-cols-3 gap-8">
                 {/* Main Column */}
@@ -349,7 +357,16 @@ export default function BusinessDashboard() {
                       </Button>
                     </div>
                     <div className="space-y-3">
-                      {todayAppointments.map((apt) => (
+                      {loading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : todayAppointments.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No appointments today
+                        </div>
+                      ) : (
+                        todayAppointments.map((apt) => (
                         <div
                           key={apt.id}
                           className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
@@ -380,7 +397,8 @@ export default function BusinessDashboard() {
                             </Button>
                           </div>
                         </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -404,7 +422,20 @@ export default function BusinessDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {recentMembers.map((member) => (
+                          {loading ? (
+                            <tr>
+                              <td colSpan={5} className="text-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
+                              </td>
+                            </tr>
+                          ) : recentMembers.length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="text-center py-8 text-muted-foreground">
+                                No members yet
+                              </td>
+                            </tr>
+                          ) : (
+                            recentMembers.map((member) => (
                             <tr key={member.id} className="border-b border-border last:border-0 hover:bg-muted/50">
                               <td className="py-4 px-4">
                                 <div className="flex items-center gap-3">
@@ -433,7 +464,8 @@ export default function BusinessDashboard() {
                                 </Button>
                               </td>
                             </tr>
-                          ))}
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -452,7 +484,16 @@ export default function BusinessDashboard() {
                       </Button>
                     </div>
                     <div className="space-y-4">
-                      {pendingPayments.map((payment) => (
+                      {loading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : pendingPayments.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No pending payments
+                        </div>
+                      ) : (
+                        pendingPayments.map((payment) => (
                         <div
                           key={payment.id}
                           className="flex items-center justify-between p-3 rounded-xl bg-muted/50"
@@ -470,7 +511,8 @@ export default function BusinessDashboard() {
                             )}
                           </div>
                         </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
 

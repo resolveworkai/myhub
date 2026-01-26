@@ -42,10 +42,10 @@ The backend uses JWT (JSON Web Tokens) for authentication with access and refres
 5. Checks account status
 6. For normal users, verifies email is verified
 7. Generates JWT access and refresh tokens
-8. Returns user data and tokens (including account_type for role-based routing)
-9. Frontend redirects based on account type:
-   - Member/User → `/dashboard` or `/user-dashboard`
-   - Business Owner → `/business-dashboard`
+8. Returns user data and tokens (including `account_type` field: 'user' or 'business_user' for role-based routing)
+9. Frontend maps `account_type` to `accountType` ('normal' or 'business') and redirects:
+   - Member/User (`account_type: 'user'`) → `/dashboard`
+   - Business Owner (`account_type: 'business_user'`) → `/business-dashboard`
 
 ## JWT Tokens
 
