@@ -25,12 +25,10 @@ import {
   Star,
   Crown,
   CreditCard,
-  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSchedules } from "@/hooks/useSchedules";
-import { useAuthStore } from "@/store/authStore";
-import { useSubscriptionStore } from "@/store/subscriptionStore";
+import { useVenueAccess } from "@/hooks/useVenueAccess";
 import { toast } from "@/hooks/use-toast";
 import { GuestAuthPrompt } from "@/components/auth/GuestAuthPrompt";
 import { MonthlyBookingModal } from "@/components/booking/MonthlyBookingModal";
@@ -79,8 +77,15 @@ const durations = [
 
 export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuthStore();
-  const { getActiveSubscription, hasValidSubscription } = useSubscriptionStore();
+  
+  // Use the centralized venue access hook
+  const { 
+    hasAccess: hasSubscription, 
+    subscription: activeSubscription, 
+    isMonthly: isMonthlySubscriber,
+    isAuthenticated,
+    user 
+  } = useVenueAccess(venue.id);
   
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -91,28 +96,11 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
   const [showMonthlyBooking, setShowMonthlyBooking] = useState(false);
   const [showMembershipModal, setShowMembershipModal] = useState(false);
-  const [showPaymentStep, setShowPaymentStep] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
   const userId = user?.id || "guest";
   const userName = user 
     ? ('name' in user ? user.name : user.businessName) 
     : "Guest";
-
-  // Check for active subscription using subscription store
-  const activeSubscription = useMemo(() => {
-    if (!user?.id) return null;
-    return getActiveSubscription(user.id, venue.id);
-  }, [user?.id, venue.id, getActiveSubscription]);
-
-  const hasSubscription = !!activeSubscription;
-  const isMonthlySubscriber = activeSubscription?.type === 'monthly';
-
-  // Calculate price for single session (for non-subscribers)
-  const sessionPrice = useMemo(() => {
-    const pricePerHour = parseInt(venue.price.replace(/[^\d]/g, '')) || 100;
-    return Math.round((pricePerHour * selectedDuration) / 60);
-  }, [venue.price, selectedDuration]);
 
   // Check if slot time is valid (at least 2 hours from now for same-day)
   const isSlotTimeValid = (slotTime: string, date: Date | undefined) => {
@@ -154,18 +142,9 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
       return;
     }
     
-    // For non-subscribers, show payment step
-    if (!hasSubscription && !showPaymentStep) {
-      setShowPaymentStep(true);
-      return;
-    }
-    
-    // For paid bookings, validate payment method
-    if (!hasSubscription && !selectedPaymentMethod) {
-      toast({
-        title: "Please select a payment method",
-        variant: "destructive",
-      });
+    // If no subscription, show membership modal (subscription-first enforcement)
+    if (!hasSubscription) {
+      setShowMembershipModal(true);
       return;
     }
 
@@ -210,7 +189,7 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
 
   const handleMembershipSelected = (plan: 'daily' | 'weekly' | 'monthly') => {
     setShowMembershipModal(false);
-    // Subscription is now active, proceed to booking
+    // Subscription is now active, proceed with booking
     toast({
       title: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Pass Activated!`,
       description: "You can now book sessions at this venue.",
@@ -223,8 +202,6 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
     setSelectedTime(undefined);
     setSelectedDuration(60);
     setNotes("");
-    setShowPaymentStep(false);
-    setSelectedPaymentMethod("");
     onClose();
   };
 
@@ -251,7 +228,7 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Subscription Status Badge */}
+          {/* Subscription Status Badge - for subscribers */}
           {hasSubscription && step === 1 && (
             <div className="p-3 sm:p-4 rounded-xl bg-success/5 border border-success/20 mb-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -281,25 +258,25 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
             </div>
           )}
           
-          {/* No Subscription - Show options */}
+          {/* No Subscription - Show "Get a Pass" prompt (for authenticated users only) */}
           {isAuthenticated && !hasSubscription && step === 1 && (
-            <div className="p-3 sm:p-4 rounded-xl bg-info/5 border border-info/20 mb-4">
+            <div className="p-3 sm:p-4 rounded-xl bg-warning/5 border border-warning/20 mb-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center shrink-0">
-                    <CreditCard className="h-5 w-5 text-info" />
+                  <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center shrink-0">
+                    <CreditCard className="h-5 w-5 text-warning" />
                   </div>
                   <div>
                     <p className="font-medium text-sm">No Active Pass</p>
                     <p className="text-xs text-muted-foreground">
-                      Purchase a pass or pay per session
+                      Get a pass to book sessions at this venue
                     </p>
                   </div>
                 </div>
                 <Button
                   size="sm"
-                  variant="outline"
-                  className="border-info text-info hover:bg-info/10 w-full sm:w-auto"
+                  variant="gradient"
+                  className="w-full sm:w-auto"
                   onClick={() => setShowMembershipModal(true)}
                 >
                   Get a Pass
@@ -457,8 +434,8 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
             </div>
           )}
 
-          {/* Step 3: Duration & Notes (or Payment for non-subscribers) */}
-          {step === 3 && !showPaymentStep && (
+          {/* Step 3: Duration & Notes - Confirmation (only for subscribers) */}
+          {step === 3 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-foreground text-sm sm:text-base">Booking Details</h3>
@@ -516,16 +493,16 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
                 />
               </div>
               
-              {/* Price Preview for non-subscribers */}
-              {!hasSubscription && (
-                <div className="p-3 sm:p-4 rounded-xl bg-info/5 border border-info/20">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm font-medium">Session Cost</span>
-                    <span className="text-lg sm:text-xl font-bold text-primary">₹{sessionPrice}</span>
+              {/* Subscription confirmation badge */}
+              {hasSubscription && (
+                <div className="p-3 sm:p-4 rounded-xl bg-success/5 border border-success/20">
+                  <div className="flex items-center gap-3">
+                    <Crown className="h-5 w-5 text-success shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-success">Included in your {activeSubscription?.type} pass</p>
+                      <p className="text-xs text-muted-foreground">No additional payment required</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Pay per session • No commitment
-                  </p>
                 </div>
               )}
 
@@ -539,83 +516,7 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
                   onClick={handleBooking}
                   disabled={isSubmitting}
                 >
-                  {hasSubscription 
-                    ? (isSubmitting ? "Booking..." : "Confirm Booking")
-                    : `Pay ₹${sessionPrice}`
-                  }
-                </Button>
-              </div>
-            </div>
-          )}
-          
-          {/* Step 3b: Payment Step for non-subscribers */}
-          {step === 3 && showPaymentStep && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-foreground text-sm sm:text-base">Complete Payment</h3>
-                <Button variant="ghost" size="sm" onClick={() => setShowPaymentStep(false)} className="text-xs sm:text-sm">
-                  Back
-                </Button>
-              </div>
-
-              {/* Booking Summary */}
-              <div className="p-3 sm:p-4 rounded-xl bg-muted/50 space-y-2">
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <MapPin className="h-4 w-4 text-primary shrink-0" />
-                  <span className="font-medium truncate">{venue.name}</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="truncate">{selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                  {timeSlots.find(s => s.time === selectedTime)?.label} ({selectedDuration} min)
-                </div>
-              </div>
-              
-              {/* Amount */}
-              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
-                <p className="text-xs sm:text-sm text-muted-foreground">Amount to Pay</p>
-                <p className="text-2xl sm:text-3xl font-bold text-primary">₹{sessionPrice}</p>
-              </div>
-
-              {/* Payment Methods */}
-              <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-foreground">Payment Method</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { id: "card", label: "Card", icon: CreditCard },
-                    { id: "upi", label: "UPI", icon: Wallet },
-                  ].map((method) => (
-                    <button
-                      key={method.id}
-                      onClick={() => setSelectedPaymentMethod(method.id)}
-                      className={cn(
-                        "p-3 rounded-lg border-2 flex items-center justify-center gap-2 transition-all",
-                        selectedPaymentMethod === method.id
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
-                      )}
-                    >
-                      <method.icon className="h-4 w-4" />
-                      <span className="font-medium text-sm">{method.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 h-10 sm:h-auto" onClick={() => setShowPaymentStep(false)}>
-                  Back
-                </Button>
-                <Button
-                  variant="gradient"
-                  className="flex-1 h-10 sm:h-auto"
-                  onClick={handleBooking}
-                  disabled={isSubmitting || !selectedPaymentMethod}
-                >
-                  {isSubmitting ? "Processing..." : `Pay ₹${sessionPrice}`}
+                  {isSubmitting ? "Booking..." : "Confirm Booking"}
                 </Button>
               </div>
             </div>
