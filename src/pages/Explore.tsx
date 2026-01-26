@@ -11,6 +11,7 @@ import { usePagination } from "@/hooks/usePagination";
 import { FilterPanel } from "@/components/explore/FilterPanel";
 import { ActiveFilters } from "@/components/explore/ActiveFilters";
 import { SavedSearches } from "@/components/explore/SavedSearches";
+import { SubscriptionBadge } from "@/components/common/SubscriptionBadge";
 import { useFilterStore, VenueCategory } from "@/store/filterStore";
 import { useFavoriteStore } from "@/store/favoriteStore";
 import { useVenueStore } from "@/store/venueStore";
@@ -380,8 +381,9 @@ export default function Explore() {
                               }`}
                             />
                           </button>
-                          <div className="absolute bottom-3 left-3">
+                          <div className="absolute bottom-3 left-3 flex items-center gap-2">
                             {getStatusBadge(business.status)}
+                            <SubscriptionBadge venueId={business.id} variant="card" />
                           </div>
                           {business.verified && (
                             <div className="absolute top-3 left-3">

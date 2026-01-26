@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { MembershipPaymentModal } from "@/components/payments/MembershipPaymentModal";
+import { SubscriptionBadge } from "@/components/common/SubscriptionBadge";
 import {
   Star,
   MapPin,
@@ -374,6 +375,10 @@ export default function BusinessDetail() {
                   {venue.name}
                 </h1>
                 <p className="text-lg text-muted-foreground mb-4">{venue.description}</p>
+                
+                {/* Subscription Status Indicator */}
+                <SubscriptionBadge venueId={venue.id} variant="default" className="mb-4" />
+                
                 <div className="flex flex-wrap items-center gap-4 text-sm">
                   <div className="flex items-center gap-1">
                     <Star className="h-5 w-5 fill-warning text-warning" />
