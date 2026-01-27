@@ -84,7 +84,8 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
     subscription: activeSubscription, 
     isMonthly: isMonthlySubscriber,
     isAuthenticated,
-    user 
+    user,
+    refresh: refreshSubscription
   } = useVenueAccess(venue.id);
   
   const [step, setStep] = useState(1);
@@ -189,6 +190,8 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
 
   const handleMembershipSelected = (plan: 'daily' | 'weekly' | 'monthly') => {
     setShowMembershipModal(false);
+    // Refresh subscription status to reflect new purchase
+    refreshSubscription();
     // Subscription is now active, proceed with booking
     toast({
       title: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Pass Activated!`,
