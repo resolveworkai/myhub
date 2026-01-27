@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
 import { SupportModal } from "@/components/support/SupportModal";
+import { ActivePassesCard } from "@/components/dashboard/ActivePassesCard";
 
 const enrollments = [
   {
@@ -245,6 +246,9 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
 
         {/* Right Sidebar */}
         <div className="space-y-8">
+          {/* Active Passes */}
+          <ActivePassesCard />
+
           {/* Pending Fees */}
           {pendingFees.length > 0 && (
             <div className="bg-card rounded-2xl border border-warning/50 p-6">

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 
@@ -8,12 +8,19 @@ import { useSubscriptionStore } from '@/store/subscriptionStore';
  */
 export function useVenueAccess(venueId: string) {
   const { user, isAuthenticated } = useAuthStore();
-  const { getActiveSubscription } = useSubscriptionStore();
+  const { getActiveSubscription, subscriptions } = useSubscriptionStore();
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Trigger a refresh to re-check subscription status
+  const refresh = useCallback(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, []);
 
   const subscription = useMemo(() => {
     if (!user?.id) return null;
     return getActiveSubscription(user.id, venueId);
-  }, [user?.id, venueId, getActiveSubscription]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, venueId, getActiveSubscription, subscriptions, refreshKey]);
 
   return {
     /** Whether the user has an active subscription for this venue */
@@ -30,5 +37,7 @@ export function useVenueAccess(venueId: string) {
     isAuthenticated,
     /** The user object */
     user,
+    /** Manually refresh subscription status */
+    refresh,
   };
 }
