@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { 
   Calendar, 
   MapPin, 
@@ -12,6 +13,7 @@ import {
   BarChart3,
   Smartphone,
 } from "lucide-react";
+import { useEnabledCategories } from "@/hooks/useEnabledCategories";
 
 const features = [
   {
@@ -82,6 +84,17 @@ const businessFeatures = [
 ];
 
 export function FeaturesSection() {
+  const { categories } = useEnabledCategories();
+  
+  // Build description dynamically based on enabled categories
+  const categoryNames = useMemo(() => {
+    const names = categories.map((c) => c.namePlural.toLowerCase());
+    if (names.length === 0) return "services";
+    if (names.length === 1) return names[0];
+    if (names.length === 2) return `${names[0]} and ${names[1]}`;
+    return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+  }, [categories]);
+
   return (
     <section id="features" className="py-12 sm:py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4 lg:px-8">
@@ -96,7 +109,7 @@ export function FeaturesSection() {
           </h2>
           <p className="text-sm sm:text-base lg:text-lg text-muted-foreground px-4">
             Whether you're a fitness enthusiast, a bookworm, or a lifelong learner,
-            Portal has the tools to help you achieve your goals.
+            Portal has the tools to help you find and book {categoryNames}.
           </p>
         </div>
 
