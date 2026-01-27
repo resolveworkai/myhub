@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { BusinessUser } from './authStore';
+import { isVenueTypeEnabled } from '@/config/businessCategories';
 import gymsData from '@/data/mock/gyms.json';
 import coachingData from '@/data/mock/coaching.json';
 import librariesData from '@/data/mock/libraries.json';
@@ -156,7 +157,9 @@ export const useVenueStore = create<VenueStore>()(
         const registeredIds = new Set(registeredVenues.map((v) => v.id));
         const filteredMock = mockVenues.filter((v) => !registeredIds.has(v.id));
         
-        return [...filteredMock, ...registeredVenues];
+        // Filter by enabled categories
+        const allVenues = [...filteredMock, ...registeredVenues];
+        return allVenues.filter((v) => isVenueTypeEnabled(v.type));
       },
 
       getVenueById: (id: string) => {

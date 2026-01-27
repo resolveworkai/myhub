@@ -12,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
+import { isCategoryEnabled } from '@/config/businessCategories';
 
 import {
   universalAmenities,
@@ -232,7 +233,7 @@ export function FilterPanel({ activeCategory }: FilterPanelProps) {
       </FilterSection>
 
       {/* Gym-specific filters */}
-      {(activeCategory === 'gym' || activeCategory === 'all') && (
+      {isCategoryEnabled('gym') && (activeCategory === 'gym' || activeCategory === 'all') && (
         <>
           <div className="pt-2 border-t border-border">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -267,7 +268,7 @@ export function FilterPanel({ activeCategory }: FilterPanelProps) {
       )}
 
       {/* Coaching-specific filters */}
-      {(activeCategory === 'coaching' || activeCategory === 'all') && (
+      {isCategoryEnabled('coaching') && (activeCategory === 'coaching' || activeCategory === 'all') && (
         <>
           <div className="pt-2 border-t border-border">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -315,7 +316,7 @@ export function FilterPanel({ activeCategory }: FilterPanelProps) {
       )}
 
       {/* Library-specific filters */}
-      {(activeCategory === 'library' || activeCategory === 'all') && (
+      {isCategoryEnabled('library') && (activeCategory === 'library' || activeCategory === 'all') && (
         <>
           <div className="pt-2 border-t border-border">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">

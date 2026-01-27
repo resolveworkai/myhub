@@ -229,9 +229,12 @@ export const radiusOptions = [
   { value: 50, label: 'Within 50 km' },
 ];
 
-// Category definitions
-export const categories = [
-  { id: 'gym', name: 'Gym', icon: '🏋️', color: 'bg-info/10 text-info' },
-  { id: 'library', name: 'Library', icon: '📚', color: 'bg-success/10 text-success' },
-  { id: 'coaching', name: 'Coaching', icon: '📖', color: 'bg-purple-100 text-purple-700' },
-];
+// Category definitions - now uses dynamic config
+import { getEnabledCategories } from '@/config/businessCategories';
+
+export const categories = getEnabledCategories().map((cat) => ({
+  id: cat.id,
+  name: cat.name,
+  icon: cat.emoji,
+  color: cat.color,
+}));

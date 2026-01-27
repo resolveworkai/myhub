@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,10 +9,8 @@ import {
   Calendar,
   ArrowRight,
   Sparkles,
-  Dumbbell,
-  BookOpen,
-  GraduationCap,
 } from "lucide-react";
+import { useEnabledCategories } from "@/hooks/useEnabledCategories";
 
 const stats = [
   { label: "Venues", value: "2,500+", icon: Users },
@@ -20,16 +18,21 @@ const stats = [
   { label: "Bookings Made", value: "1M+", icon: Calendar },
 ];
 
-const categories = [
-  { name: "Gyms", icon: Dumbbell, href: "/gyms", color: "bg-blue-500/20 text-blue-400" },
-  { name: "Coaching", icon: GraduationCap, href: "/coaching", color: "bg-purple-500/20 text-purple-400" },
-  { name: "Libraries", icon: BookOpen, href: "/libraries", color: "bg-green-500/20 text-green-400" },
-];
-
 export function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
   const navigate = useNavigate();
+  const { categories } = useEnabledCategories();
+
+  // Build categories dynamically based on enabled config
+  const quickCategories = useMemo(() => {
+    return categories.map((cat) => ({
+      name: cat.namePlural,
+      icon: cat.icon,
+      href: cat.route,
+      color: cat.heroColor,
+    }));
+  }, [categories]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +110,7 @@ export function HeroSection() {
 
           {/* Quick Categories */}
           <div className="flex flex-nowrap sm:flex-wrap justify-start sm:justify-center gap-2 sm:gap-3 mb-8 sm:mb-12 animate-slide-up px-4 overflow-x-auto scrollbar-hide pb-2" style={{ animationDelay: "0.25s" }}>
-            {categories.map((cat) => (
+            {quickCategories.map((cat) => (
               <Link
                 key={cat.name}
                 to={cat.href}

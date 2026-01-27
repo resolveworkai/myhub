@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Facebook,
@@ -6,28 +7,7 @@ import {
   Linkedin,
 } from "lucide-react";
 import { SUPPORT_EMAIL } from "@/lib/support";
-
-const footerLinks = {
-  discover: [
-    { name: "Gyms", href: "/gyms" },
-    { name: "Coaching Centers", href: "/coaching" },
-    { name: "Libraries", href: "/libraries" },
-    { name: "Explore All", href: "/explore" },
-  ],
-  company: [
-    { name: "About Us", href: "/about" },
-    { name: "How It Works", href: "/how-it-works" },
-    { name: "For Business", href: "/for-business" },
-    { name: "Contact Us", href: "/contact" },
-  ],
-  support: [
-    { name: "Help Center", href: "/faq" },
-    { name: "FAQ", href: "/faq" },
-    { name: "Email Support", href: `mailto:${SUPPORT_EMAIL}` },
-    { name: "Privacy Policy", href: "/privacy-policy" },
-    { name: "Terms & Conditions", href: "/terms-conditions" },
-  ],
-};
+import { useEnabledCategories } from "@/hooks/useEnabledCategories";
 
 const socialLinks = [
   { name: "Facebook", icon: Facebook, href: "#" },
@@ -37,6 +17,40 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const { categories } = useEnabledCategories();
+
+  // Build discover links dynamically based on enabled categories
+  const discoverLinks = useMemo(() => {
+    const categoryLinks = categories.map((cat) => ({
+      name: cat.namePlural,
+      href: cat.route,
+    }));
+    return [...categoryLinks, { name: "Explore All", href: "/explore" }];
+  }, [categories]);
+
+  const companyLinks = [
+    { name: "About Us", href: "/about" },
+    { name: "How It Works", href: "/how-it-works" },
+    { name: "For Business", href: "/for-business" },
+    { name: "Contact Us", href: "/contact" },
+  ];
+
+  const supportLinks = [
+    { name: "Help Center", href: "/faq" },
+    { name: "FAQ", href: "/faq" },
+    { name: "Email Support", href: `mailto:${SUPPORT_EMAIL}` },
+    { name: "Privacy Policy", href: "/privacy-policy" },
+    { name: "Terms & Conditions", href: "/terms-conditions" },
+  ];
+
+  // Build description based on enabled categories
+  const categoryDescription = useMemo(() => {
+    const names = categories.map((c) => c.namePlural.toLowerCase());
+    if (names.length === 0) return "services";
+    if (names.length === 1) return names[0];
+    if (names.length === 2) return `${names[0]} and ${names[1]}`;
+    return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+  }, [categories]);
   return (
     <footer className="bg-foreground text-background">
       <div className="container mx-auto px-4 lg:px-8 py-12 sm:py-16">
@@ -52,8 +66,7 @@ export function Footer() {
               <span className="font-display font-bold text-lg sm:text-xl">Portal</span>
             </Link>
             <p className="text-background/70 mb-4 sm:mb-6 max-w-sm text-sm sm:text-base">
-              Your gateway to fitness and learning. Discover gyms, coaching centers, 
-              and libraries near you with real-time availability and instant booking.
+              Your gateway to fitness and learning. Discover {categoryDescription} near you with real-time availability and instant booking.
             </p>
             <div className="flex gap-3 sm:gap-4">
               {socialLinks.map((social) => (
@@ -73,7 +86,7 @@ export function Footer() {
           <div>
             <h3 className="font-display font-semibold text-base sm:text-lg mb-3 sm:mb-4">Discover</h3>
             <ul className="space-y-2 sm:space-y-3">
-              {footerLinks.discover.map((link) => (
+              {discoverLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
@@ -90,7 +103,7 @@ export function Footer() {
           <div>
             <h3 className="font-display font-semibold text-base sm:text-lg mb-3 sm:mb-4">Company</h3>
             <ul className="space-y-2 sm:space-y-3">
-              {footerLinks.company.map((link) => (
+              {companyLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
@@ -107,7 +120,7 @@ export function Footer() {
           <div>
             <h3 className="font-display font-semibold text-base sm:text-lg mb-3 sm:mb-4">Support</h3>
             <ul className="space-y-2 sm:space-y-3">
-              {footerLinks.support.map((link) => (
+              {supportLinks.map((link) => (
                 <li key={link.name}>
                   {link.href.startsWith('mailto:') ? (
                     <a

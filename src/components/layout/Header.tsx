@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,6 @@ import {
   X,
   ChevronDown,
   Building2,
-  Dumbbell,
-  BookOpen,
-  GraduationCap,
   HelpCircle,
   Check,
 } from "lucide-react";
@@ -23,14 +20,7 @@ import { useAuthStore } from "@/store/authStore";
 import { UserMenu } from "./UserMenu";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { languages } from "@/i18n";
-
-const navigation = [
-  { nameKey: "nav.gyms", href: "/gyms", icon: Dumbbell },
-  { nameKey: "nav.coaching", href: "/coaching", icon: GraduationCap },
-  { nameKey: "nav.libraries", href: "/libraries", icon: BookOpen },
-  { nameKey: "nav.howItWorks", href: "/how-it-works", icon: HelpCircle },
-  { nameKey: "nav.forBusiness", href: "/for-business", icon: Building2 },
-];
+import { useEnabledCategories } from "@/hooks/useEnabledCategories";
 
 export function Header() {
   const { t, i18n } = useTranslation();
@@ -40,8 +30,19 @@ export function Header() {
   const isHomePage = location.pathname === "/";
   
   const { isAuthenticated, accountType } = useAuthStore();
+  const { getNavItems } = useEnabledCategories();
   
   const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
+
+  // Build navigation dynamically based on enabled categories
+  const navigation = useMemo(() => {
+    const categoryNavItems = getNavItems();
+    return [
+      ...categoryNavItems,
+      { nameKey: "nav.howItWorks", href: "/how-it-works", icon: HelpCircle },
+      { nameKey: "nav.forBusiness", href: "/for-business", icon: Building2 },
+    ];
+  }, [getNavItems]);
 
   const handleLanguageChange = (langCode: string) => {
     i18n.changeLanguage(langCode);
