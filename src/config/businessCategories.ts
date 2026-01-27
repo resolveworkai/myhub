@@ -2,7 +2,7 @@ import { Dumbbell, BookOpen, GraduationCap, LucideIcon } from "lucide-react";
 
 /**
  * Business Categories Configuration
- * 
+ *
  * Toggle business categories on/off here.
  * When a category is disabled (false), all related touchpoints will be hidden:
  * - Navigation links
@@ -13,7 +13,7 @@ import { Dumbbell, BookOpen, GraduationCap, LucideIcon } from "lucide-react";
  * - Venue cards of that type
  */
 
-export type BusinessCategoryId = 'gym' | 'library' | 'coaching';
+export type BusinessCategoryId = "gym" | "library" | "coaching";
 
 export interface BusinessCategoryConfig {
   id: BusinessCategoryId;
@@ -35,43 +35,43 @@ export interface BusinessCategoryConfig {
  */
 export const businessCategoryConfig: Record<BusinessCategoryId, BusinessCategoryConfig> = {
   gym: {
-    id: 'gym',
+    id: "gym",
     enabled: true, // Toggle gym visibility
-    name: 'Gym',
-    namePlural: 'Gyms',
+    name: "Gym",
+    namePlural: "Gyms",
     icon: Dumbbell,
-    emoji: '🏋️',
-    route: '/gyms',
-    navKey: 'nav.gyms',
-    color: 'bg-info/10 text-info',
-    heroColor: 'bg-blue-500/20 text-blue-400',
-    filterColor: 'bg-info/10 text-info border-info/30',
+    emoji: "🏋️",
+    route: "/gyms",
+    navKey: "nav.gyms",
+    color: "bg-info/10 text-info",
+    heroColor: "bg-blue-500/20 text-blue-400",
+    filterColor: "bg-info/10 text-info border-info/30",
   },
   coaching: {
-    id: 'coaching',
-    enabled: true, // Toggle coaching visibility
-    name: 'Coaching',
-    namePlural: 'Coaching',
+    id: "coaching",
+    enabled: false, // Toggle coaching visibility
+    name: "Coaching",
+    namePlural: "Coaching",
     icon: GraduationCap,
-    emoji: '📖',
-    route: '/coaching',
-    navKey: 'nav.coaching',
-    color: 'bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400',
-    heroColor: 'bg-purple-500/20 text-purple-400',
-    filterColor: 'bg-purple-100 text-purple-700 border-purple-200',
+    emoji: "📖",
+    route: "/coaching",
+    navKey: "nav.coaching",
+    color: "bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400",
+    heroColor: "bg-purple-500/20 text-purple-400",
+    filterColor: "bg-purple-100 text-purple-700 border-purple-200",
   },
   library: {
-    id: 'library',
+    id: "library",
     enabled: true, // Toggle library visibility
-    name: 'Library',
-    namePlural: 'Libraries',
+    name: "Library",
+    namePlural: "Libraries",
     icon: BookOpen,
-    emoji: '📚',
-    route: '/libraries',
-    navKey: 'nav.libraries',
-    color: 'bg-success/10 text-success',
-    heroColor: 'bg-green-500/20 text-green-400',
-    filterColor: 'bg-success/10 text-success border-success/30',
+    emoji: "📚",
+    route: "/libraries",
+    navKey: "nav.libraries",
+    color: "bg-success/10 text-success",
+    heroColor: "bg-green-500/20 text-green-400",
+    filterColor: "bg-success/10 text-success border-success/30",
   },
 };
 
@@ -101,9 +101,9 @@ export function getEnabledCategoryIds(): BusinessCategoryId[] {
  */
 export function normalizeVenueType(type: string): BusinessCategoryId | null {
   const normalized = type.toLowerCase();
-  if (normalized === 'gym' || normalized === 'gyms') return 'gym';
-  if (normalized === 'library' || normalized === 'libraries') return 'library';
-  if (normalized === 'coaching') return 'coaching';
+  if (normalized === "gym" || normalized === "gyms") return "gym";
+  if (normalized === "library" || normalized === "libraries") return "library";
+  if (normalized === "coaching") return "coaching";
   return null;
 }
 
