@@ -16,6 +16,8 @@ import {
   updateNotificationPreferences,
   updateSecuritySettings,
   togglePublishStatus,
+  changePassword,
+  getBusinessVenueId,
 } from '../controllers/businessController';
 import { authenticate, requireBusiness } from '../middleware/auth';
 import { validate } from '../middleware/validation';
@@ -67,5 +69,11 @@ router.get('/analytics', getBusinessAnalytics);
 
 // Announcements route
 router.post('/announcements', validate(sendAnnouncementSchema), sendAnnouncement);
+
+// Password change
+router.post('/change-password', changePassword);
+
+// Get business venue ID
+router.get('/venue-id', getBusinessVenueId);
 
 export default router;

@@ -466,9 +466,9 @@ export const getVenueById = async (id: string): Promise<Venue> => {
 };
 
 // Get venue schedule
-export const getVenueSchedule = async (venueId: string, date?: string): Promise<any[]> => {
+export const getVenueSchedule = async (venueId: string, date?: string): Promise<{ date: string; timeSlot: string; totalSlots: number; bookedSlots: number; availableSlots: number }[]> => {
   const params = date ? `?date=${date}` : '';
-  const result = await api.get<any[]>(`/venues/${venueId}/schedule${params}`);
+  const result = await api.get<{ date: string; timeSlot: string; totalSlots: number; bookedSlots: number; availableSlots: number }[]>(`/venues/${venueId}/schedule${params}`);
   return result;
 };
 
@@ -477,8 +477,8 @@ export const getVenueReviews = async (
   venueId: string,
   page: number = 1,
   limit: number = 10
-): Promise<{ reviews: any[]; pagination: any }> => {
-  const result = await api.get<{ reviews: any[]; pagination: any }>(
+): Promise<{ reviews: { id: string; userId: string; venueId: string; rating: number; comment: string; createdAt: string; userName?: string; userAvatar?: string }[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> => {
+  const result = await api.get<{ reviews: { id: string; userId: string; venueId: string; rating: number; comment: string; createdAt: string; userName?: string; userAvatar?: string }[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
     `/venues/${venueId}/reviews?page=${page}&limit=${limit}`
   );
   return result;
@@ -533,13 +533,13 @@ export const getUserBookings = async (filters: {
   status?: string;
   page?: number;
   limit?: number;
-} = {}): Promise<{ bookings: Booking[]; pagination: any }> => {
+} = {}): Promise<{ bookings: Booking[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> => {
   const params = new URLSearchParams();
   if (filters.status) params.append('status', filters.status);
   if (filters.page) params.append('page', filters.page.toString());
   if (filters.limit) params.append('limit', filters.limit.toString());
 
-  const result = await api.get<{ bookings: Booking[]; pagination: any }>(
+  const result = await api.get<{ bookings: Booking[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
     `/bookings?${params.toString()}`
   );
   return result;
@@ -558,10 +558,32 @@ export const getBusinessBookings = async (filters: {
   if (filters.page) params.append('page', filters.page.toString());
   if (filters.limit) params.append('limit', filters.limit.toString());
 
-  const result = await api.get<{ bookings: Booking[]; pagination: any }>(
+  const result = await api.get<{ success: boolean; data: { bookings: Booking[]; pagination: { page: number; limit: number; total: number; totalPages: number } } }>(
     `/bookings/business/all?${params.toString()}`
   );
-  return result;
+  return result.data || { bookings: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+};
+
+// Update booking status (for business users)
+export const updateBookingStatus = async (bookingId: string, status: string): Promise<Booking> => {
+  const result = await api.patch<{ success: boolean; data: Booking }>(`/bookings/business/${bookingId}/status`, { status });
+  return result.data;
+};
+
+// Create business appointment
+export const createBusinessAppointment = async (data: {
+  userName: string;
+  userEmail?: string;
+  userPhone?: string;
+  venueId: string;
+  date: string;
+  time: string;
+  duration: number;
+  attendees?: number;
+  specialRequests?: string;
+}): Promise<Booking> => {
+  const result = await api.post<{ success: boolean; data: Booking }>('/bookings/business', data);
+  return result.data;
 };
 
 // Get booking by ID
@@ -856,6 +878,76 @@ export const updateSecuritySettings = async (settings: {
 export const togglePublishStatus = async (isPublished: boolean): Promise<BusinessUser> => {
   const result = await api.patch<{ data: BusinessUser }>('/business/settings/publish', { isPublished });
   return result.data;
+};
+
+export const changeBusinessPassword = async (
+  currentPassword: string,
+  newPassword: string
+): Promise<void> => {
+  await api.post('/business/change-password', { currentPassword, newPassword });
+};
+
+// Get business venue ID
+export const getBusinessVenueId = async (): Promise<string | null> => {
+  const result = await api.get<{ success: boolean; data: { venueId: string | null } }>('/business/venue-id');
+  return result.data?.venueId || null;
+};
+
+// Get business payments
+export const getBusinessPayments = async (filters: {
+  status?: string;
+  type?: string;
+  page?: number;
+  limit?: number;
+} = {}): Promise<{ payments: any[]; pagination: any }> => {
+  const params = new URLSearchParams();
+  if (filters.status) params.append('status', filters.status);
+  if (filters.type) params.append('type', filters.type);
+  if (filters.page) params.append('page', filters.page.toString());
+  if (filters.limit) params.append('limit', filters.limit.toString());
+
+  const result = await api.get<{ payments: any[]; pagination: any }>(
+    `/payments/business?${params.toString()}`
+  );
+  return result;
+};
+
+// Create payment
+export const createPayment = async (data: {
+  userId?: string;
+  amount: number;
+  type: string;
+  paymentMethod?: string;
+  dueDate?: string;
+  notes?: string;
+  memberName?: string;
+  memberEmail?: string;
+  memberPhone?: string;
+}): Promise<any> => {
+  const result = await api.post<{ success: boolean; data: any }>('/payments/business', data);
+  return result.data;
+};
+
+// Update payment status
+export const updatePaymentStatus = async (paymentId: string, status: string, paymentMethod?: string): Promise<any> => {
+  const result = await api.patch<{ data: any }>(`/payments/business/${paymentId}/status`, { status, paymentMethod });  
+  return result.data;
+};
+
+// Get business payment stats
+export const getBusinessPaymentStats = async (): Promise<{
+  totalRevenue: number;
+  pendingDues: number;
+  paidThisMonth: number;
+  overdue: number;
+}> => {
+  const result = await api.get<{
+  totalRevenue: number;
+  pendingDues: number;
+  paidThisMonth: number;
+  overdue: number;
+}>('/payments/business/stats');
+  return result;
 };
 
 // ========== NOTIFICATION API ==========

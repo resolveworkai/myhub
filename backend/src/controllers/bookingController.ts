@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { bookingService } from '../services/bookingService';
 import { asyncHandler } from '../middleware/errorHandler';
+import { pool } from '@/db/pool';
 
 // Extend Request to include user info from auth middleware
 interface AuthRequest extends Request {
@@ -164,5 +165,94 @@ export const getBusinessBookings = asyncHandler(async (req: AuthRequest, res: Re
   res.json({
     success: true,
     data: result,
+  });
+});
+
+/**
+ * Update booking status (for business users)
+ */
+export const updateBookingStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!status || !['pending', 'confirmed', 'completed', 'cancelled'].includes(status)) {
+    return res.status(400).json({
+      success: false,
+      error: { message: 'Valid status is required', code: 'VALIDATION_ERROR' },
+    });
+  }
+
+  const booking = await bookingService.updateBookingStatus(id, businessUserId, status);
+
+  res.json({
+    success: true,
+    message: 'Booking status updated successfully',
+    data: booking,
+  });
+});
+
+/**
+ * Create booking for business (walk-in/appointment)
+ */
+export const createBusinessBooking = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const { userName, userEmail, userPhone, venueId, date, time, duration, attendees, specialRequests } = req.body;
+
+  if (!userName || !venueId || !date || !time || !duration) {
+    return res.status(400).json({
+      success: false,
+      error: { message: 'userName, venueId, date, time, and duration are required', code: 'VALIDATION_ERROR' },
+    });
+  }
+
+  // Get business venue if venueId not provided or is "default"
+  let finalVenueId = venueId;
+  if (!finalVenueId || finalVenueId === "default") {
+    const venueResult = await pool.query(
+      `SELECT id FROM venues WHERE business_user_id = $1 AND deleted_at IS NULL LIMIT 1`,
+      [businessUserId]
+    );
+    if (venueResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'No venue found for this business. Please create a venue first.', code: 'NOT_FOUND' },
+      });
+    }
+    finalVenueId = venueResult.rows[0].id;
+  }
+
+  const booking = await bookingService.createBusinessBooking(businessUserId, {
+    userName,
+    userEmail,
+    userPhone,
+    venueId: finalVenueId,
+    date,
+    time,
+    duration,
+    attendees,
+    specialRequests,
+  });
+
+  res.status(201).json({
+    success: true,
+    message: 'Appointment created successfully',
+    data: booking,
   });
 });

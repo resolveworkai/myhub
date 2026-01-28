@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +42,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
+import { getBusinessPayments, createPayment as createPaymentAPI, updatePaymentStatus as updatePaymentStatusAPI, getBusinessPaymentStats } from "@/lib/apiService";
 
 interface Payment {
   id: string;
@@ -55,21 +56,9 @@ interface Payment {
   method?: string;
 }
 
-const initialPayments: Payment[] = [
-  { id: "p1", memberName: "Rahul Sharma", memberEmail: "rahul@email.com", amount: 1999, type: "membership", status: "paid", date: "2026-01-20", method: "UPI" },
-  { id: "p2", memberName: "Priya Patel", memberEmail: "priya@email.com", amount: 3999, type: "membership", status: "paid", date: "2026-01-18", method: "Card" },
-  { id: "p3", memberName: "Amit Kumar", memberEmail: "amit@email.com", amount: 999, type: "membership", status: "pending", date: "2026-01-15", dueDate: "2026-01-25" },
-  { id: "p4", memberName: "Sneha Gupta", memberEmail: "sneha@email.com", amount: 500, type: "session", status: "paid", date: "2026-01-22", method: "Cash" },
-  { id: "p5", memberName: "Vikram Singh", memberEmail: "vikram@email.com", amount: 1999, type: "membership", status: "overdue", date: "2026-01-01", dueDate: "2026-01-15" },
-  { id: "p6", memberName: "Neha Roy", memberEmail: "neha@email.com", amount: 2500, type: "product", status: "refunded", date: "2026-01-10" },
-];
+// Payments will be loaded from API
 
-const stats = [
-  { label: "Total Revenue", value: "₹4,52,500", change: "+12%", icon: IndianRupee, color: "text-success" },
-  { label: "Pending Dues", value: "₹78,500", change: "-5%", icon: Clock, color: "text-warning" },
-  { label: "Paid This Month", value: "156", change: "+8%", icon: CheckCircle, color: "text-primary" },
-  { label: "Overdue", value: "12", change: "-2", icon: AlertCircle, color: "text-destructive" },
-];
+// Stats will be populated from API
 
 const statusColors = {
   paid: "success",
@@ -79,7 +68,14 @@ const statusColors = {
 } as const;
 
 export default function BusinessPayments() {
-  const [payments, setPayments] = useState<Payment[]>(initialPayments);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [paymentStats, setPaymentStats] = useState({
+    totalRevenue: 0,
+    pendingDues: 0,
+    paidThisMonth: 0,
+    overdue: 0,
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -93,6 +89,46 @@ export default function BusinessPayments() {
     dueDate: "",
   });
 
+  // Fetch payments and stats
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const filters: any = {};
+        if (filterStatus !== "all") filters.status = filterStatus;
+        
+        const [paymentsResult, statsResult] = await Promise.all([
+          getBusinessPayments(filters),
+          getBusinessPaymentStats(),
+        ]);
+        
+        // Handle response structure - could be { payments: ... } or { data: { payments: ... } }
+        const paymentsList = paymentsResult?.payments || [];
+        
+        const formatted = paymentsList.map((p: any) => ({
+          id: p.id,
+          memberName: p.userName || "Guest",
+          memberEmail: p.userEmail || "",
+          amount: p.amount,
+          type: p.type,
+          status: p.status,
+          date: p.date,
+          dueDate: p.dueDate,
+          method: p.method,
+        }));
+        setPayments(formatted);
+        setPaymentStats(statsResult);
+      } catch (error: any) {
+        toast.error("Failed to load payments");
+        console.error("Payments error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [filterStatus]);
+
   const filteredPayments = useMemo(() => {
     return payments.filter((p) => {
       const matchesSearch = p.memberName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -103,30 +139,56 @@ export default function BusinessPayments() {
 
   const pendingPayments = payments.filter((p) => p.status === "pending" || p.status === "overdue");
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!formData.memberName || !formData.amount) {
       toast.error("Please fill required fields");
       return;
     }
-    const newPayment: Payment = {
-      id: `p${Date.now()}`,
-      memberName: formData.memberName,
-      memberEmail: formData.memberEmail,
-      amount: Number(formData.amount),
-      type: formData.type,
-      status: "pending",
-      date: new Date().toISOString().split("T")[0],
-      dueDate: formData.dueDate || undefined,
-    };
-    setPayments([newPayment, ...payments]);
-    setFormData({ memberName: "", memberEmail: "", amount: "", type: "membership", dueDate: "" });
-    setIsAddOpen(false);
-    toast.success("Payment record created");
+    try {
+      await createPaymentAPI({
+        userId: formData.memberEmail || formData.memberName,
+        amount: Number(formData.amount),
+        type: formData.type,
+        dueDate: formData.dueDate || undefined,
+        memberName: formData.memberName,
+        memberEmail: formData.memberEmail || undefined,
+      });
+      setFormData({ memberName: "", memberEmail: "", amount: "", type: "membership", dueDate: "" });
+      setIsAddOpen(false);
+      toast.success("Payment record created");
+      // Refresh payments
+      const filters: any = {};
+      if (filterStatus !== "all") filters.status = filterStatus;
+      const result = await getBusinessPayments(filters);
+      const paymentsList = result?.payments || result?.payments || [];
+      const formatted = paymentsList.map((p: any) => ({
+        id: p.id,
+        memberName: p.userName || "Guest",
+        memberEmail: p.userEmail || "",
+        amount: p.amount,
+        type: p.type,
+        status: p.status,
+        date: p.date,
+        dueDate: p.dueDate,
+        method: p.method,
+      }));
+      setPayments(formatted);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to create payment record");
+    }
   };
 
-  const handleMarkPaid = (id: string) => {
-    setPayments(payments.map((p) => p.id === id ? { ...p, status: "paid" as const, method: "Manual" } : p));
-    toast.success("Payment marked as paid");
+  const handleMarkPaid = async (id: string) => {
+    try {
+      await updatePaymentStatusAPI(id, "completed", "Manual");
+      setPayments(payments.map((p) => p.id === id ? { ...p, status: "paid" as const, method: "Manual" } : p));
+      toast.success("Payment marked as paid");
+      // Refresh stats
+      const stats = await getBusinessPaymentStats();
+      setPaymentStats(stats);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to update payment");
+    }
   };
 
   const handleSendReminder = () => {
@@ -160,18 +222,34 @@ export default function BusinessPayments() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="bg-card rounded-xl border border-border p-4">
-            <div className="flex items-center justify-between mb-2">
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              <span className={`text-xs font-medium ${stat.change.startsWith("+") ? "text-success" : "text-destructive"}`}>
-                {stat.change}
-              </span>
-            </div>
-            <div className="text-2xl font-bold">{stat.value}</div>
-            <div className="text-sm text-muted-foreground">{stat.label}</div>
+        <div className="bg-card rounded-xl border border-border p-4">
+          <div className="flex items-center justify-between mb-2">
+            <IndianRupee className="h-5 w-5 text-success" />
           </div>
-        ))}
+          <div className="text-2xl font-bold">₹{paymentStats.totalRevenue.toLocaleString()}</div>
+          <div className="text-sm text-muted-foreground">Total Revenue</div>
+        </div>
+        <div className="bg-card rounded-xl border border-border p-4">
+          <div className="flex items-center justify-between mb-2">
+            <Clock className="h-5 w-5 text-warning" />
+          </div>
+          <div className="text-2xl font-bold">₹{paymentStats.pendingDues.toLocaleString()}</div>
+          <div className="text-sm text-muted-foreground">Pending Dues</div>
+        </div>
+        <div className="bg-card rounded-xl border border-border p-4">
+          <div className="flex items-center justify-between mb-2">
+            <CheckCircle className="h-5 w-5 text-primary" />
+          </div>
+          <div className="text-2xl font-bold">{paymentStats.paidThisMonth}</div>
+          <div className="text-sm text-muted-foreground">Paid This Month</div>
+        </div>
+        <div className="bg-card rounded-xl border border-border p-4">
+          <div className="flex items-center justify-between mb-2">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+          </div>
+          <div className="text-2xl font-bold">{paymentStats.overdue}</div>
+          <div className="text-sm text-muted-foreground">Overdue</div>
+        </div>
       </div>
 
       <Tabs defaultValue="all">

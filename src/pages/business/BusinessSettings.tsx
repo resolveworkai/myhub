@@ -46,8 +46,9 @@ import {
   updateNotificationPreferences,
   updateSecuritySettings,
   togglePublishStatus,
+  changeBusinessPassword,
+  getBusinessProfile,
 } from "@/lib/apiService";
-import { Console } from "console";
 
 export default function BusinessSettings() {
   const { user, updateUser } = useAuthStore();
@@ -109,6 +110,12 @@ export default function BusinessSettings() {
     sessionTimeout: "30",
   });
 
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
   // Location and media state
   const [location, setLocation] = useState<{ lat: number; lng: number } | undefined>(
     businessUser?.address?.lat && businessUser?.address?.lng
@@ -142,6 +149,21 @@ export default function BusinessSettings() {
     monthly: businessUser?.monthlyPackagePrice || 4999,
   });
 
+  // Fetch business profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profile = await getBusinessProfile();
+        updateUser(profile as Partial<BusinessUser>);
+      } catch (error) {
+        console.error('Failed to fetch business profile:', error);
+      }
+    };
+    
+    // Always fetch profile on mount to ensure fresh data
+    fetchProfile();
+  }, []);
+
   // Sync with user changes
   useEffect(() => {
     if (businessUser) {
@@ -150,12 +172,15 @@ export default function BusinessSettings() {
         email: businessUser.email || "",
         phone: businessUser.phone || "",
         address: businessUser.address?.street || "",
-        description: businessUser.serviceAreas || "",
+        description: businessUser.description || businessUser.serviceAreas || "",
         website: businessUser.website || "",
       });
       setLocation(
         businessUser.address?.lat && businessUser.address?.lng
-          ? { lat: businessUser.address.lat, lng: businessUser.address.lng }
+          ? { 
+              lat: typeof businessUser.address.lat === 'number' ? businessUser.address.lat : parseFloat(String(businessUser.address.lat)), 
+              lng: typeof businessUser.address.lng === 'number' ? businessUser.address.lng : parseFloat(String(businessUser.address.lng))
+            }
           : undefined
       );
       setLogo(businessUser.logo || "");
@@ -163,6 +188,75 @@ export default function BusinessSettings() {
       setGalleryImages(businessUser.galleryImages || []);
       setAmenities(businessUser.amenities || []);
       setIsPublished(businessUser.isPublished || false);
+      
+      // Update pricing
+      if (businessUser.dailyPackagePrice || businessUser.weeklyPackagePrice || businessUser.monthlyPackagePrice) {
+        setPricing({
+          daily: businessUser.dailyPackagePrice || 299,
+          weekly: businessUser.weeklyPackagePrice || 1499,
+          monthly: businessUser.monthlyPackagePrice || 4999,
+        });
+      }
+      
+      // Update operating hours
+      if (businessUser.operatingHours) {
+        setOperatingHours(prev => {
+          const normalized: Record<string, { open: string; close: string; closed: boolean }> = {};
+          Object.entries(businessUser.operatingHours || {}).forEach(([day, hours]: [string, any]) => {
+            normalized[day] = {
+              open: hours.open || prev[day]?.open || "06:00",
+              close: hours.close || prev[day]?.close || "22:00",
+              closed: hours.closed ?? false,
+            };
+          });
+          return { ...defaultHours, ...normalized };
+        });
+      }
+      
+      // Update notifications
+      if (businessUser.notificationPreferences) {
+        setNotifications(prev => ({
+          ...prev,
+          ...businessUser.notificationPreferences,
+        }));
+      }
+      
+      // Update security
+      if (businessUser.securitySettings) {
+        setSecurity(prev => ({
+          ...prev,
+          ...businessUser.securitySettings,
+        }));
+      }
+      
+      // Update attributes
+      if (businessUser.businessAttributes) {
+        const attrs = businessUser.businessAttributes;
+        if (attrs.amenities) setAmenities(attrs.amenities);
+        if (attrs.equipment) setEquipment(attrs.equipment);
+        if (attrs.classTypes) setClassTypes(attrs.classTypes);
+        if (attrs.subjects) setSubjects(attrs.subjects);
+        if (attrs.levels) setLevels(attrs.levels);
+        if (attrs.teachingModes) setTeachingModes(attrs.teachingModes);
+        if (attrs.batchSizes) setBatchSizes(attrs.batchSizes);
+        if (attrs.facilities) setFacilities(attrs.facilities);
+        if (attrs.collections) setCollections(attrs.collections);
+        if (attrs.spaceTypes) setSpaceTypes(attrs.spaceTypes);
+        if (attrs.membershipOptions) setMembershipOptions(attrs.membershipOptions);
+      } else {
+        // Fallback to individual fields
+        if (businessUser.amenities) setAmenities(businessUser.amenities);
+        if (businessUser.equipment) setEquipment(businessUser.equipment);
+        if (businessUser.classTypes) setClassTypes(businessUser.classTypes);
+        if (businessUser.subjects) setSubjects(businessUser.subjects);
+        if (businessUser.levels) setLevels(businessUser.levels);
+        if (businessUser.teachingModes) setTeachingModes(businessUser.teachingModes);
+        if (businessUser.batchSizes) setBatchSizes(businessUser.batchSizes);
+        if (businessUser.facilities) setFacilities(businessUser.facilities);
+        if (businessUser.collections) setCollections(businessUser.collections);
+        if (businessUser.spaceTypes) setSpaceTypes(businessUser.spaceTypes);
+        if (businessUser.membershipOptions) setMembershipOptions(businessUser.membershipOptions);
+      }
     }
   }, [businessUser]);
 
@@ -184,6 +278,15 @@ export default function BusinessSettings() {
         address: businessInfo.address,
         description: businessInfo.description,
       });
+      // Update local state immediately
+      setBusinessInfo({
+        name: updated.businessName || businessInfo.name,
+        email: updated.email || businessInfo.email,
+        phone: updated.phone || businessInfo.phone,
+        website: updated.website || businessInfo.website,
+        address: updated.address?.street || businessInfo.address,
+        description: updated.description || businessInfo.description,
+      });
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Business information updated");
     } catch (error: any) {
@@ -194,6 +297,10 @@ export default function BusinessSettings() {
   const handleSaveHours = async () => {
     try {
       const updated = await updateOperatingHours(operatingHours);
+      // Update local state immediately
+      if (updated.operatingHours) {
+        setOperatingHours(prev => ({ ...prev, ...updated.operatingHours }));
+      }
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Operating hours updated");
     } catch (error: any) {
@@ -204,6 +311,10 @@ export default function BusinessSettings() {
   const handleSaveNotifications = async () => {
     try {
       const updated = await updateNotificationPreferences(notifications);
+      // Update local state immediately
+      if (updated.notificationPreferences) {
+        setNotifications(prev => ({ ...prev, ...updated.notificationPreferences }));
+      }
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Notification preferences saved");
     } catch (error: any) {
@@ -214,6 +325,10 @@ export default function BusinessSettings() {
   const handleSaveSecurity = async () => {
     try {
       const updated = await updateSecuritySettings(security);
+      // Update local state immediately
+      if (updated.securitySettings) {
+        setSecurity(prev => ({ ...prev, ...updated.securitySettings }));
+      }
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Security settings updated");
     } catch (error: any) {
@@ -234,6 +349,16 @@ export default function BusinessSettings() {
         coverImage,
         galleryImages,
       });
+      // Update local state immediately
+      if (updated.address) {
+        setLocation({
+          lat: updated.address.lat || location.lat,
+          lng: updated.address.lng || location.lng,
+        });
+      }
+      if (updated.logo) setLogo(updated.logo);
+      if (updated.coverImage) setCoverImage(updated.coverImage);
+      if (updated.galleryImages) setGalleryImages(updated.galleryImages);
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Location and media updated");
     } catch (error: any) {
@@ -263,6 +388,21 @@ export default function BusinessSettings() {
       }
       
       const updated = await updateBusinessAttributes(attributes);
+      // Update local state immediately
+      if (updated.businessAttributes) {
+        const attrs = updated.businessAttributes as any;
+        if (attrs.amenities) setAmenities(attrs.amenities);
+        if (attrs.equipment) setEquipment(attrs.equipment);
+        if (attrs.classTypes) setClassTypes(attrs.classTypes);
+        if (attrs.subjects) setSubjects(attrs.subjects);
+        if (attrs.levels) setLevels(attrs.levels);
+        if (attrs.teachingModes) setTeachingModes(attrs.teachingModes);
+        if (attrs.batchSizes) setBatchSizes(attrs.batchSizes);
+        if (attrs.facilities) setFacilities(attrs.facilities);
+        if (attrs.collections) setCollections(attrs.collections);
+        if (attrs.spaceTypes) setSpaceTypes(attrs.spaceTypes);
+        if (attrs.membershipOptions) setMembershipOptions(attrs.membershipOptions);
+      }
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Business attributes updated");
     } catch (error: any) {
@@ -869,10 +1009,46 @@ export default function BusinessSettings() {
                 <div className="p-4 rounded-lg bg-muted/50">
                   <div className="font-medium mb-2">Change Password</div>
                   <div className="space-y-3">
-                    <Input type="password" placeholder="Current password" />
-                    <Input type="password" placeholder="New password" />
-                    <Input type="password" placeholder="Confirm new password" />
-                    <Button variant="outline">Update Password</Button>
+                    <Input 
+                      type="password" 
+                      placeholder="Current password" 
+                      value={passwordForm.currentPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                    />
+                    <Input 
+                      type="password" 
+                      placeholder="New password" 
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                    />
+                    <Input 
+                      type="password" 
+                      placeholder="Confirm new password" 
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                    />
+                    <Button 
+                      variant="outline"
+                      onClick={async () => {
+                        if (!passwordForm.currentPassword || !passwordForm.newPassword) {
+                          toast.error("Please fill all password fields");
+                          return;
+                        }
+                        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                          toast.error("New passwords do not match");
+                          return;
+                        }
+                        try {
+                          await changeBusinessPassword(passwordForm.currentPassword, passwordForm.newPassword);
+                          setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                          toast.success("Password updated successfully");
+                        } catch (error: any) {
+                          toast.error(error.response?.data?.error?.message || "Failed to update password");
+                        }
+                      }}
+                    >
+                      Update Password
+                    </Button>
                   </div>
                 </div>
               </div>

@@ -6,6 +6,8 @@ import {
   updateBooking,
   cancelBooking,
   getBusinessBookings,
+  updateBookingStatus,
+  createBusinessBooking,
 } from '../controllers/bookingController';
 import { authenticate, requireBusiness } from '../middleware/auth';
 import { validate } from '../middleware/validation';
@@ -29,5 +31,7 @@ router.delete('/:id', validate(cancelBookingSchema), cancelBooking);
 
 // Business routes
 router.get('/business/all', requireBusiness, getBusinessBookings);
+router.post('/business', requireBusiness, createBusinessBooking);
+router.patch('/business/:id/status', requireBusiness, updateBookingStatus);
 
 export default router;

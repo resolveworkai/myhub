@@ -395,6 +395,84 @@ Cancel booking. **Requires Authentication**
 ### GET /api/bookings/business/all
 Get business bookings. **Requires Business Account**
 
+**Query Parameters:**
+- `status` - Filter by status (pending, confirmed, completed, cancelled)
+- `date` - Filter by booking date (YYYY-MM-DD)
+- `page` - Page number
+- `limit` - Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "bookings": [
+      {
+        "id": "uuid",
+        "userId": "uuid",
+        "venueId": "uuid",
+        "venueName": "Gym Name",
+        "userName": "John Doe",
+        "userEmail": "john@example.com",
+        "date": "2024-12-20",
+        "time": "07:00",
+        "duration": 90,
+        "status": "pending",
+        "totalPrice": 75.0,
+        "attendees": 1
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 50,
+      "totalPages": 3
+    }
+  }
+}
+```
+
+---
+
+### POST /api/bookings/business
+Create booking/appointment for business (walk-in). **Requires Business Account**
+
+**Request:**
+```json
+{
+  "userName": "John Doe",
+  "userEmail": "john@example.com",
+  "userPhone": "+1234567890",
+  "venueId": "uuid",
+  "date": "2024-12-20",
+  "time": "07:00",
+  "duration": 60,
+  "attendees": 1,
+  "specialRequests": "Need equipment"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "message": "Appointment created successfully",
+  "data": {
+    "id": "uuid",
+    "userId": "uuid",
+    "venueId": "uuid",
+    "date": "2024-12-20",
+    "time": "07:00",
+    "duration": 60,
+    "status": "pending",
+    "totalPrice": 50.0,
+    "attendees": 1
+  }
+}
+```
+
+---
+
 ---
 
 ## Review Endpoints
@@ -516,15 +594,39 @@ Get business members. **Requires Business Account**
 ---
 
 ### POST /api/business/members
-Add business member. **Requires Business Account**
+Add business member with membership (standalone - no user table relationship required). **Requires Business Account**
 
 **Request:**
 ```json
 {
-  "userId": "uuid",
-  "notes": "VIP member"
+  "userName": "John Doe",
+  "userEmail": "john@example.com",  // Optional
+  "userPhone": "+971501234567",     // Optional
+  "membershipType": "monthly",      // daily, weekly, or monthly
+  "price": 4999.00,
+  "notes": "VIP member"             // Optional
 }
 ```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "message": "Business member added successfully",
+  "data": {
+    "id": "uuid",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "+971501234567",
+    "membershipType": "monthly",
+    "startDate": "2026-01-26",
+    "endDate": "2026-02-26",
+    "price": 4999.00
+  }
+}
+```
+
+**Note:** Business members are stored in a standalone table (`business_members_standalone`) and do not require a user account. This allows business owners to add members without requiring them to register.
 
 ---
 

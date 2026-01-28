@@ -3,7 +3,7 @@ import { logger } from '../utils/logger';
 import { NotFoundError, ValidationError } from '../utils/errors';
 
 interface VenueFilters {
-  category?: 'gym' | 'coaching' | 'library';
+  category?: 'gym' | 'coaching' | 'library' | 'all';
   city?: string;
   minRating?: number;
   priceRange?: string;
@@ -23,7 +23,7 @@ interface VenueAttributes {
   facilities?: string[];
   classTypes?: string[];
   membershipTypes?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 class VenueService {
@@ -48,7 +48,7 @@ class VenueService {
 
     const offset = (page - 1) * limit;
     const conditions: string[] = ['v.deleted_at IS NULL', 'v.is_published = TRUE'];
-    const params: any[] = [];
+    const params: (string | number | string[] | undefined)[] = [];
     let paramCount = 0;
 
     // Category filter
@@ -164,32 +164,103 @@ class VenueService {
     // Get total count
     // If distance filter is used, we need to calculate distance in a subquery
     let countQuery: string;
-    const countParams = [...params];
+    const countParams: (string | number | string[] | undefined)[] = [];
     
-    if (userLat && userLng && radius && userLatParamIndex && userLngParamIndex && radiusParamIndex) {
+    // Rebuild params for count query (excluding limit/offset)
+    let countParamCount = 0;
+    const countConditions: string[] = [];
+    
+    // Rebuild conditions for count query
+    if (category && category !== 'all') {
+      countParamCount++;
+      countConditions.push(`v.category = $${countParamCount}`);
+      countParams.push(category);
+    }
+    
+    if (city) {
+      countParamCount++;
+      countConditions.push(`LOWER(v.location_city) = LOWER($${countParamCount})`);
+      countParams.push(city);
+    }
+    
+    if (minRating !== undefined) {
+      countParamCount++;
+      countConditions.push(`v.rating >= $${countParamCount}`);
+      countParams.push(minRating);
+    }
+    
+    if (priceRange) {
+      const priceMap: Record<string, { min: number; max: number }> = {
+        $: { min: 0, max: 1000 },
+        $$: { min: 1000, max: 3000 },
+        $$$: { min: 3000, max: Infinity },
+      };
+      let range = priceMap[priceRange];
+
+      if (!range && priceRange.includes(',')) {
+        const [min, max] = priceRange.split(',').map(Number);
+        if (!isNaN(min) && !isNaN(max)) {
+          range = { min, max };
+        }
+      }
+
+      if (range) {
+        if (range.max === Infinity) {
+          countParamCount++;
+          countConditions.push(`v.price >= $${countParamCount}`);
+          countParams.push(range.min);
+        } else {
+          countParamCount++;
+          countConditions.push(`v.price >= $${countParamCount} AND v.price < $${countParamCount + 1}`);
+          countParams.push(range.min, range.max);
+          countParamCount++;
+        }
+      }
+    }
+    
+    if (status && status !== 'all') {
+      countParamCount++;
+      countConditions.push(`v.status = $${countParamCount}`);
+      countParams.push(status);
+    }
+    
+    if (searchQuery) {
+      countParamCount++;
+      countConditions.push(`(LOWER(v.name) LIKE LOWER($${countParamCount}) OR LOWER(v.description) LIKE LOWER($${countParamCount}))`);
+      countParams.push(`%${searchQuery}%`);
+    }
+    
+    const countWhereClause = countConditions.length > 0 ? `WHERE ${countConditions.join(' AND ')}` : '';
+    
+    if (userLat && userLng && radius) {
       // Use subquery to calculate distance and filter by it
+      const latParamIdx = countParamCount + 1;
+      const lngParamIdx = countParamCount + 2;
+      const radiusParamIdx = countParamCount + 3;
+      
       countQuery = `
         SELECT COUNT(*) as total
         FROM (
           SELECT v.id, (
             6371 * acos(
-              cos(radians($${userLatParamIndex})) * 
+              cos(radians($${latParamIdx})) * 
               cos(radians(v.location_lat)) * 
-              cos(radians(v.location_lng) - radians($${userLngParamIndex})) + 
-              sin(radians($${userLatParamIndex})) * 
+              cos(radians(v.location_lng) - radians($${lngParamIdx})) + 
+              sin(radians($${latParamIdx})) * 
               sin(radians(v.location_lat))
             )
           ) as distance
           FROM venues v
-          ${whereClause}
+          ${countWhereClause}
         ) subquery
-        WHERE distance <= $${radiusParamIndex}
+        WHERE distance <= $${radiusParamIdx}
       `;
+      countParams.push(userLat, userLng, radius);
     } else {
       countQuery = `
         SELECT COUNT(*) as total
         FROM venues v
-        ${whereClause}
+        ${countWhereClause}
       `;
     }
     
@@ -349,7 +420,34 @@ class VenueService {
   /**
    * Format venue for response
    */
-  private formatVenue(row: any) {
+  private formatVenue(row: {
+    id: string;
+    name: string;
+    category: string;
+    description: string | null;
+    price: string | number;
+    location_address: string | null;
+    location_city: string | null;
+    location_lat: number | null;
+    location_lng: number | null;
+    capacity: number;
+    status: string;
+    rating: string | number;
+    reviews_count: number;
+    image: string | null;
+    amenities: string[] | null;
+    is_published: boolean;
+    verified: boolean;
+    business_user_id: string | null;
+    business_name: string | null;
+    owner_name: string | null;
+    subscription_tier: string | null;
+    distance?: number;
+    attributes?: string;
+    price_label?: string;
+    occupancy?: number;
+    open_now?: boolean;
+  }) {
     const attributes: VenueAttributes = row.attributes ? JSON.parse(row.attributes) : {};
     
     return {

@@ -22,7 +22,51 @@
 - [Security Measures](./security/security-measures.md)
 - [Backend Architecture](./architecture/backend-architecture.md)
 
-## Recent Updates (January 2026)
+## Recent Updates (Latest)
+
+### Bug Fixes - January 2025
+
+1. **Venue API Distance Column Error**
+   - Fixed SQL COUNT query error when filtering venues by radius
+   - Implemented proper subquery structure for distance calculations
+   - Resolved parameter indexing issues in complex queries
+
+2. **Business Members Phone Constraint**
+   - Made phone field optional for business-created members
+   - Added placeholder email generation for guest users
+   - Enabled flexible member management without strict user table relationship
+
+3. **Business Dashboard Notifications**
+   - Integrated NotificationDropdown component
+   - Fixed notification fetching for business users
+   - Properly mapped account types to user types
+
+4. **Appointments Management**
+   - Added API endpoint for creating business appointments (`POST /api/bookings/business`)
+   - Fixed bookings undefined error in frontend
+   - Removed incorrect `deleted_at` column reference from bookings table
+   - Implemented proper venue ID resolution for appointments
+
+5. **Business Settings Save Functionality**
+   - Fixed all save buttons to immediately reflect changes in UI
+   - Added proper state updates after successful API calls
+   - Ensured data persistence and UI synchronization
+
+6. **Payments Authentication**
+   - Added authentication middleware to payment routes
+   - Fixed 401 unauthorized errors when accessing payment endpoints
+   - Ensured proper business account verification
+
+7. **TypeScript Type Safety**
+   - Replaced critical `any` types with proper interfaces
+   - Added type definitions for booking, venue, and business services
+   - Improved type safety across the application
+
+8. **Export Functionality**
+   - Added Excel/CSV export for business members list
+   - Implemented proper data formatting and download functionality
+
+## Recent Updates (Previous) (January 2026)
 
 - ✅ Complete backend implementation with all API endpoints
 - ✅ Frontend API integration - all mock data replaced with real API calls

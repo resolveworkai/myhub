@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -54,12 +54,28 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { useSubscriptionStore, Subscription } from "@/store/subscriptionStore";
 import { useAuthStore, BusinessUser } from "@/store/authStore";
-import { cancelMembership as cancelMembershipAPI } from "@/lib/apiService";
+import { cancelMembership as cancelMembershipAPI, getBusinessMembers } from "@/lib/apiService";
 import { AssignMembershipModal } from "@/components/business/AssignMembershipModal";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+
+interface BusinessMember {
+  id: string;
+  userId: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  avatar: string | null;
+  assignedAt: string;
+  membershipStatus: string;
+  membershipEndDate: string;
+  membershipType: string;
+  price: number;
+  startDate: string;
+  status: string;
+  notes: string | null;
+}
 
 const typeColors = {
   daily: "bg-muted text-muted-foreground",
@@ -79,23 +95,57 @@ export default function BusinessMembers() {
   const venueId = businessUser?.id || "g1";
   const venueName = businessUser?.businessName || "My Business";
   
-  const {
-    getVenueSubscriptions,
-    getActiveVenueSubscriptions,
-    canDeleteSubscription,
-    cancelSubscription,
-  } = useSubscriptionStore();
-
+  const [members, setMembers] = useState<BusinessMember[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isAssignOpen, setIsAssignOpen] = useState(false);
-  const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
+  const [selectedMember, setSelectedMember] = useState<BusinessMember | null>(null);
 
-  // Get all subscriptions for this venue
-  const allSubscriptions = getVenueSubscriptions(venueId);
-  const activeCount = getActiveVenueSubscriptions(venueId).length;
+  // Fetch members from API
+  useEffect(() => {
+    const fetchMembers = async () => {
+      setLoading(true);
+      try {
+        const result = await getBusinessMembers(1, 100);
+        setMembers(result.members || []);
+      } catch (error) {
+        console.error("Failed to fetch members:", error);
+        toast.error("Failed to load members");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMembers();
+  }, []);
+
+  // Refresh members after adding
+  const refreshMembers = async () => {
+    try {
+      const result = await getBusinessMembers(1, 100);
+      setMembers(result.members || []);
+    } catch (error) {
+      console.error("Failed to refresh members:", error);
+    }
+  };
+
+  const allSubscriptions = members.map(m => ({
+    id: m.id,
+    userName: m.name,
+    userEmail: m.email || "",
+    userPhone: m.phone || "",
+    venueId,
+    venueName,
+    type: m.membershipType as 'daily' | 'weekly' | 'monthly',
+    price: m.price,
+    startDate: m.startDate,
+    endDate: m.membershipEndDate,
+    status: m.status as 'active' | 'expired' | 'cancelled',
+  }));
+
+  const activeCount = allSubscriptions.filter(s => s.status === 'active').length;
 
   const filteredSubscriptions = useMemo(() => {
     return allSubscriptions.filter((sub) => {
@@ -109,24 +159,29 @@ export default function BusinessMembers() {
   }, [allSubscriptions, searchQuery, filterStatus, filterType]);
 
   const handleDelete = async () => {
-    if (!selectedSubscription) return;
+    if (!selectedMember) return;
     
-    const result = canDeleteSubscription(selectedSubscription.id);
-    if (!result.canDelete) {
-      toast.error(result.reason || "Cannot delete this subscription");
-      setIsDeleteOpen(false);
-      return;
+    // Check if monthly membership can be cancelled (30-day lock)
+    if (selectedMember.membershipType === 'monthly') {
+      const startDate = new Date(selectedMember.startDate);
+      const daysSinceStart = Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysSinceStart < 30) {
+        toast.error(`Monthly memberships cannot be cancelled within 30 days. ${30 - daysSinceStart} days remaining.`);
+        setIsDeleteOpen(false);
+        return;
+      }
     }
     
     try {
-      // Call API to cancel membership
-      await cancelMembershipAPI(selectedSubscription.id);
+      // Call API to cancel membership - use the member ID
+      await cancelMembershipAPI(selectedMember.id);
       
-      // Update local store
-      cancelSubscription(selectedSubscription.id);
+      // Refresh members list
+      await refreshMembers();
       
       setIsDeleteOpen(false);
-      setSelectedSubscription(null);
+      setSelectedMember(null);
       toast.success("Subscription cancelled successfully");
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || "Failed to cancel subscription");
@@ -134,8 +189,8 @@ export default function BusinessMembers() {
     }
   };
 
-  const openDelete = (sub: Subscription) => {
-    setSelectedSubscription(sub);
+  const openDelete = (member: BusinessMember) => {
+    setSelectedMember(member);
     setIsDeleteOpen(true);
   };
 
@@ -212,7 +267,41 @@ export default function BusinessMembers() {
               <SelectItem value="monthly">Monthly</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" className="hidden sm:flex">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="hidden sm:flex"
+            onClick={() => {
+              // Export to Excel
+              const headers = ['Name', 'Email', 'Phone', 'Type', 'Status', 'Start Date', 'End Date', 'Price'];
+              const rows = filteredSubscriptions.map(sub => [
+                sub.userName,
+                sub.userEmail,
+                sub.userPhone || '',
+                sub.type,
+                sub.status,
+                format(new Date(sub.startDate), 'yyyy-MM-dd'),
+                format(new Date(sub.endDate), 'yyyy-MM-dd'),
+                sub.price.toString()
+              ]);
+              
+              const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+              ].join('\n');
+              
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              const link = document.createElement('a');
+              const url = URL.createObjectURL(blob);
+              link.setAttribute('href', url);
+              link.setAttribute('download', `members_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+              link.style.visibility = 'hidden';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              toast.success('Members exported successfully');
+            }}
+          >
             <Download className="h-4 w-4" />
           </Button>
         </div>
@@ -228,7 +317,10 @@ export default function BusinessMembers() {
             </div>
           ) : (
             filteredSubscriptions.map((sub) => {
-              const deleteCheck = canDeleteSubscription(sub.id);
+              const member = members.find(m => m.id === sub.id);
+              const startDate = member ? new Date(member.startDate) : new Date(sub.startDate);
+              const daysSinceStart = Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+              const canDelete = sub.membershipType !== 'monthly' || daysSinceStart >= 30;
               return (
                 <div key={sub.id} className="p-3 rounded-lg bg-muted/30 space-y-2">
                   <div className="flex items-start justify-between">
@@ -251,10 +343,10 @@ export default function BusinessMembers() {
                       <Calendar className="h-3 w-3" />
                       Expires: {format(new Date(sub.endDate), "MMM d, yyyy")}
                     </span>
-                    {sub.type === 'monthly' && !deleteCheck.canDelete && (
+                    {sub.type === 'monthly' && !canDelete && (
                       <span className="flex items-center gap-1 text-warning">
                         <Lock className="h-3 w-3" />
-                        {deleteCheck.daysRemaining}d lock
+                        {30 - daysSinceStart}d lock
                       </span>
                     )}
                   </div>
@@ -270,11 +362,11 @@ export default function BusinessMembers() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className={cn("flex-1 text-xs h-8", deleteCheck.canDelete ? "text-destructive" : "text-muted-foreground")}
-                      onClick={() => openDelete(sub)}
-                      disabled={!deleteCheck.canDelete}
+                      className={cn("flex-1 text-xs h-8", canDelete ? "text-destructive" : "text-muted-foreground")}
+                      onClick={() => member && openDelete(member)}
+                      disabled={!canDelete}
                     >
-                      {deleteCheck.canDelete ? (
+                      {canDelete ? (
                         <>
                           <Trash2 className="h-3 w-3 mr-1" />
                           Cancel
@@ -316,7 +408,10 @@ export default function BusinessMembers() {
                 </TableRow>
               ) : (
                 filteredSubscriptions.map((sub) => {
-                  const deleteCheck = canDeleteSubscription(sub.id);
+                  const member = members.find(m => m.id === sub.id);
+                  const startDate = member ? new Date(member.startDate) : new Date(sub.startDate);
+                  const daysSinceStart = Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+                  const canDelete = sub.membershipType !== 'monthly' || daysSinceStart >= 30;
                   return (
                     <TableRow key={sub.id}>
                       <TableCell>
@@ -374,9 +469,9 @@ export default function BusinessMembers() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              {deleteCheck.canDelete ? (
+                              {canDelete ? (
                                 <DropdownMenuItem
-                                  onClick={() => openDelete(sub)}
+                                  onClick={() => member && openDelete(member)}
                                   className="text-destructive"
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" /> Cancel Subscription
@@ -386,7 +481,7 @@ export default function BusinessMembers() {
                                   <TooltipTrigger asChild>
                                     <DropdownMenuItem disabled className="text-muted-foreground">
                                       <Lock className="h-4 w-4 mr-2" />
-                                      Locked ({deleteCheck.daysRemaining}d remaining)
+                                      Locked ({30 - daysSinceStart}d remaining)
                                     </DropdownMenuItem>
                                   </TooltipTrigger>
                                   <TooltipContent>
@@ -416,7 +511,7 @@ export default function BusinessMembers() {
               Cancel Subscription
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to cancel {selectedSubscription?.userName}'s {selectedSubscription?.type} subscription?
+              Are you sure you want to cancel {selectedMember?.name}'s {selectedMember?.membershipType} subscription?
               This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -435,7 +530,13 @@ export default function BusinessMembers() {
       {/* Assign Membership Modal */}
       <AssignMembershipModal
         open={isAssignOpen}
-        onOpenChange={setIsAssignOpen}
+        onOpenChange={(open) => {
+          setIsAssignOpen(open);
+          if (!open) {
+            // Refresh members when modal closes
+            refreshMembers();
+          }
+        }}
         venueId={venueId}
         venueName={venueName}
         pricing={pricing}

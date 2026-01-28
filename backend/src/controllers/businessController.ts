@@ -31,6 +31,27 @@ export const getBusinessProfile = asyncHandler(async (req: AuthRequest, res: Res
 });
 
 /**
+ * Get business venue ID
+ */
+export const getBusinessVenueId = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const venueId = await businessService.getBusinessVenueId(businessUserId);
+
+  res.json({
+    success: true,
+    data: { venueId },
+  });
+});
+
+/**
  * Update business profile
  */
 export const updateBusinessProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -392,5 +413,35 @@ export const togglePublishStatus = asyncHandler(async (req: AuthRequest, res: Re
     success: true,
     message: isPublished ? 'Business published successfully' : 'Business unpublished successfully',
     data: business,
+  });
+});
+
+/**
+ * Change password for business user
+ */
+export const changePassword = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      error: { message: 'Current password and new password are required', code: 'VALIDATION_ERROR' },
+    });
+  }
+
+  await businessService.changePassword(businessUserId, currentPassword, newPassword);
+
+  res.json({
+    success: true,
+    message: 'Password changed successfully',
   });
 });

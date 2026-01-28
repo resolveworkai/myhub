@@ -27,7 +27,8 @@ export function NotificationDropdown() {
 
   useEffect(() => {
     if (isAuthenticated && user && accountType) {
-      fetchNotifications(user.id, accountType);
+      const userType = accountType === 'business' ? 'business' : 'normal';
+      fetchNotifications(user.id, userType);
     }
   }, [isAuthenticated, user, accountType, fetchNotifications]);
 

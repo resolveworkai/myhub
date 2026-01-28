@@ -49,6 +49,7 @@ import { LiveOccupancyCard } from "@/components/business/LiveOccupancyCard";
 import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
 import { UpgradePlanModal } from "@/components/payments/UpgradePlanModal";
 import { SupportModal } from "@/components/support/SupportModal";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 
 const navigation = [
   { name: "Dashboard", href: "/business-dashboard", icon: LayoutDashboard },
@@ -66,7 +67,7 @@ export default function BusinessDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
   
   // Modal states
   const [addMemberOpen, setAddMemberOpen] = useState(false);
@@ -204,7 +205,7 @@ export default function BusinessDashboard() {
                 <Building2 className="h-6 w-6 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold truncate">FitZone Premium</h3>
+                <h3 className="font-semibold truncate">{(user.accountType === 'business' && user.businessName) || 'Business'}</h3>
                 <div className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-success" />
                   <span className="text-xs text-muted-foreground">Open Now</span>
@@ -270,10 +271,7 @@ export default function BusinessDashboard() {
               <Plus className="h-4 w-4 mr-2" />
               Add Member
             </Button>
-            <button className="p-2 rounded-lg hover:bg-muted relative touch-target flex items-center justify-center">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
-            </button>
+            <NotificationDropdown />
             <img
               src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
               alt="User"

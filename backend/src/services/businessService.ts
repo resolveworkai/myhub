@@ -2,6 +2,7 @@ import { pool } from '../db/pool';
 import { logger } from '../utils/logger';
 import { NotFoundError, ValidationError } from '../utils/errors';
 import { bookingService } from './bookingService';
+import { authService } from './authService';
 
 interface UpdateBusinessData {
   businessName?: string;
@@ -43,6 +44,18 @@ class BusinessService {
   }
 
   /**
+   * Get business venue ID (first venue for the business)
+   */
+  async getBusinessVenueId(businessUserId: string): Promise<string | null> {
+    const result = await pool.query(
+      `SELECT id FROM venues WHERE business_user_id = $1 AND deleted_at IS NULL LIMIT 1`,
+      [businessUserId]
+    );
+
+    return result.rows.length > 0 ? result.rows[0].id : null;
+  }
+
+  /**
    * Update business profile
    */
   async updateBusinessProfile(businessUserId: string, data: UpdateBusinessData) {
@@ -52,7 +65,7 @@ class BusinessService {
       await client.query('BEGIN');
 
       const updates: string[] = [];
-      const params: any[] = [];
+      const params: (string | number | boolean | null | undefined)[] = [];
       let paramCount = 1;
 
       if (data.businessName !== undefined) {
@@ -176,41 +189,57 @@ class BusinessService {
   }
 
   /**
-   * Get business members
+   * Get business members (from standalone table)
    */
   async getBusinessMembers(businessUserId: string, page: number = 1, limit: number = 20) {
     const offset = (page - 1) * limit;
 
-    // Get total count
+    // Get total count from standalone table
     const countResult = await pool.query(
-      `SELECT COUNT(*) as total FROM business_members WHERE business_user_id = $1`,
+      `SELECT COUNT(*) as total FROM business_members_standalone WHERE business_user_id = $1 AND deleted_at IS NULL`,
       [businessUserId]
     );
     const total = parseInt(countResult.rows[0].total);
 
-    // Get members
+    // Get members from standalone table
     const result = await pool.query(
-      `SELECT bm.*, u.name, u.email, u.phone, u.avatar, m.status as membership_status, m.end_date
-       FROM business_members bm
-       JOIN users u ON bm.user_id = u.id
-       LEFT JOIN memberships m ON bm.membership_id = m.id
-       WHERE bm.business_user_id = $1
-       ORDER BY bm.assigned_at DESC
+      `SELECT 
+        id, business_user_id, venue_id, name, email, phone,
+        membership_type, price, start_date, end_date, status, notes,
+        assigned_at, created_at, updated_at
+       FROM business_members_standalone
+       WHERE business_user_id = $1 AND deleted_at IS NULL
+       ORDER BY assigned_at DESC
        LIMIT $2 OFFSET $3`,
       [businessUserId, limit, offset]
     );
 
     return {
-      members: result.rows.map((row: any) => ({
+      members: result.rows.map((row: {
+        id: string;
+        name: string;
+        email: string | null;
+        phone: string | null;
+        membership_type: string;
+        price: string | number;
+        start_date: string;
+        end_date: string;
+        status: string;
+        notes: string | null;
+        assigned_at: string;
+      }) => ({
         id: row.id,
-        userId: row.user_id,
+        userId: row.id, // Use member ID as userId for compatibility
         name: row.name,
         email: row.email,
         phone: row.phone,
-        avatar: row.avatar,
+        avatar: null, // No avatar in standalone table
         assignedAt: row.assigned_at,
-        membershipStatus: row.membership_status,
+        membershipStatus: row.status,
         membershipEndDate: row.end_date,
+        membershipType: row.membership_type,
+        price: parseFloat(String(row.price)),
+        startDate: row.start_date,
         status: row.status,
         notes: row.notes,
       })),
@@ -242,47 +271,55 @@ class BusinessService {
     try {
       await client.query('BEGIN');
 
-      // Get business venue (assuming one venue per business for now)
-      const venueResult = await client.query(
+      // Get or create business venue (assuming one venue per business for now)
+      let venueResult = await client.query(
         `SELECT id FROM venues WHERE business_user_id = $1 AND deleted_at IS NULL LIMIT 1`,
         [businessUserId]
       );
 
+      let venueId: string;
       if (venueResult.rows.length === 0) {
-        throw new NotFoundError('No venue found for this business');
-      }
-
-      const venueId = venueResult.rows[0].id;
-
-      // Check if user exists by email, otherwise create a guest user
-      let userId: string;
-      if (data.userEmail) {
-        const userResult = await client.query(
-          `SELECT id FROM users WHERE email = $1 AND deleted_at IS NULL`,
-          [data.userEmail.toLowerCase()]
+        // Get business info to create venue
+        const businessResult = await client.query(
+          `SELECT business_name, business_type, address_street, address_city, address_lat, address_lng, 
+                  daily_package_price, weekly_package_price, monthly_package_price
+           FROM business_users WHERE id = $1 AND deleted_at IS NULL`,
+          [businessUserId]
         );
 
-        if (userResult.rows.length > 0) {
-          userId = userResult.rows[0].id;
-        } else {
-          // Create guest user
-          const newUserResult = await client.query(
-            `INSERT INTO users (name, email, phone, account_status, email_verified)
-             VALUES ($1, $2, $3, 'active', FALSE)
-             RETURNING id`,
-            [data.userName, data.userEmail.toLowerCase(), data.userPhone || null]
-          );
-          userId = newUserResult.rows[0].id;
+        if (businessResult.rows.length === 0) {
+          throw new NotFoundError('Business not found');
         }
-      } else {
-        // Create guest user without email
-        const newUserResult = await client.query(
-          `INSERT INTO users (name, phone, account_status, email_verified)
-           VALUES ($1, $2, 'active', FALSE)
-           RETURNING id`,
-          [data.userName, data.userPhone || null]
+
+        const business = businessResult.rows[0];
+        
+        // Create a default venue for the business
+        const newVenueResult = await client.query(
+          `INSERT INTO venues (
+            business_user_id, name, category, description, price,
+            location_address, location_city, location_lat, location_lng,
+            capacity, status, is_published
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+          RETURNING id`,
+          [
+            businessUserId,
+            business.business_name,
+            business.business_type,
+            `Main location for ${business.business_name}`,
+            business.daily_package_price || 299,
+            business.address_street,
+            business.address_city,
+            business.address_lat,
+            business.address_lng,
+            100, // default capacity
+            'available',
+            false, // not published by default
+          ]
         );
-        userId = newUserResult.rows[0].id;
+        venueId = newVenueResult.rows[0].id;
+        logger.info('Created default venue for business', { businessUserId, venueId });
+      } else {
+        venueId = venueResult.rows[0].id;
       }
 
       // Calculate membership dates
@@ -296,29 +333,42 @@ class BusinessService {
         endDate.setMonth(endDate.getMonth() + 1);
       }
 
-      // Create membership
-      const membershipResult = await client.query(
-        `INSERT INTO memberships (user_id, venue_id, business_user_id, membership_type, start_date, end_date, price, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, 'active')
-         RETURNING id`,
-        [userId, venueId, businessUserId, data.membershipType, startDate, endDate, data.price]
-      );
-
-      const membershipId = membershipResult.rows[0].id;
-
-      // Add to business_members
-      await client.query(
-        `INSERT INTO business_members (business_user_id, user_id, membership_id, notes)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (business_user_id, user_id) DO UPDATE SET membership_id = $3, notes = $4`,
-        [businessUserId, userId, membershipId, data.notes || null]
+      // Insert directly into business_members_standalone table (no user table relationship)
+      const memberResult = await client.query(
+        `INSERT INTO business_members_standalone (
+          business_user_id, venue_id, name, email, phone, 
+          membership_type, price, start_date, end_date, status, notes
+        )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'active', $10)
+         RETURNING *`,
+        [
+          businessUserId,
+          venueId,
+          data.userName,
+          data.userEmail || null,
+          data.userPhone || null,
+          data.membershipType,
+          data.price,
+          startDate.toISOString().split('T')[0],
+          endDate.toISOString().split('T')[0],
+          data.notes || null,
+        ]
       );
 
       await client.query('COMMIT');
 
-      logger.info('Business member added with membership', { businessUserId, userId, membershipId });
+      logger.info('Business member added (standalone)', { businessUserId, memberId: memberResult.rows[0].id });
 
-      return { userId, membershipId };
+      return {
+        id: memberResult.rows[0].id,
+        name: data.userName,
+        email: data.userEmail,
+        phone: data.userPhone,
+        membershipType: data.membershipType,
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+        price: data.price,
+      };
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
@@ -328,31 +378,31 @@ class BusinessService {
   }
 
   /**
-   * Cancel membership
+   * Cancel membership (for standalone members)
    */
-  async cancelMembership(membershipId: string, businessUserId: string) {
+  async cancelMembership(memberId: string, businessUserId: string) {
     const client = await pool.connect();
 
     try {
       await client.query('BEGIN');
 
-      // Verify membership belongs to business
-      const membershipResult = await client.query(
+      // Verify member belongs to business (from standalone table)
+      const memberResult = await client.query(
         `SELECT id, status, start_date, membership_type
-         FROM memberships
-         WHERE id = $1 AND business_user_id = $2`,
-        [membershipId, businessUserId]
+         FROM business_members_standalone
+         WHERE id = $1 AND business_user_id = $2 AND deleted_at IS NULL`,
+        [memberId, businessUserId]
       );
 
-      if (membershipResult.rows.length === 0) {
-        throw new NotFoundError('Membership not found');
+      if (memberResult.rows.length === 0) {
+        throw new NotFoundError('Member not found');
       }
 
-      const membership = membershipResult.rows[0];
+      const member = memberResult.rows[0];
 
       // Check if monthly membership can be cancelled (30-day lock)
-      if (membership.membership_type === 'monthly') {
-        const startDate = new Date(membership.start_date);
+      if (member.membership_type === 'monthly') {
+        const startDate = new Date(member.start_date);
         const daysSinceStart = Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24));
         
         if (daysSinceStart < 30) {
@@ -360,19 +410,21 @@ class BusinessService {
         }
       }
 
-      if (membership.status === 'cancelled') {
+      if (member.status === 'cancelled') {
         throw new ValidationError('Membership is already cancelled');
       }
 
-      // Cancel membership
+      // Cancel membership (soft delete)
       await client.query(
-        `UPDATE memberships SET status = 'cancelled', updated_at = NOW() WHERE id = $1`,
-        [membershipId]
+        `UPDATE business_members_standalone 
+         SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP, deleted_at = CURRENT_TIMESTAMP
+         WHERE id = $1`,
+        [memberId]
       );
 
       await client.query('COMMIT');
 
-      logger.info('Membership cancelled', { membershipId, businessUserId });
+      logger.info('Membership cancelled', { memberId, businessUserId });
 
       return { success: true };
     } catch (error) {
@@ -524,7 +576,7 @@ class BusinessService {
           `SELECT user_id FROM business_members WHERE business_user_id = $1`,
           [businessUserId]
         );
-        targetMemberIds = membersResult.rows.map((row: any) => row.user_id);
+        targetMemberIds = membersResult.rows.map((row: { user_id: string }) => row.user_id);
       }
 
       // Create notifications for each member
@@ -601,7 +653,7 @@ class BusinessService {
       await client.query('BEGIN');
 
       const updates: string[] = [];
-      const params: any[] = [];
+      const params: (string | number | boolean | null | undefined)[] = [];
       let paramCount = 0;
 
       if (data.businessName !== undefined) {
@@ -685,7 +737,7 @@ class BusinessService {
       await client.query('BEGIN');
 
       const updates: string[] = [];
-      const params: any[] = [];
+      const params: (string | number | boolean | null | undefined)[] = [];
       let paramCount = 0;
 
       if (data.lat !== undefined) {
@@ -806,7 +858,7 @@ class BusinessService {
       await client.query('BEGIN');
 
       const updates: string[] = [];
-      const params: any[] = [];
+      const params: (string | number | boolean | null | undefined)[] = [];
       let paramCount = 0;
 
       if (data.dailyPackagePrice !== undefined) {
@@ -976,6 +1028,55 @@ class BusinessService {
   }
 
   /**
+   * Change password for business user
+   */
+  async changePassword(businessUserId: string, currentPassword: string, newPassword: string) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // Get current password hash
+      const businessResult = await client.query(
+        `SELECT password_hash FROM business_users WHERE id = $1 AND deleted_at IS NULL`,
+        [businessUserId]
+      );
+
+      if (businessResult.rows.length === 0) {
+        throw new NotFoundError('Business user not found');
+      }
+
+      // Verify current password
+      const isValid = await authService.comparePassword(
+        currentPassword,
+        businessResult.rows[0].password_hash
+      );
+
+      if (!isValid) {
+        throw new ValidationError('Current password is incorrect');
+      }
+
+      // Hash new password
+      const newPasswordHash = await authService.hashPassword(newPassword);
+
+      // Update password
+      await client.query(
+        `UPDATE business_users SET password_hash = $1, updated_at = NOW() WHERE id = $2`,
+        [newPasswordHash, businessUserId]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Password changed', { businessUserId });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
    * Toggle publish status
    */
   async togglePublishStatus(businessUserId: string, isPublished: boolean) {
@@ -1009,11 +1110,109 @@ class BusinessService {
   /**
    * Format business for response
    */
-  private formatBusiness(row: any) {
-    const operatingHours = row.operating_hours ? JSON.parse(JSON.stringify(row.operating_hours)) : {};
-    const notificationPreferences = row.notification_preferences ? JSON.parse(JSON.stringify(row.notification_preferences)) : {};
-    const securitySettings = row.security_settings ? JSON.parse(JSON.stringify(row.security_settings)) : {};
-    const businessAttributes = row.business_attributes ? JSON.parse(JSON.stringify(row.business_attributes)) : {};
+  private formatBusiness(row: {
+    id: string;
+    business_name: string;
+    owner_name: string | null;
+    email: string;
+    phone: string | null;
+    business_type: string;
+    address_street: string | null;
+    address_city: string | null;
+    address_state: string | null;
+    address_country: string | null;
+    address_lat: number | null;
+    address_lng: number | null;
+    website: string | null;
+    description: string | null;
+    logo: string | null;
+    cover_image: string | null;
+    gallery_images: string[] | null;
+    daily_package_price: number | null;
+    weekly_package_price: number | null;
+    monthly_package_price: number | null;
+    operating_hours: Record<string, unknown> | null;
+    notification_preferences: Record<string, unknown> | null;
+    security_settings: Record<string, unknown> | null;
+    business_attributes: Record<string, unknown> | null;
+    email_verified: boolean;
+    phone_verified: boolean;
+    business_verified: boolean;
+    verification_status: string;
+    account_status: string;
+    subscription_tier: string | null;
+    is_published: boolean;
+    created_at: string;
+    updated_at: string;
+  }) {
+    // Parse JSONB fields safely
+    let operatingHours = {};
+    if (row.operating_hours) {
+      try {
+        operatingHours = typeof row.operating_hours === 'string' 
+          ? JSON.parse(row.operating_hours) 
+          : row.operating_hours;
+      } catch (e) {
+        logger.warn('Failed to parse operating_hours', { error: e });
+      }
+    }
+
+    let notificationPreferences = {
+      emailBookings: true,
+      emailPayments: true,
+      emailReminders: true,
+      smsBookings: false,
+      smsPayments: true,
+      pushNotifications: true,
+    };
+    if (row.notification_preferences) {
+      try {
+        notificationPreferences = typeof row.notification_preferences === 'string'
+          ? JSON.parse(row.notification_preferences)
+          : row.notification_preferences;
+      } catch (e) {
+        logger.warn('Failed to parse notification_preferences', { error: e });
+      }
+    }
+
+    let securitySettings = {
+      twoFactor: false,
+      sessionTimeout: "30",
+    };
+    if (row.security_settings) {
+      try {
+        securitySettings = typeof row.security_settings === 'string'
+          ? JSON.parse(row.security_settings)
+          : row.security_settings;
+      } catch (e) {
+        logger.warn('Failed to parse security_settings', { error: e });
+      }
+    }
+
+    let businessAttributes = {};
+    if (row.business_attributes) {
+      try {
+        businessAttributes = typeof row.business_attributes === 'string'
+          ? JSON.parse(row.business_attributes)
+          : row.business_attributes;
+      } catch (e) {
+        logger.warn('Failed to parse business_attributes', { error: e });
+      }
+    }
+
+    // Extract attributes for backward compatibility
+    const attrs = businessAttributes as Record<string, unknown>;
+    const amenities = attrs.amenities || [];
+    const equipment = attrs.equipment || [];
+    const classTypes = attrs.classTypes || [];
+    const membershipOptions = attrs.membershipOptions || [];
+    const subjects = attrs.subjects || [];
+    const levels = attrs.levels || [];
+    const teachingModes = attrs.teachingModes || [];
+    const batchSizes = attrs.batchSizes || [];
+    const facilities = attrs.facilities || [];
+    const collections = attrs.collections || [];
+    const spaceTypes = attrs.spaceTypes || [];
 
     return {
       id: row.id,
@@ -1029,18 +1228,19 @@ class BusinessService {
         state: row.address_state,
         postalCode: row.address_postal_code,
         country: row.address_country,
-        lat: parseFloat(row.address_lat) || null,
-        lng: parseFloat(row.address_lng) || null,
+        lat: row.address_lat ? parseFloat(String(row.address_lat)) : null,
+        lng: row.address_lng ? parseFloat(String(row.address_lng)) : null,
       },
       website: row.website,
-      description: row.description,
+      description: row.description || row.service_areas,
+      serviceAreas: row.service_areas,
       subscriptionTier: row.subscription_tier,
       subscriptionStatus: row.subscription_status,
       emailVerified: row.email_verified,
       businessVerified: row.business_verified,
       verificationStatus: row.verification_status,
       accountStatus: row.account_status,
-      isPublished: row.is_published,
+      isPublished: row.is_published || false,
       publishedAt: row.published_at,
       dailyPackagePrice: parseFloat(row.daily_package_price) || 0,
       weeklyPackagePrice: parseFloat(row.weekly_package_price) || 0,
@@ -1052,6 +1252,18 @@ class BusinessService {
       notificationPreferences,
       securitySettings,
       businessAttributes,
+      // Backward compatibility - expose attributes at top level
+      amenities,
+      equipment,
+      classTypes,
+      membershipOptions,
+      subjects,
+      levels,
+      teachingModes,
+      batchSizes,
+      facilities,
+      collections,
+      spaceTypes,
       createdAt: row.created_at,
     };
   }

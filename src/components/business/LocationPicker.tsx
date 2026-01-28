@@ -33,9 +33,9 @@ export function LocationPicker({ value, onChange, className }: LocationPickerPro
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    // Default to Mumbai or provided value
-    const defaultLat = value?.lat || 19.076;
-    const defaultLng = value?.lng || 72.8777;
+    // Default to Mumbai or provided value - ensure numbers
+    const defaultLat = value?.lat ? (typeof value.lat === 'number' ? value.lat : parseFloat(String(value.lat))) : 19.076;
+    const defaultLng = value?.lng ? (typeof value.lng === 'number' ? value.lng : parseFloat(String(value.lng))) : 72.8777;
 
     const map = L.map(containerRef.current).setView([defaultLat, defaultLng], 13);
     
@@ -47,7 +47,9 @@ export function LocationPicker({ value, onChange, className }: LocationPickerPro
 
     // Add initial marker if value exists
     if (value?.lat && value?.lng) {
-      const marker = L.marker([value.lat, value.lng], { draggable: true }).addTo(map);
+      const lat = typeof value.lat === 'number' ? value.lat : parseFloat(String(value.lat));
+      const lng = typeof value.lng === 'number' ? value.lng : parseFloat(String(value.lng));
+      const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
       markerRef.current = marker;
       
       marker.on('dragend', () => {
@@ -246,7 +248,7 @@ export function LocationPicker({ value, onChange, className }: LocationPickerPro
             Location Selected
           </div>
           <div className="text-xs text-muted-foreground mt-1">
-            {value.lat.toFixed(6)}°N, {value.lng.toFixed(6)}°E
+            {typeof value.lat === 'number' ? value.lat.toFixed(6) : parseFloat(String(value.lat)).toFixed(6)}°N, {typeof value.lng === 'number' ? value.lng.toFixed(6) : parseFloat(String(value.lng)).toFixed(6)}°E
           </div>
           {address && (
             <div className="text-xs text-muted-foreground mt-1 line-clamp-2">

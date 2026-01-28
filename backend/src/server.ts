@@ -14,6 +14,7 @@ import reviewRoutes from './routes/reviewRoutes';
 import userRoutes from './routes/userRoutes';
 import businessRoutes from './routes/businessRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import paymentRoutes from './routes/paymentRoutes';
 
 const app: Express = express();
 
@@ -53,6 +54,7 @@ app.use(`${config.apiPrefix}/reviews`, reviewRoutes);
 app.use(`${config.apiPrefix}/users`, userRoutes);
 app.use(`${config.apiPrefix}/business`, businessRoutes);
 app.use(`${config.apiPrefix}/notifications`, notificationRoutes);
+app.use(`${config.apiPrefix}/payments`, paymentRoutes);
 
 // 404 handler
 app.use((req, res) => {

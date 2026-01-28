@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { getBusinessBookings, updateBookingStatus as updateBookingStatusAPI, createBusinessAppointment, getBusinessVenueId } from "@/lib/apiService";
+import { useAuthStore } from "@/store/authStore";
 
 interface Appointment {
   id: string;
@@ -49,14 +51,7 @@ interface Appointment {
   notes?: string;
 }
 
-const initialAppointments: Appointment[] = [
-  { id: "a1", memberName: "Rahul Sharma", memberEmail: "rahul@email.com", service: "Personal Training", date: "2026-01-24", time: "09:00", duration: 60, status: "confirmed" },
-  { id: "a2", memberName: "Priya Patel", memberEmail: "priya@email.com", service: "Yoga Class", date: "2026-01-24", time: "10:30", duration: 90, status: "pending" },
-  { id: "a3", memberName: "Amit Kumar", memberEmail: "amit@email.com", service: "Gym Session", date: "2026-01-24", time: "14:00", duration: 120, status: "confirmed" },
-  { id: "a4", memberName: "Sneha Gupta", memberEmail: "sneha@email.com", service: "Personal Training", date: "2026-01-25", time: "08:00", duration: 60, status: "pending" },
-  { id: "a5", memberName: "Vikram Singh", memberEmail: "vikram@email.com", service: "CrossFit", date: "2026-01-23", time: "16:00", duration: 60, status: "completed" },
-  { id: "a6", memberName: "Neha Roy", memberEmail: "neha@email.com", service: "Gym Session", date: "2026-01-22", time: "11:00", duration: 90, status: "cancelled", notes: "Member requested reschedule" },
-];
+// Appointments will be loaded from API
 
 const services = ["Personal Training", "Yoga Class", "Gym Session", "CrossFit", "Pilates", "Cardio Session", "Weight Training"];
 const timeSlots = ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
@@ -69,7 +64,10 @@ const statusConfig = {
 } as const;
 
 export default function BusinessAppointments() {
-  const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
+  const { user } = useAuthStore();
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [venueId, setVenueId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -87,6 +85,68 @@ export default function BusinessAppointments() {
     notes: "",
   });
 
+  // Get business venue ID
+  useEffect(() => {
+    const fetchVenueId = async () => {
+      try {
+        const id = await getBusinessVenueId();
+        setVenueId(id || "default");
+      } catch (error) {
+        console.error("Failed to get venue ID:", error);
+        setVenueId("default");
+      }
+    };
+    if (user?.accountType === 'business') {
+      fetchVenueId();
+    }
+  }, [user]);
+
+  // Fetch appointments from API
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      setLoading(true);
+      try {
+        const filters: { status?: string; date?: string } = {};
+        if (filterStatus !== "all") filters.status = filterStatus;
+        if (selectedDate) filters.date = format(selectedDate, "yyyy-MM-dd");
+        
+        const result = await getBusinessBookings(filters);
+        const formatted = (result.bookings || []).map((booking: {
+          id: string;
+          userName?: string;
+          userEmail?: string;
+          venueName?: string;
+          venueType?: string;
+          date?: string;
+          bookingDate?: string;
+          time?: string;
+          bookingTime?: string;
+          duration?: number;
+          status?: string;
+          specialRequests?: string;
+        }) => ({
+          id: booking.id,
+          memberName: booking.userName || "Guest",
+          memberEmail: booking.userEmail || "",
+          service: booking.venueName || booking.venueType || "Service",
+          date: booking.date || booking.bookingDate,
+          time: booking.time || booking.bookingTime || "00:00",
+          duration: booking.duration || 60,
+          status: booking.status === "confirmed" ? "confirmed" : booking.status === "completed" ? "completed" : booking.status === "cancelled" ? "cancelled" : "pending",
+          notes: booking.specialRequests || "",
+        }));
+        setAppointments(formatted);
+      } catch (error: unknown) {
+        toast.error("Failed to load appointments");
+        console.error("Appointments error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, [filterStatus, selectedDate]);
+
   const filteredAppointments = useMemo(() => {
     return appointments.filter((apt) => {
       const matchesSearch = apt.memberName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -97,26 +157,65 @@ export default function BusinessAppointments() {
     });
   }, [appointments, searchQuery, filterStatus, selectedDate]);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!formData.memberName || !formData.service) {
       toast.error("Please fill required fields");
       return;
     }
-    const newApt: Appointment = {
-      id: `a${Date.now()}`,
-      memberName: formData.memberName,
-      memberEmail: formData.memberEmail,
-      service: formData.service,
-      date: format(formData.date, "yyyy-MM-dd"),
-      time: formData.time,
-      duration: formData.duration,
-      status: "pending",
-      notes: formData.notes,
-    };
-    setAppointments([...appointments, newApt]);
-    resetForm();
-    setIsAddOpen(false);
-    toast.success("Appointment created successfully");
+    try {
+      if (!venueId) {
+        toast.error("Please wait for venue to load");
+        return;
+      }
+      
+      await createBusinessAppointment({
+        userName: formData.memberName,
+        userEmail: formData.memberEmail,
+        venueId,
+        date: format(formData.date, "yyyy-MM-dd"),
+        time: formData.time,
+        duration: formData.duration,
+        attendees: 1,
+        specialRequests: formData.notes,
+      });
+      
+      resetForm();
+      setIsAddOpen(false);
+      toast.success("Appointment created successfully");
+      
+      // Refresh appointments
+      const filters: { status?: string; date?: string } = {};
+      if (filterStatus !== "all") filters.status = filterStatus;
+      if (selectedDate) filters.date = format(selectedDate, "yyyy-MM-dd");
+      const result = await getBusinessBookings(filters);
+      const formatted = (result.bookings || []).map((booking: {
+        id: string;
+        userName?: string;
+        userEmail?: string;
+        venueName?: string;
+        venueType?: string;
+        date?: string;
+        bookingDate?: string;
+        time?: string;
+        bookingTime?: string;
+        duration?: number;
+        status?: string;
+        specialRequests?: string;
+      }) => ({
+        id: booking.id,
+        memberName: booking.userName || "Guest",
+        memberEmail: booking.userEmail || "",
+        service: booking.venueName || booking.venueType || "Service",
+        date: booking.date || booking.bookingDate,
+        time: booking.time || booking.bookingTime || "00:00",
+        duration: booking.duration || 60,
+        status: booking.status === "confirmed" ? "confirmed" : booking.status === "completed" ? "completed" : booking.status === "cancelled" ? "cancelled" : "pending",
+        notes: booking.specialRequests || "",
+      }));
+      setAppointments(formatted);
+    } catch (error: unknown) {
+      toast.error(error.response?.data?.error?.message || "Failed to create appointment");
+    }
   };
 
   const handleEdit = () => {
@@ -142,9 +241,14 @@ export default function BusinessAppointments() {
     toast.success("Appointment deleted");
   };
 
-  const handleStatusChange = (id: string, status: Appointment["status"]) => {
-    setAppointments(appointments.map((a) => a.id === id ? { ...a, status } : a));
-    toast.success(`Appointment ${status}`);
+  const handleStatusChange = async (id: string, status: Appointment["status"]) => {
+    try {
+      await updateBookingStatusAPI(id, status);
+      setAppointments(appointments.map((a) => a.id === id ? { ...a, status } : a));
+      toast.success(`Appointment ${status}`);
+    } catch (error: unknown) {
+      toast.error(error.response?.data?.error?.message || "Failed to update appointment status");
+    }
   };
 
   const resetForm = () => {
