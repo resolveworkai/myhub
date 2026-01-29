@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import Map, { Marker, NavigationControl, GeolocateControl, MapRef } from 'react-map-gl/maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Navigation, Search, Loader2 } from 'lucide-react';
+import { MapPin, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LocationPickerProps {
@@ -12,77 +12,37 @@ interface LocationPickerProps {
   className?: string;
 }
 
-// Fix Leaflet default marker icon issue
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
+// Free OpenStreetMap-based tile style
+const MAP_STYLE = "https://tiles.openfreemap.org/styles/bright";
 
 export function LocationPicker({ value, onChange, className }: LocationPickerProps) {
-  const mapRef = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<MapRef>(null);
+  const geolocateRef = useRef<maplibregl.GeolocateControl>(null);
   
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [address, setAddress] = useState('');
+  const [markerPosition, setMarkerPosition] = useState<{ lat: number; lng: number } | null>(
+    value ? { lat: value.lat, lng: value.lng } : null
+  );
+  const [viewState, setViewState] = useState({
+    longitude: value?.lng || 72.8777,
+    latitude: value?.lat || 19.076,
+    zoom: 13,
+  });
+  const [hasAutoLocated, setHasAutoLocated] = useState(false);
 
-  // Initialize map
+  // Auto-trigger geolocation on mount if no value provided
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-
-    // Default to Mumbai or provided value
-    const defaultLat = value?.lat || 19.076;
-    const defaultLng = value?.lng || 72.8777;
-
-    const map = L.map(containerRef.current).setView([defaultLat, defaultLng], 13);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-    }).addTo(map);
-
-    mapRef.current = map;
-
-    // Add initial marker if value exists
-    if (value?.lat && value?.lng) {
-      const marker = L.marker([value.lat, value.lng], { draggable: true }).addTo(map);
-      markerRef.current = marker;
-      
-      marker.on('dragend', () => {
-        const pos = marker.getLatLng();
-        onChange({ lat: pos.lat, lng: pos.lng });
-        reverseGeocode(pos.lat, pos.lng);
-      });
+    if (!value && !hasAutoLocated) {
+      const timer = setTimeout(() => {
+        if (geolocateRef.current) {
+          geolocateRef.current.trigger();
+        }
+      }, 500);
+      return () => clearTimeout(timer);
     }
-
-    // Click to place marker
-    map.on('click', (e) => {
-      const { lat, lng } = e.latlng;
-      
-      if (markerRef.current) {
-        markerRef.current.setLatLng([lat, lng]);
-      } else {
-        const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-        markerRef.current = marker;
-        
-        marker.on('dragend', () => {
-          const pos = marker.getLatLng();
-          onChange({ lat: pos.lat, lng: pos.lng });
-          reverseGeocode(pos.lat, pos.lng);
-        });
-      }
-      
-      onChange({ lat, lng });
-      reverseGeocode(lat, lng);
-    });
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, []);
+  }, [value, hasAutoLocated]);
 
   // Reverse geocode to get address
   const reverseGeocode = useCallback(async (lat: number, lng: number) => {
@@ -97,50 +57,31 @@ export function LocationPicker({ value, onChange, className }: LocationPickerPro
       }
     } catch (error) {
       console.error('Reverse geocoding failed:', error);
+      onChange({ lat, lng });
     }
   }, [onChange]);
 
-  // Use current location
-  const handleUseCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
-      return;
-    }
+  // Handle map click to place marker
+  const handleMapClick = useCallback((event: maplibregl.MapMouseEvent) => {
+    const { lng, lat } = event.lngLat;
+    setMarkerPosition({ lat, lng });
+    reverseGeocode(lat, lng);
+  }, [reverseGeocode]);
 
-    setIsLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        
-        if (mapRef.current) {
-          mapRef.current.setView([latitude, longitude], 16);
-          
-          if (markerRef.current) {
-            markerRef.current.setLatLng([latitude, longitude]);
-          } else {
-            const marker = L.marker([latitude, longitude], { draggable: true }).addTo(mapRef.current);
-            markerRef.current = marker;
-            
-            marker.on('dragend', () => {
-              const pos = marker.getLatLng();
-              onChange({ lat: pos.lat, lng: pos.lng });
-              reverseGeocode(pos.lat, pos.lng);
-            });
-          }
-        }
-        
-        onChange({ lat: latitude, lng: longitude });
-        reverseGeocode(latitude, longitude);
-        setIsLoading(false);
-      },
-      (error) => {
-        console.error('Geolocation error:', error);
-        setIsLoading(false);
-        alert('Could not get your location. Please allow location access or search manually.');
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  };
+  // Handle geolocate event
+  const handleGeolocate = useCallback((e: GeolocationPosition) => {
+    const { latitude, longitude } = e.coords;
+    setMarkerPosition({ lat: latitude, lng: longitude });
+    setHasAutoLocated(true);
+    reverseGeocode(latitude, longitude);
+  }, [reverseGeocode]);
+
+  // Handle marker drag end
+  const handleMarkerDragEnd = useCallback((event: { lngLat: { lng: number; lat: number } }) => {
+    const { lng, lat } = event.lngLat;
+    setMarkerPosition({ lat, lng });
+    reverseGeocode(lat, lng);
+  }, [reverseGeocode]);
 
   // Search location
   const handleSearch = async () => {
@@ -158,23 +99,12 @@ export function LocationPicker({ value, onChange, className }: LocationPickerPro
         const latitude = parseFloat(lat);
         const longitude = parseFloat(lon);
         
-        if (mapRef.current) {
-          mapRef.current.setView([latitude, longitude], 16);
-          
-          if (markerRef.current) {
-            markerRef.current.setLatLng([latitude, longitude]);
-          } else {
-            const marker = L.marker([latitude, longitude], { draggable: true }).addTo(mapRef.current);
-            markerRef.current = marker;
-            
-            marker.on('dragend', () => {
-              const pos = marker.getLatLng();
-              onChange({ lat: pos.lat, lng: pos.lng });
-              reverseGeocode(pos.lat, pos.lng);
-            });
-          }
-        }
-        
+        setViewState({
+          longitude,
+          latitude,
+          zoom: 16,
+        });
+        setMarkerPosition({ lat: latitude, lng: longitude });
         setAddress(display_name);
         onChange({ lat: latitude, lng: longitude, address: display_name });
       } else {
@@ -194,7 +124,7 @@ export function LocationPicker({ value, onChange, className }: LocationPickerPro
         <span>Click on the map or drag the marker to set your business location</span>
       </div>
 
-      {/* Search and GPS buttons */}
+      {/* Search bar */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="flex-1 flex gap-2">
           <Input
@@ -211,42 +141,63 @@ export function LocationPicker({ value, onChange, className }: LocationPickerPro
             disabled={isLoading}
             className="shrink-0"
           >
-            <Search className="h-4 w-4" />
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           </Button>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleUseCurrentLocation}
-          disabled={isLoading}
-          className="gap-2 shrink-0"
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Navigation className="h-4 w-4" />
-          )}
-          <span className="hidden sm:inline">Use My Location</span>
-          <span className="sm:hidden">GPS</span>
-        </Button>
       </div>
 
       {/* Map container */}
-      <div 
-        ref={containerRef} 
-        className="w-full h-64 sm:h-80 rounded-xl overflow-hidden border border-border"
-        style={{ zIndex: 1 }}
-      />
+      <div className="w-full h-64 sm:h-80 rounded-xl overflow-hidden border border-border">
+        <Map
+          ref={mapRef}
+          {...viewState}
+          onMove={(evt) => setViewState(evt.viewState)}
+          onClick={handleMapClick}
+          style={{ width: "100%", height: "100%" }}
+          mapStyle={MAP_STYLE}
+          attributionControl={false}
+        >
+          {/* Navigation controls */}
+          <NavigationControl position="top-right" />
+          
+          {/* Geolocation control */}
+          <GeolocateControl
+            ref={geolocateRef}
+            position="top-right"
+            positionOptions={{ enableHighAccuracy: true }}
+            trackUserLocation={false}
+            onGeolocate={handleGeolocate}
+          />
+
+          {/* Draggable marker */}
+          {markerPosition && (
+            <Marker
+              longitude={markerPosition.lng}
+              latitude={markerPosition.lat}
+              anchor="bottom"
+              draggable
+              onDragEnd={handleMarkerDragEnd}
+            >
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                  <MapPin className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-primary -mt-1" />
+              </div>
+            </Marker>
+          )}
+        </Map>
+      </div>
 
       {/* Selected coordinates */}
-      {value?.lat && value?.lng && (
+      {markerPosition && (
         <div className="p-3 rounded-lg bg-success/10 border border-success/20">
           <div className="flex items-center gap-2 text-sm font-medium text-success">
             <MapPin className="h-4 w-4" />
             Location Selected
           </div>
           <div className="text-xs text-muted-foreground mt-1">
-            {value.lat.toFixed(6)}°N, {value.lng.toFixed(6)}°E
+            {markerPosition.lat.toFixed(6)}°N, {markerPosition.lng.toFixed(6)}°E
           </div>
           {address && (
             <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
