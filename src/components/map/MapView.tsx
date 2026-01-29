@@ -1,7 +1,6 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import Map, { Marker, Popup, NavigationControl, GeolocateControl, MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useState } from "react";
 
 interface Venue {
   id: string;
@@ -42,7 +41,6 @@ const MAP_STYLE = "https://tiles.openfreemap.org/styles/bright";
 
 export function MapView({ venues, onVenueClick, initialCenter }: MapViewProps) {
   const mapRef = useRef<MapRef>(null);
-  const geolocateRef = useRef<maplibregl.GeolocateControl>(null);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [viewState, setViewState] = useState({
     longitude: initialCenter?.lng || 72.8777,
@@ -50,14 +48,14 @@ export function MapView({ venues, onVenueClick, initialCenter }: MapViewProps) {
     zoom: 12,
   });
 
-  // Auto-trigger geolocation on mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (geolocateRef.current) {
-        geolocateRef.current.trigger();
-      }
-    }, 500);
-    return () => clearTimeout(timer);
+  // Update view when user location is detected
+  const handleGeolocate = useCallback((e: GeolocationPosition) => {
+    setViewState((prev) => ({
+      ...prev,
+      longitude: e.coords.longitude,
+      latitude: e.coords.latitude,
+      zoom: 14,
+    }));
   }, []);
 
   const handleMarkerClick = useCallback((venue: Venue) => {
@@ -85,10 +83,10 @@ export function MapView({ venues, onVenueClick, initialCenter }: MapViewProps) {
       
       {/* Geolocation control - auto-centers on user location */}
       <GeolocateControl
-        ref={geolocateRef}
         position="top-right"
         positionOptions={{ enableHighAccuracy: true }}
         trackUserLocation={true}
+        onGeolocate={handleGeolocate}
       />
 
       {/* Venue markers */}

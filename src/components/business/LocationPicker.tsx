@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Map, { Marker, NavigationControl, GeolocateControl, MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,6 @@ const MAP_STYLE = "https://tiles.openfreemap.org/styles/bright";
 
 export function LocationPicker({ value, onChange, className }: LocationPickerProps) {
   const mapRef = useRef<MapRef>(null);
-  const geolocateRef = useRef<maplibregl.GeolocateControl>(null);
   
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,19 +29,6 @@ export function LocationPicker({ value, onChange, className }: LocationPickerPro
     latitude: value?.lat || 19.076,
     zoom: 13,
   });
-  const [hasAutoLocated, setHasAutoLocated] = useState(false);
-
-  // Auto-trigger geolocation on mount if no value provided
-  useEffect(() => {
-    if (!value && !hasAutoLocated) {
-      const timer = setTimeout(() => {
-        if (geolocateRef.current) {
-          geolocateRef.current.trigger();
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [value, hasAutoLocated]);
 
   // Reverse geocode to get address
   const reverseGeocode = useCallback(async (lat: number, lng: number) => {
@@ -72,7 +58,12 @@ export function LocationPicker({ value, onChange, className }: LocationPickerPro
   const handleGeolocate = useCallback((e: GeolocationPosition) => {
     const { latitude, longitude } = e.coords;
     setMarkerPosition({ lat: latitude, lng: longitude });
-    setHasAutoLocated(true);
+    setViewState((prev) => ({
+      ...prev,
+      longitude,
+      latitude,
+      zoom: 16,
+    }));
     reverseGeocode(latitude, longitude);
   }, [reverseGeocode]);
 
@@ -162,7 +153,6 @@ export function LocationPicker({ value, onChange, className }: LocationPickerPro
           
           {/* Geolocation control */}
           <GeolocateControl
-            ref={geolocateRef}
             position="top-right"
             positionOptions={{ enableHighAccuracy: true }}
             trackUserLocation={false}
