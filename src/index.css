@@ -2,123 +2,152 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Portal Design System - Modern Scheduling Platform */
-/* Fonts preloaded in index.html for better performance */
+/* ============================================
+   PORTAL DESIGN SYSTEM - Modern Theme
+   ============================================
+   
+   HOW TO CUSTOMIZE:
+   Simply change the HSL values below to update the entire app.
+   All colors use HSL format: H S% L%
+   
+   Example: --primary: 220 90% 56% = Vibrant Blue
+   ============================================ */
 
 @layer base {
   :root {
-    /* Brand Colors - Teal/Cyan Primary with Coral Accent */
-    --background: 210 20% 98%;
-    --foreground: 220 25% 10%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
-
-    /* Primary - Fresh Teal */
-    --primary: 175 84% 32%;
+    /* ========== CORE BRAND COLORS ========== */
+    
+    /* Primary - Modern Indigo/Blue */
+    --primary: 230 80% 56%;
     --primary-foreground: 0 0% 100%;
-
-    /* Secondary - Soft Slate */
-    --secondary: 215 25% 93%;
-    --secondary-foreground: 220 25% 25%;
-
-    /* Muted - Subtle Gray */
-    --muted: 210 20% 96%;
-    --muted-foreground: 220 15% 45%;
-
-    /* Accent - Warm Coral */
-    --accent: 12 90% 62%;
+    
+    /* Secondary - Soft Neutral */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 20% 25%;
+    
+    /* Accent - Vibrant Violet */
+    --accent: 265 75% 60%;
     --accent-foreground: 0 0% 100%;
-
+    
+    /* ========== BACKGROUND & SURFACE ========== */
+    
+    --background: 220 20% 98%;
+    --foreground: 224 30% 12%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 224 30% 12%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 30% 12%;
+    
+    /* ========== SEMANTIC COLORS ========== */
+    
+    /* Muted - Subtle backgrounds */
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 10% 46%;
+    
+    /* Destructive - Error/Danger */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-
-    --border: 215 25% 90%;
-    --input: 215 25% 90%;
-    --ring: 175 84% 32%;
-
-    --radius: 0.75rem;
-
-    /* Extended Palette */
-    --success: 158 64% 40%;
+    
+    /* Success - Positive actions */
+    --success: 152 70% 42%;
     --success-foreground: 0 0% 100%;
     
+    /* Warning - Caution */
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 10%;
     
+    /* Info - Informational */
     --info: 205 85% 50%;
     --info-foreground: 0 0% 100%;
-
-    /* Gradient Colors */
-    --gradient-start: 175 84% 32%;
-    --gradient-end: 195 85% 40%;
-    --gradient-accent-start: 12 90% 62%;
-    --gradient-accent-end: 25 95% 55%;
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(220 25% 10% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(220 25% 10% / 0.1), 0 2px 4px -2px hsl(220 25% 10% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(220 25% 10% / 0.1), 0 4px 6px -4px hsl(220 25% 10% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(220 25% 10% / 0.1), 0 8px 10px -6px hsl(220 25% 10% / 0.1);
-    --shadow-glow: 0 0 40px -10px hsl(175 84% 32% / 0.4);
-
-    /* Sidebar */
+    
+    /* ========== UI ELEMENTS ========== */
+    
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 230 80% 56%;
+    --radius: 0.75rem;
+    
+    /* ========== GRADIENTS ========== */
+    
+    --gradient-start: 230 80% 56%;
+    --gradient-end: 265 75% 60%;
+    --gradient-accent-start: 265 75% 60%;
+    --gradient-accent-end: 320 75% 55%;
+    
+    /* ========== SHADOWS ========== */
+    
+    --shadow-sm: 0 1px 2px 0 hsl(224 30% 12% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(224 30% 12% / 0.08), 0 2px 4px -2px hsl(224 30% 12% / 0.08);
+    --shadow-lg: 0 10px 15px -3px hsl(224 30% 12% / 0.1), 0 4px 6px -4px hsl(224 30% 12% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(224 30% 12% / 0.1), 0 8px 10px -6px hsl(224 30% 12% / 0.1);
+    --shadow-glow: 0 0 40px -10px hsl(230 80% 56% / 0.4);
+    
+    /* ========== SIDEBAR ========== */
+    
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 25% 25%;
-    --sidebar-primary: 175 84% 32%;
+    --sidebar-foreground: 220 20% 25%;
+    --sidebar-primary: 230 80% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 96%;
-    --sidebar-accent-foreground: 220 25% 25%;
-    --sidebar-border: 215 25% 92%;
-    --sidebar-ring: 175 84% 32%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 220 20% 25%;
+    --sidebar-border: 220 13% 93%;
+    --sidebar-ring: 230 80% 56%;
   }
 
+  /* ========== DARK MODE ========== */
+  
   .dark {
-    --background: 222 30% 8%;
-    --foreground: 210 20% 98%;
-
-    --card: 222 25% 12%;
-    --card-foreground: 210 20% 98%;
-
-    --popover: 222 25% 12%;
-    --popover-foreground: 210 20% 98%;
-
-    --primary: 175 75% 45%;
+    /* Core */
+    --primary: 230 75% 65%;
     --primary-foreground: 0 0% 100%;
-
-    --secondary: 222 25% 18%;
-    --secondary-foreground: 210 20% 90%;
-
-    --muted: 222 25% 15%;
-    --muted-foreground: 215 20% 60%;
-
-    --accent: 12 85% 55%;
+    
+    --secondary: 224 20% 18%;
+    --secondary-foreground: 220 14% 90%;
+    
+    --accent: 265 70% 65%;
     --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 70% 50%;
+    
+    /* Background & Surface */
+    --background: 224 30% 8%;
+    --foreground: 220 20% 98%;
+    
+    --card: 224 25% 12%;
+    --card-foreground: 220 20% 98%;
+    
+    --popover: 224 25% 12%;
+    --popover-foreground: 220 20% 98%;
+    
+    /* Semantic */
+    --muted: 224 20% 15%;
+    --muted-foreground: 220 15% 60%;
+    
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 100%;
-
-    --border: 222 25% 20%;
-    --input: 222 25% 20%;
-    --ring: 175 75% 45%;
-
-    --success: 158 60% 45%;
-    --warning: 38 90% 55%;
-    --info: 205 80% 55%;
-
-    --sidebar-background: 222 25% 10%;
-    --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 175 75% 45%;
+    
+    --success: 152 65% 48%;
+    --warning: 38 88% 55%;
+    --info: 205 80% 58%;
+    
+    /* UI Elements */
+    --border: 224 20% 20%;
+    --input: 224 20% 20%;
+    --ring: 230 75% 65%;
+    
+    /* Sidebar */
+    --sidebar-background: 224 25% 10%;
+    --sidebar-foreground: 220 14% 90%;
+    --sidebar-primary: 230 75% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 25% 15%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 222 25% 18%;
-    --sidebar-ring: 175 75% 45%;
+    --sidebar-accent: 224 20% 15%;
+    --sidebar-accent-foreground: 220 14% 90%;
+    --sidebar-border: 224 20% 18%;
+    --sidebar-ring: 230 75% 65%;
   }
 }
+
+/* ========== BASE STYLES ========== */
 
 @layer base {
   * {
@@ -145,7 +174,6 @@
     min-height: 100dvh;
   }
 
-  /* Responsive images */
   img {
     max-width: 100%;
     height: auto;
@@ -156,7 +184,8 @@
   }
 }
 
-/* Safe area padding for notched devices */
+/* ========== SAFE AREA PADDING ========== */
+
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -170,7 +199,8 @@
   padding-right: env(safe-area-inset-right, 0);
 }
 
-/* Hide scrollbar utility */
+/* ========== SCROLLBAR ========== */
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -180,28 +210,49 @@
   scrollbar-width: none;
 }
 
-/* Minimum touch target */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+/* ========== TOUCH TARGET ========== */
+
 .touch-target {
   min-height: 44px;
   min-width: 44px;
 }
 
+/* ========== UTILITY CLASSES ========== */
+
 @layer utilities {
   /* Gradient Utilities */
   .gradient-primary {
-    @apply bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))];
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
   }
 
   .gradient-accent {
-    @apply bg-gradient-to-r from-accent to-[hsl(var(--gradient-accent-end))];
+    background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--gradient-accent-end)) 100%);
   }
 
   .gradient-hero {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--gradient-end)) 50%, hsl(var(--accent)) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--gradient-accent-end)) 100%);
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))];
+    @apply bg-clip-text text-transparent;
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
   }
 
   /* Glass Morphism */
@@ -266,6 +317,8 @@
   }
 }
 
+/* ========== KEYFRAMES ========== */
+
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
@@ -317,30 +370,14 @@
   }
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+/* ========== FOCUS STYLES ========== */
 
-::-webkit-scrollbar-track {
-  @apply bg-muted;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/50;
-}
-
-/* Focus Visible */
 .focus-ring {
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
 }
 
-/* Status Colors for Occupancy */
+/* ========== STATUS COLORS ========== */
+
 .status-available {
   @apply bg-success text-success-foreground;
 }
@@ -353,25 +390,26 @@
   @apply bg-destructive text-destructive-foreground;
 }
 
-/* Category Colors */
+/* ========== CATEGORY COLORS ========== */
+
 .category-gym {
-  --category-color: 205 85% 50%;
+  --category-color: 230 80% 56%;
 }
 
 .category-library {
-  --category-color: 158 64% 40%;
+  --category-color: 152 70% 42%;
 }
 
 .category-coaching {
-  --category-color: 265 70% 55%;
+  --category-color: 265 75% 60%;
 }
 
 .category-yoga {
-  --category-color: 12 90% 62%;
+  --category-color: 320 75% 55%;
 }
 
 .category-dance {
-  --category-color: 330 70% 55%;
+  --category-color: 350 70% 55%;
 }
 
 .category-sports {

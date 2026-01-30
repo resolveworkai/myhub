@@ -112,20 +112,8 @@ export function filterVenues(
   }
 
   // Stage 3: Location/distance filter
-  if (filters.userLocation && filters.radiusKm && filters.radiusKm < 50) {
-    result = result
-      .map((v) => ({
-        ...v,
-        distance: calculateDistance(
-          filters.userLocation!.lat,
-          filters.userLocation!.lng,
-          v.location.lat,
-          v.location.lng
-        ),
-      }))
-      .filter((v) => v.distance! <= filters.radiusKm!);
-  } else if (filters.userLocation) {
-    // Add distance even without radius filter for sorting
+  // Always calculate distance if user location is available
+  if (filters.userLocation) {
     result = result.map((v) => ({
       ...v,
       distance: calculateDistance(
@@ -135,6 +123,11 @@ export function filterVenues(
         v.location.lng
       ),
     }));
+    
+    // Apply radius filter if set (less than max)
+    if (filters.radiusKm && filters.radiusKm < 50) {
+      result = result.filter((v) => v.distance! <= filters.radiusKm!);
+    }
   }
 
   // Stage 4: Price range filter
