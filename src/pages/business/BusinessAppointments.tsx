@@ -178,30 +178,32 @@ export default function BusinessAppointments() {
         </Button>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-6">
-        {/* Calendar Sidebar */}
-        <div className="bg-card rounded-xl border border-border p-4">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-            className="rounded-md"
-          />
-          <Button variant="ghost" size="sm" className="w-full mt-2" onClick={() => setSelectedDate(undefined)}>
-            Clear Date Filter
-          </Button>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Calendar Sidebar - Collapsible on mobile */}
+        <div className="bg-card rounded-xl border border-border p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-4">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              className="rounded-md mx-auto"
+            />
+            <Button variant="ghost" size="sm" className="w-full" onClick={() => setSelectedDate(undefined)}>
+              Clear Date Filter
+            </Button>
+          </div>
         </div>
 
         {/* Appointments List */}
         <div className="lg:col-span-3 space-y-4">
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Search appointments..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
             </div>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -226,51 +228,51 @@ export default function BusinessAppointments() {
                 const config = statusConfig[apt.status];
                 const StatusIcon = config.icon;
                 return (
-                  <div key={apt.id} className="bg-card rounded-xl border border-border p-4 hover:border-primary/50 transition-colors">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <User className="h-6 w-6 text-primary" />
+                  <div key={apt.id} className="bg-card rounded-xl border border-border p-3 sm:p-4 hover:border-primary/50 transition-colors">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          <User className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                         </div>
-                        <div>
-                          <h3 className="font-medium">{apt.memberName}</h3>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-medium truncate">{apt.memberName}</h3>
                           <p className="text-sm text-muted-foreground">{apt.service}</p>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
-                              <CalendarIcon className="h-3.5 w-3.5" /> {apt.date}
+                              <CalendarIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {apt.date}
                             </span>
                             <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" /> {apt.time} ({apt.duration}min)
+                              <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {apt.time} ({apt.duration}min)
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={config.color as any}>
+                      <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
+                        <Badge variant={config.color as any} className="text-xs">
                           <StatusIcon className="h-3 w-3 mr-1" />
                           {config.label}
                         </Badge>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 ml-auto sm:ml-0">
                           {apt.status === "pending" && (
-                            <Button size="sm" variant="outline" onClick={() => handleStatusChange(apt.id, "confirmed")}>
+                            <Button size="sm" variant="outline" className="text-xs h-8 px-2 sm:px-3" onClick={() => handleStatusChange(apt.id, "confirmed")}>
                               Confirm
                             </Button>
                           )}
                           {apt.status === "confirmed" && (
-                            <Button size="sm" variant="outline" onClick={() => handleStatusChange(apt.id, "completed")}>
+                            <Button size="sm" variant="outline" className="text-xs h-8 px-2 sm:px-3" onClick={() => handleStatusChange(apt.id, "completed")}>
                               Complete
                             </Button>
                           )}
-                          <Button size="icon-sm" variant="ghost" onClick={() => openEdit(apt)}>
+                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(apt)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button size="icon-sm" variant="ghost" onClick={() => { setSelected(apt); setIsDeleteOpen(true); }}>
+                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setSelected(apt); setIsDeleteOpen(true); }}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
                       </div>
                     </div>
-                    {apt.notes && <p className="mt-3 text-sm text-muted-foreground bg-muted/50 p-2 rounded">{apt.notes}</p>}
+                    {apt.notes && <p className="mt-3 text-xs sm:text-sm text-muted-foreground bg-muted/50 p-2 rounded">{apt.notes}</p>}
                   </div>
                 );
               })
@@ -287,7 +289,7 @@ export default function BusinessAppointments() {
             <DialogDescription>Fill in the appointment details</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Member Name *</Label>
                 <Input value={formData.memberName} onChange={(e) => setFormData({ ...formData, memberName: e.target.value })} placeholder="Name" />
@@ -306,17 +308,17 @@ export default function BusinessAppointments() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !formData.date && "text-muted-foreground")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.date ? format(formData.date, "PPP") : "Pick a date"}
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal text-sm", !formData.date && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                      <span className="truncate">{formData.date ? format(formData.date, "PPP") : "Pick a date"}</span>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={formData.date} onSelect={(d) => d && setFormData({ ...formData, date: d })} /></PopoverContent>
+                  <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={formData.date} onSelect={(d) => d && setFormData({ ...formData, date: d })} /></PopoverContent>
                 </Popover>
               </div>
               <div className="space-y-2">
@@ -344,9 +346,9 @@ export default function BusinessAppointments() {
               <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Additional notes..." />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsAddOpen(false); setIsEditOpen(false); }}>Cancel</Button>
-            <Button onClick={isEditOpen ? handleEdit : handleAdd}>{isEditOpen ? "Save Changes" : "Create Appointment"}</Button>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => { setIsAddOpen(false); setIsEditOpen(false); }} className="w-full sm:w-auto">Cancel</Button>
+            <Button onClick={isEditOpen ? handleEdit : handleAdd} className="w-full sm:w-auto">{isEditOpen ? "Save Changes" : "Create Appointment"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -358,9 +360,9 @@ export default function BusinessAppointments() {
             <DialogTitle>Cancel Appointment</DialogTitle>
             <DialogDescription>Are you sure you want to cancel this appointment with {selected?.memberName}?</DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>Keep</Button>
-            <Button variant="destructive" onClick={handleDelete}>Cancel Appointment</Button>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteOpen(false)} className="w-full sm:w-auto">Keep</Button>
+            <Button variant="destructive" onClick={handleDelete} className="w-full sm:w-auto">Cancel Appointment</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

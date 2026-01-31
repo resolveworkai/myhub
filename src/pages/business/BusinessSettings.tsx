@@ -675,11 +675,11 @@ export default function BusinessSettings() {
               <CardTitle>Operating Hours</CardTitle>
               <CardDescription>Set your business hours for each day</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4">
               {days.map((day) => (
-                <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-2 border-b border-border last:border-0">
-                  <div className="w-24 font-medium capitalize">{day}</div>
-                  <div className="flex items-center gap-4">
+                <div key={day} className="flex flex-col gap-2 py-2 border-b border-border last:border-0">
+                  <div className="flex items-center justify-between">
+                    <div className="w-24 font-medium capitalize text-sm sm:text-base">{day}</div>
                     <Switch
                       checked={!operatingHours[day]?.closed}
                       onCheckedChange={(checked) => setOperatingHours({
@@ -687,32 +687,32 @@ export default function BusinessSettings() {
                         [day]: { ...operatingHours[day], closed: !checked }
                       })}
                     />
-                    {!operatingHours[day]?.closed ? (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="time"
-                          value={operatingHours[day]?.open || "06:00"}
-                          onChange={(e) => setOperatingHours({
-                            ...operatingHours,
-                            [day]: { ...operatingHours[day], open: e.target.value }
-                          })}
-                          className="w-28"
-                        />
-                        <span className="text-muted-foreground">to</span>
-                        <Input
-                          type="time"
-                          value={operatingHours[day]?.close || "22:00"}
-                          onChange={(e) => setOperatingHours({
-                            ...operatingHours,
-                            [day]: { ...operatingHours[day], close: e.target.value }
-                          })}
-                          className="w-28"
-                        />
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">Closed</span>
-                    )}
                   </div>
+                  {!operatingHours[day]?.closed ? (
+                    <div className="flex items-center gap-2 pl-0 sm:pl-24">
+                      <Input
+                        type="time"
+                        value={operatingHours[day]?.open || "06:00"}
+                        onChange={(e) => setOperatingHours({
+                          ...operatingHours,
+                          [day]: { ...operatingHours[day], open: e.target.value }
+                        })}
+                        className="flex-1 sm:w-28 sm:flex-none"
+                      />
+                      <span className="text-muted-foreground text-sm">to</span>
+                      <Input
+                        type="time"
+                        value={operatingHours[day]?.close || "22:00"}
+                        onChange={(e) => setOperatingHours({
+                          ...operatingHours,
+                            [day]: { ...operatingHours[day], close: e.target.value }
+                        })}
+                        className="flex-1 sm:w-28 sm:flex-none"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm pl-0 sm:pl-24">Closed</p>
+                  )}
                 </div>
               ))}
 
@@ -734,25 +734,25 @@ export default function BusinessSettings() {
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <h4 className="font-medium flex items-center gap-2"><Mail className="h-4 w-4" /> Email Notifications</h4>
-                <div className="space-y-3 pl-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">New Bookings</div>
-                      <div className="text-sm text-muted-foreground">Get notified when someone books</div>
+                <div className="space-y-3 pl-0 sm:pl-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm sm:text-base">New Bookings</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Get notified when someone books</div>
                     </div>
                     <Switch checked={notifications.emailBookings} onCheckedChange={(v) => setNotifications({ ...notifications, emailBookings: v })} />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Payment Received</div>
-                      <div className="text-sm text-muted-foreground">Get notified on successful payments</div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm sm:text-base">Payment Received</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Get notified on successful payments</div>
                     </div>
                     <Switch checked={notifications.emailPayments} onCheckedChange={(v) => setNotifications({ ...notifications, emailPayments: v })} />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Daily Reminders</div>
-                      <div className="text-sm text-muted-foreground">Summary of upcoming appointments</div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm sm:text-base">Daily Reminders</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Summary of upcoming appointments</div>
                     </div>
                     <Switch checked={notifications.emailReminders} onCheckedChange={(v) => setNotifications({ ...notifications, emailReminders: v })} />
                   </div>
@@ -761,11 +761,11 @@ export default function BusinessSettings() {
 
               <div className="space-y-4">
                 <h4 className="font-medium flex items-center gap-2"><Bell className="h-4 w-4" /> Push Notifications</h4>
-                <div className="space-y-3 pl-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Enable Push Notifications</div>
-                      <div className="text-sm text-muted-foreground">Real-time updates in browser</div>
+                <div className="space-y-3 pl-0 sm:pl-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm sm:text-base">Enable Push Notifications</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Real-time updates in browser</div>
                     </div>
                     <Switch checked={notifications.pushNotifications} onCheckedChange={(v) => setNotifications({ ...notifications, pushNotifications: v })} />
                   </div>
@@ -789,22 +789,22 @@ export default function BusinessSettings() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                  <div>
-                    <div className="font-medium">Two-Factor Authentication</div>
-                    <div className="text-sm text-muted-foreground">Add an extra layer of security</div>
+                <div className="flex items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-sm sm:text-base">Two-Factor Authentication</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Add an extra layer of security</div>
                   </div>
                   <Switch checked={security.twoFactor} onCheckedChange={(v) => setSecurity({ ...security, twoFactor: v })} />
                 </div>
 
-                <div className="p-4 rounded-lg bg-muted/50">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <div className="font-medium">Session Timeout</div>
-                      <div className="text-sm text-muted-foreground">Auto-logout after inactivity</div>
+                <div className="p-3 sm:p-4 rounded-lg bg-muted/50">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm sm:text-base">Session Timeout</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Auto-logout after inactivity</div>
                     </div>
                     <Select value={security.sessionTimeout} onValueChange={(v) => setSecurity({ ...security, sessionTimeout: v })}>
-                      <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-full sm:w-40"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="15">15 minutes</SelectItem>
                         <SelectItem value="30">30 minutes</SelectItem>
@@ -815,13 +815,13 @@ export default function BusinessSettings() {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg bg-muted/50">
-                  <div className="font-medium mb-2">Change Password</div>
+                <div className="p-3 sm:p-4 rounded-lg bg-muted/50">
+                  <div className="font-medium text-sm sm:text-base mb-3">Change Password</div>
                   <div className="space-y-3">
-                    <Input type="password" placeholder="Current password" />
-                    <Input type="password" placeholder="New password" />
-                    <Input type="password" placeholder="Confirm new password" />
-                    <Button variant="outline">Update Password</Button>
+                    <Input type="password" placeholder="Current password" className="text-sm" />
+                    <Input type="password" placeholder="New password" className="text-sm" />
+                    <Input type="password" placeholder="Confirm new password" className="text-sm" />
+                    <Button variant="outline" className="w-full sm:w-auto">Update Password</Button>
                   </div>
                 </div>
               </div>
