@@ -40,6 +40,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -51,6 +56,7 @@ export default function Explore() {
   const location = useLocation();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Use persisted favorites store instead of local state
   const { favorites, toggleFavorite, isFavorite } = useFavoriteStore();
@@ -161,7 +167,7 @@ export default function Explore() {
     totalItems,
   } = usePagination({
     data: sortedBusinesses,
-    itemsPerPage: 12,
+    itemsPerPage: 15,
   });
 
   // Memoized toggle handler
@@ -296,19 +302,36 @@ export default function Explore() {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 lg:px-8 py-8">
-          <div className="flex gap-8">
-            {/* Sidebar Filters - Desktop */}
-            <aside className="hidden lg:block w-72 flex-shrink-0">
-              <div className="sticky top-44 max-h-[calc(100vh-12rem)] overflow-y-auto pr-2">
-                <FilterPanel activeCategory={effectiveCategory} />
+        <div className="container mx-auto px-4 lg:px-8 py-6">
+          {/* Filters Section - Below Search */}
+          <div className="hidden lg:block mb-6">
+            <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+              <div className="flex items-center justify-between mb-3">
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Filter className="h-4 w-4" />
+                    {filtersOpen ? "Hide Filters" : "Show Filters"}
+                    {activeFiltersCount > 0 && (
+                      <Badge variant="secondary" className="ml-1">
+                        {activeFiltersCount}
+                      </Badge>
+                    )}
+                  </Button>
+                </CollapsibleTrigger>
               </div>
-            </aside>
+              <CollapsibleContent>
+                <div className="bg-card border border-border rounded-xl p-4 mb-4">
+                  <FilterPanel activeCategory={effectiveCategory} horizontal />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
 
-            {/* Main Content */}
-            <div className="flex-1">
-              {/* Active Filters Chips */}
-              <ActiveFilters />
+          {/* Active Filters Chips */}
+          <ActiveFilters />
+
+          {/* Main Content */}
+          <div className="w-full">
 
               {/* Results Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
@@ -522,9 +545,8 @@ export default function Explore() {
                   >
                     Clear All Filters
                   </Button>
-                </div>
+              </div>
               )}
-            </div>
           </div>
         </div>
       </main>

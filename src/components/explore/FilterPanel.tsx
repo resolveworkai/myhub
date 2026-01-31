@@ -91,9 +91,10 @@ function CheckboxFilter({ items, selected, onToggle }: CheckboxFilterProps) {
 
 interface FilterPanelProps {
   activeCategory: VenueCategory;
+  horizontal?: boolean;
 }
 
-export function FilterPanel({ activeCategory }: FilterPanelProps) {
+export function FilterPanel({ activeCategory, horizontal = false }: FilterPanelProps) {
   const {
     priceRange,
     setPriceRange,
@@ -138,8 +139,8 @@ export function FilterPanel({ activeCategory }: FilterPanelProps) {
   const activeFilterCount = getActiveFilterCount();
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className={horizontal ? "space-y-4" : "space-y-4"}>
+      <div className={`flex items-center justify-between ${horizontal ? 'mb-2' : ''}`}>
         <h3 className="font-display text-lg font-semibold">Filters</h3>
         {activeFilterCount > 0 && (
           <Button variant="ghost" size="sm" onClick={clearAllFilters} className="gap-1.5">
@@ -148,6 +149,8 @@ export function FilterPanel({ activeCategory }: FilterPanelProps) {
           </Button>
         )}
       </div>
+
+      <div className={horizontal ? "grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4" : "space-y-4"}>
 
       {/* Distance/Radius Filter */}
       <FilterSection title="Distance" count={radiusKm < 50 ? 1 : 0} defaultOpen>
@@ -363,9 +366,11 @@ export function FilterPanel({ activeCategory }: FilterPanelProps) {
         </>
       )}
 
+      </div>
+
       {/* Reset Button */}
       {activeFilterCount > 0 && (
-        <Button variant="outline" className="w-full" onClick={clearAllFilters}>
+        <Button variant="outline" className={horizontal ? "mt-2" : "w-full"} onClick={clearAllFilters}>
           <RotateCcw className="h-4 w-4 mr-2" />
           Reset All Filters
         </Button>
