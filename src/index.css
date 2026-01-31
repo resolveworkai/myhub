@@ -15,137 +15,140 @@
 
 @layer base {
   :root {
-    /* ========== MODERN CLASSY PALETTE ========== */
-    /* Neutral Greys + Warm Terracotta Accent */
-    /* Inspired by 2024 minimalist design trends */
+    /* ========== MINT BREEZE PALETTE ========== */
+    /* Fresh, modern, and clean color scheme */
+    /* Primary: Emerald | Secondary: Light Green | Accent: Cyan */
     
-    /* Primary - Charcoal Grey */
-    --primary: 220 10% 20%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary - Emerald #10B981 */
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
     
-    /* Secondary - Warm Stone */
-    --secondary: 30 10% 96%;
-    --secondary-foreground: 220 10% 20%;
+    /* Secondary - Light Green #34D399 */
+    --secondary: 152 76% 51%;
+    --secondary-foreground: 163 87% 16%;
     
-    /* Accent - Warm Terracotta/Coral */
-    --accent: 16 50% 58%;
+    /* Accent - Cyan #06B6D4 */
+    --accent: 189 94% 43%;
     --accent-foreground: 0 0% 100%;
     
     /* ========== BACKGROUND & SURFACE ========== */
     
-    --background: 40 20% 99%;
-    --foreground: 220 10% 15%;
+    /* Background - Mint Tint #F0FDF4 */
+    --background: 138 76% 97%;
+    /* Foreground - Dark Green #064E3B */
+    --foreground: 163 87% 16%;
     
+    /* Card/Surface - White #FFFFFF */
     --card: 0 0% 100%;
-    --card-foreground: 220 10% 15%;
+    --card-foreground: 163 87% 16%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 220 10% 15%;
+    --popover-foreground: 163 87% 16%;
     
     /* ========== SEMANTIC COLORS ========== */
     
-    /* Muted - Soft Warm Grey */
-    --muted: 30 8% 95%;
-    --muted-foreground: 220 8% 45%;
+    /* Muted - Soft Mint */
+    --muted: 138 40% 94%;
+    --muted-foreground: 163 40% 35%;
     
-    /* Destructive - Muted Rose */
-    --destructive: 0 55% 50%;
+    /* Destructive - Coral Red */
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
-    /* Success - Sage Green */
-    --success: 145 35% 42%;
+    /* Success - Primary Emerald */
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
     
     /* Warning - Warm Amber */
-    --warning: 35 80% 52%;
+    --warning: 38 92% 50%;
     --warning-foreground: 0 0% 10%;
     
-    /* Info - Steel Blue */
-    --info: 210 45% 50%;
+    /* Info - Accent Cyan */
+    --info: 189 94% 43%;
     --info-foreground: 0 0% 100%;
     
     /* ========== UI ELEMENTS ========== */
     
-    --border: 30 10% 90%;
-    --input: 30 10% 92%;
-    --ring: 16 50% 58%;
-    --radius: 0.5rem;
+    --border: 152 30% 85%;
+    --input: 152 30% 90%;
+    --ring: 160 84% 39%;
+    --radius: 0.75rem;
     
     /* ========== GRADIENTS ========== */
     
-    --gradient-start: 220 10% 20%;
-    --gradient-end: 16 50% 58%;
-    --gradient-accent-start: 16 50% 58%;
-    --gradient-accent-end: 16 45% 48%;
+    --gradient-start: 160 84% 39%;
+    --gradient-end: 189 94% 43%;
+    --gradient-accent-start: 189 94% 43%;
+    --gradient-accent-end: 189 94% 35%;
     
     /* ========== SHADOWS ========== */
     
-    --shadow-sm: 0 1px 2px 0 hsl(220 10% 15% / 0.03);
-    --shadow-md: 0 4px 6px -1px hsl(220 10% 15% / 0.04), 0 2px 4px -2px hsl(220 10% 15% / 0.03);
-    --shadow-lg: 0 10px 15px -3px hsl(220 10% 15% / 0.05), 0 4px 6px -4px hsl(220 10% 15% / 0.04);
-    --shadow-xl: 0 20px 25px -5px hsl(220 10% 15% / 0.05), 0 8px 10px -6px hsl(220 10% 15% / 0.03);
-    --shadow-glow: 0 0 30px -10px hsl(16 50% 58% / 0.25);
+    --shadow-sm: 0 1px 2px 0 hsl(160 84% 39% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(160 84% 39% / 0.08), 0 2px 4px -2px hsl(160 84% 39% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(160 84% 39% / 0.10), 0 4px 6px -4px hsl(160 84% 39% / 0.08);
+    --shadow-xl: 0 20px 25px -5px hsl(160 84% 39% / 0.10), 0 8px 10px -6px hsl(160 84% 39% / 0.06);
+    --shadow-glow: 0 0 30px -10px hsl(160 84% 39% / 0.35);
     
     /* ========== SIDEBAR ========== */
     
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 10% 20%;
-    --sidebar-primary: 220 10% 20%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 30 8% 95%;
-    --sidebar-accent-foreground: 220 10% 20%;
-    --sidebar-border: 30 10% 92%;
-    --sidebar-ring: 16 50% 58%;
+    --sidebar-foreground: 163 87% 16%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 138 40% 94%;
+    --sidebar-accent-foreground: 163 87% 16%;
+    --sidebar-border: 152 30% 88%;
+    --sidebar-ring: 160 84% 39%;
   }
 
   /* ========== DARK MODE ========== */
   
   .dark {
-    /* Core */
-    --primary: 30 8% 85%;
-    --primary-foreground: 220 10% 10%;
+    /* Core - Emerald adjusted for dark */
+    --primary: 160 70% 45%;
+    --primary-foreground: 0 0% 100%;
     
-    --secondary: 220 8% 14%;
-    --secondary-foreground: 30 8% 85%;
+    --secondary: 152 50% 25%;
+    --secondary-foreground: 152 76% 80%;
     
-    --accent: 16 45% 55%;
+    --accent: 189 80% 50%;
     --accent-foreground: 0 0% 100%;
     
-    /* Background & Surface */
-    --background: 220 10% 7%;
-    --foreground: 30 8% 95%;
+    /* Background & Surface - Dark with green tint */
+    --background: 160 30% 6%;
+    --foreground: 138 40% 92%;
     
-    --card: 220 8% 10%;
-    --card-foreground: 30 8% 95%;
+    --card: 160 25% 10%;
+    --card-foreground: 138 40% 92%;
     
-    --popover: 220 8% 10%;
-    --popover-foreground: 30 8% 95%;
+    --popover: 160 25% 10%;
+    --popover-foreground: 138 40% 92%;
     
     /* Semantic */
-    --muted: 220 8% 13%;
-    --muted-foreground: 30 5% 50%;
+    --muted: 160 20% 15%;
+    --muted-foreground: 152 30% 55%;
     
-    --destructive: 0 50% 48%;
+    --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
     
-    --success: 145 30% 48%;
-    --warning: 35 70% 55%;
-    --info: 210 40% 55%;
+    --success: 160 70% 45%;
+    --warning: 38 80% 55%;
+    --info: 189 80% 50%;
     
     /* UI Elements */
-    --border: 220 8% 16%;
-    --input: 220 8% 16%;
-    --ring: 16 45% 55%;
+    --border: 160 20% 18%;
+    --input: 160 20% 18%;
+    --ring: 160 70% 45%;
     
     /* Sidebar */
-    --sidebar-background: 220 8% 8%;
-    --sidebar-foreground: 30 8% 85%;
-    --sidebar-primary: 16 45% 55%;
+    --sidebar-background: 160 25% 8%;
+    --sidebar-foreground: 138 40% 92%;
+    --sidebar-primary: 160 70% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 8% 13%;
-    --sidebar-accent-foreground: 30 8% 85%;
-    --sidebar-border: 220 8% 14%;
-    --sidebar-ring: 16 45% 55%;
+    --sidebar-accent: 160 20% 15%;
+    --sidebar-accent-foreground: 138 40% 92%;
+    --sidebar-border: 160 20% 16%;
+    --sidebar-ring: 160 70% 45%;
   }
 }
 
