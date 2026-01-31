@@ -128,19 +128,11 @@ export function useGeolocation(): UseGeolocationReturn {
   );
 
   // Auto-request browser location on mount if not already set
-  // Also set default location immediately for better UX
   useEffect(() => {
     if (!userLocation && !hasRequested) {
-      // Set Mumbai as immediate default while requesting GPS
-      setUserLocation({
-        lat: 19.076,
-        lng: 72.8777,
-        city: 'Mumbai',
-        source: 'default',
-      });
       requestLocation();
     }
-  }, [userLocation, hasRequested, requestLocation, setUserLocation]);
+  }, [userLocation, hasRequested, requestLocation]);
 
   return {
     location: userLocation,

@@ -2,157 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================
-   PORTAL DESIGN SYSTEM - Modern Theme
-   ============================================
-   
-   HOW TO CUSTOMIZE:
-   Simply change the HSL values below to update the entire app.
-   All colors use HSL format: H S% L%
-   
-   Example: --primary: 220 90% 56% = Vibrant Blue
-   ============================================ */
+/* Portal Design System - Modern Scheduling Platform */
+/* Fonts preloaded in index.html for better performance */
 
 @layer base {
   :root {
-    /* ========== MINT BREEZE PALETTE ========== */
-    /* Fresh, modern, and clean color scheme */
-    /* Primary: Emerald | Secondary: Light Green | Accent: Cyan */
-    
-    /* Primary - Emerald #10B981 */
-    --primary: 160 84% 39%;
-    --primary-foreground: 0 0% 100%;
-    
-    /* Secondary - Light Green #34D399 */
-    --secondary: 152 76% 51%;
-    --secondary-foreground: 163 87% 16%;
-    
-    /* Accent - Cyan #06B6D4 */
-    --accent: 189 94% 43%;
-    --accent-foreground: 0 0% 100%;
-    
-    /* ========== BACKGROUND & SURFACE ========== */
-    
-    /* Background - Mint Tint #F0FDF4 */
-    --background: 138 76% 97%;
-    /* Foreground - Dark Green #064E3B */
-    --foreground: 163 87% 16%;
-    
-    /* Card/Surface - White #FFFFFF */
+    /* Brand Colors - Teal/Cyan Primary with Coral Accent */
+    --background: 210 20% 98%;
+    --foreground: 220 25% 10%;
+
     --card: 0 0% 100%;
-    --card-foreground: 163 87% 16%;
-    
+    --card-foreground: 220 25% 10%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 163 87% 16%;
-    
-    /* ========== SEMANTIC COLORS ========== */
-    
-    /* Muted - Soft Mint */
-    --muted: 138 40% 94%;
-    --muted-foreground: 163 40% 35%;
-    
-    /* Destructive - Coral Red */
-    --destructive: 0 72% 51%;
+    --popover-foreground: 220 25% 10%;
+
+    /* Primary - Fresh Teal */
+    --primary: 175 84% 32%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Soft Slate */
+    --secondary: 215 25% 93%;
+    --secondary-foreground: 220 25% 25%;
+
+    /* Muted - Subtle Gray */
+    --muted: 210 20% 96%;
+    --muted-foreground: 220 15% 45%;
+
+    /* Accent - Warm Coral */
+    --accent: 12 90% 62%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    
-    /* Success - Primary Emerald */
-    --success: 160 84% 39%;
+
+    --border: 215 25% 90%;
+    --input: 215 25% 90%;
+    --ring: 175 84% 32%;
+
+    --radius: 0.75rem;
+
+    /* Extended Palette */
+    --success: 158 64% 40%;
     --success-foreground: 0 0% 100%;
     
-    /* Warning - Warm Amber */
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 10%;
     
-    /* Info - Accent Cyan */
-    --info: 189 94% 43%;
+    --info: 205 85% 50%;
     --info-foreground: 0 0% 100%;
-    
-    /* ========== UI ELEMENTS ========== */
-    
-    --border: 152 30% 85%;
-    --input: 152 30% 90%;
-    --ring: 160 84% 39%;
-    --radius: 0.75rem;
-    
-    /* ========== GRADIENTS ========== */
-    
-    --gradient-start: 160 84% 39%;
-    --gradient-end: 189 94% 43%;
-    --gradient-accent-start: 189 94% 43%;
-    --gradient-accent-end: 189 94% 35%;
-    
-    /* ========== SHADOWS ========== */
-    
-    --shadow-sm: 0 1px 2px 0 hsl(160 84% 39% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(160 84% 39% / 0.08), 0 2px 4px -2px hsl(160 84% 39% / 0.05);
-    --shadow-lg: 0 10px 15px -3px hsl(160 84% 39% / 0.10), 0 4px 6px -4px hsl(160 84% 39% / 0.08);
-    --shadow-xl: 0 20px 25px -5px hsl(160 84% 39% / 0.10), 0 8px 10px -6px hsl(160 84% 39% / 0.06);
-    --shadow-glow: 0 0 30px -10px hsl(160 84% 39% / 0.35);
-    
-    /* ========== SIDEBAR ========== */
-    
+
+    /* Gradient Colors */
+    --gradient-start: 175 84% 32%;
+    --gradient-end: 195 85% 40%;
+    --gradient-accent-start: 12 90% 62%;
+    --gradient-accent-end: 25 95% 55%;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 25% 10% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(220 25% 10% / 0.1), 0 2px 4px -2px hsl(220 25% 10% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(220 25% 10% / 0.1), 0 4px 6px -4px hsl(220 25% 10% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(220 25% 10% / 0.1), 0 8px 10px -6px hsl(220 25% 10% / 0.1);
+    --shadow-glow: 0 0 40px -10px hsl(175 84% 32% / 0.4);
+
+    /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 163 87% 16%;
-    --sidebar-primary: 160 84% 39%;
+    --sidebar-foreground: 220 25% 25%;
+    --sidebar-primary: 175 84% 32%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 138 40% 94%;
-    --sidebar-accent-foreground: 163 87% 16%;
-    --sidebar-border: 152 30% 88%;
-    --sidebar-ring: 160 84% 39%;
+    --sidebar-accent: 210 20% 96%;
+    --sidebar-accent-foreground: 220 25% 25%;
+    --sidebar-border: 215 25% 92%;
+    --sidebar-ring: 175 84% 32%;
   }
 
-  /* ========== DARK MODE ========== */
-  
   .dark {
-    /* Core - Emerald adjusted for dark */
-    --primary: 160 70% 45%;
+    --background: 222 30% 8%;
+    --foreground: 210 20% 98%;
+
+    --card: 222 25% 12%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 222 25% 12%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 175 75% 45%;
     --primary-foreground: 0 0% 100%;
-    
-    --secondary: 152 50% 25%;
-    --secondary-foreground: 152 76% 80%;
-    
-    --accent: 189 80% 50%;
+
+    --secondary: 222 25% 18%;
+    --secondary-foreground: 210 20% 90%;
+
+    --muted: 222 25% 15%;
+    --muted-foreground: 215 20% 60%;
+
+    --accent: 12 85% 55%;
     --accent-foreground: 0 0% 100%;
-    
-    /* Background & Surface - Dark with green tint */
-    --background: 160 30% 6%;
-    --foreground: 138 40% 92%;
-    
-    --card: 160 25% 10%;
-    --card-foreground: 138 40% 92%;
-    
-    --popover: 160 25% 10%;
-    --popover-foreground: 138 40% 92%;
-    
-    /* Semantic */
-    --muted: 160 20% 15%;
-    --muted-foreground: 152 30% 55%;
-    
-    --destructive: 0 60% 50%;
+
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
-    
-    --success: 160 70% 45%;
-    --warning: 38 80% 55%;
-    --info: 189 80% 50%;
-    
-    /* UI Elements */
-    --border: 160 20% 18%;
-    --input: 160 20% 18%;
-    --ring: 160 70% 45%;
-    
-    /* Sidebar */
-    --sidebar-background: 160 25% 8%;
-    --sidebar-foreground: 138 40% 92%;
-    --sidebar-primary: 160 70% 45%;
+
+    --border: 222 25% 20%;
+    --input: 222 25% 20%;
+    --ring: 175 75% 45%;
+
+    --success: 158 60% 45%;
+    --warning: 38 90% 55%;
+    --info: 205 80% 55%;
+
+    --sidebar-background: 222 25% 10%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 175 75% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 160 20% 15%;
-    --sidebar-accent-foreground: 138 40% 92%;
-    --sidebar-border: 160 20% 16%;
-    --sidebar-ring: 160 70% 45%;
+    --sidebar-accent: 222 25% 15%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 222 25% 18%;
+    --sidebar-ring: 175 75% 45%;
   }
 }
-
-/* ========== BASE STYLES ========== */
 
 @layer base {
   * {
@@ -179,6 +145,7 @@
     min-height: 100dvh;
   }
 
+  /* Responsive images */
   img {
     max-width: 100%;
     height: auto;
@@ -189,8 +156,7 @@
   }
 }
 
-/* ========== SAFE AREA PADDING ========== */
-
+/* Safe area padding for notched devices */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -204,8 +170,7 @@
   padding-right: env(safe-area-inset-right, 0);
 }
 
-/* ========== SCROLLBAR ========== */
-
+/* Hide scrollbar utility */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -215,49 +180,28 @@
   scrollbar-width: none;
 }
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-muted;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/50;
-}
-
-/* ========== TOUCH TARGET ========== */
-
+/* Minimum touch target */
 .touch-target {
   min-height: 44px;
   min-width: 44px;
 }
 
-/* ========== UTILITY CLASSES ========== */
-
 @layer utilities {
   /* Gradient Utilities */
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+    @apply bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))];
   }
 
   .gradient-accent {
-    background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--gradient-accent-end)) 100%);
+    @apply bg-gradient-to-r from-accent to-[hsl(var(--gradient-accent-end))];
   }
 
   .gradient-hero {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--gradient-accent-end)) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--gradient-end)) 50%, hsl(var(--accent)) 100%);
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent;
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))];
   }
 
   /* Glass Morphism */
@@ -322,8 +266,6 @@
   }
 }
 
-/* ========== KEYFRAMES ========== */
-
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
@@ -375,14 +317,30 @@
   }
 }
 
-/* ========== FOCUS STYLES ========== */
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+/* Focus Visible */
 .focus-ring {
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
 }
 
-/* ========== STATUS COLORS ========== */
-
+/* Status Colors for Occupancy */
 .status-available {
   @apply bg-success text-success-foreground;
 }
@@ -395,26 +353,25 @@
   @apply bg-destructive text-destructive-foreground;
 }
 
-/* ========== CATEGORY COLORS ========== */
-
+/* Category Colors */
 .category-gym {
-  --category-color: 230 80% 56%;
+  --category-color: 205 85% 50%;
 }
 
 .category-library {
-  --category-color: 152 70% 42%;
+  --category-color: 158 64% 40%;
 }
 
 .category-coaching {
-  --category-color: 265 75% 60%;
+  --category-color: 265 70% 55%;
 }
 
 .category-yoga {
-  --category-color: 320 75% 55%;
+  --category-color: 12 90% 62%;
 }
 
 .category-dance {
-  --category-color: 350 70% 55%;
+  --category-color: 330 70% 55%;
 }
 
 .category-sports {

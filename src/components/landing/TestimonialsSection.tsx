@@ -131,7 +131,7 @@ export function TestimonialsSection() {
         </div>
 
         {/* Stats Bar */}
-        <div className="mt-16 p-8 rounded-2xl bg-primary/5 border border-primary/10">
+        <div className="mt-16 p-8 rounded-2xl gradient-primary">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
               { label: "Average Rating", value: "4.9/5" },
@@ -140,10 +140,10 @@ export function TestimonialsSection() {
               { label: "Cities Covered", value: "50+" },
             ].map((stat) => (
               <div key={stat.label}>
-                <div className="font-display text-3xl md:text-4xl font-bold text-foreground mb-1">
+                <div className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-1">
                   {stat.value}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-primary-foreground/70">
                   {stat.label}
                 </div>
               </div>
