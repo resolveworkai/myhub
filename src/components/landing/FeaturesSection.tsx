@@ -174,7 +174,7 @@ export function FeaturesSection() {
 
               {/* Right Visual */}
               <div className="relative">
-                <div className="aspect-square rounded-2xl gradient-primary p-8 flex items-center justify-center">
+                <div className="aspect-square rounded-2xl bg-primary/5 border border-primary/10 p-8 flex items-center justify-center">
                   <div className="w-full h-full bg-card/90 rounded-xl shadow-xl p-6 space-y-4">
                     {/* Mock Dashboard Preview */}
                     <div className="flex items-center justify-between">

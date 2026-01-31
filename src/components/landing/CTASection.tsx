@@ -4,12 +4,12 @@ import { ArrowRight, Sparkles, Building2, Users } from "lucide-react";
 
 export function CTASection() {
   return (
-    <section className="py-24 bg-muted/50">
+    <section className="py-24 bg-background">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-8">
           {/* For Users */}
           <div className="relative group">
-            <div className="absolute inset-0 gradient-primary rounded-3xl opacity-10 group-hover:opacity-20 transition-opacity" />
+            <div className="absolute inset-0 gradient-primary rounded-3xl opacity-5 group-hover:opacity-10 transition-opacity" />
             <div className="relative rounded-3xl border border-primary/20 p-8 lg:p-12 bg-card">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
                 <Users className="h-7 w-7 text-primary" />
@@ -51,8 +51,8 @@ export function CTASection() {
 
           {/* For Businesses */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-accent to-warning rounded-3xl opacity-10 group-hover:opacity-20 transition-opacity" />
-            <div className="relative rounded-3xl border border-accent/20 p-8 lg:p-12 bg-card">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-primary/10 rounded-3xl opacity-40 group-hover:opacity-60 transition-opacity" />
+            <div className="relative rounded-3xl border border-border p-8 lg:p-12 bg-card">
               <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6">
                 <Building2 className="h-7 w-7 text-accent" />
               </div>
