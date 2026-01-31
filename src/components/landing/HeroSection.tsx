@@ -42,7 +42,7 @@ export function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background Gradient */}
-      <div className="absolute inset-0 gradient-hero" />
+      <div className="absolute inset-0 gradient-hero opacity-25" />
       
       {/* Animated Background Elements - Hidden on mobile for performance */}
       <div className="absolute inset-0 overflow-hidden hidden sm:block">
@@ -67,7 +67,7 @@ export function HeroSection() {
           {/* Headline */}
           <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-primary-foreground mb-4 sm:mb-6 tracking-tight animate-slide-up leading-tight px-2">
             Your Gateway to
-            <span className="block mt-1 sm:mt-2 text-transparent bg-clip-text bg-gradient-to-r from-accent via-warning to-accent">
+            <span className="block mt-1 sm:mt-2 text-transparent bg-clip-text bg-gradient-to-r from-accent to-secondary">
               Fitness & Learning
             </span>
           </h1>
