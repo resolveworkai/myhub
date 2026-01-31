@@ -293,6 +293,13 @@ class BusinessService {
 
         const business = businessResult.rows[0];
         
+        // Use default coordinates if business doesn't have location data
+        // Default to Dubai, UAE coordinates (25.2048, 55.2708)
+        const defaultLat = 25.2048;
+        const defaultLng = 55.2708;
+        const venueLat = business.address_lat ?? defaultLat;
+        const venueLng = business.address_lng ?? defaultLng;
+        
         // Create a default venue for the business
         const newVenueResult = await client.query(
           `INSERT INTO venues (
@@ -307,10 +314,10 @@ class BusinessService {
             business.business_type,
             `Main location for ${business.business_name}`,
             business.daily_package_price || 299,
-            business.address_street,
-            business.address_city,
-            business.address_lat,
-            business.address_lng,
+            business.address_street || 'Address not provided',
+            business.address_city || 'City not provided',
+            venueLat,
+            venueLng,
             100, // default capacity
             'available',
             false, // not published by default
