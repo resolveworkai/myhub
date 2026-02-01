@@ -179,15 +179,17 @@ export default function BusinessAppointments() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Calendar Sidebar - Collapsible on mobile */}
-        <div className="bg-card rounded-xl border border-border p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-4">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="rounded-md mx-auto"
-            />
+        {/* Calendar Sidebar - Responsive */}
+        <div className="bg-card rounded-xl border border-border p-3 sm:p-4 overflow-x-auto">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-full overflow-x-auto flex justify-center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                className="rounded-md mx-auto [&_.rdp-months]:flex-wrap [&_.rdp-month]:min-w-[280px] [&_.rdp]:max-w-full"
+              />
+            </div>
             <Button variant="ghost" size="sm" className="w-full" onClick={() => setSelectedDate(undefined)}>
               Clear Date Filter
             </Button>

@@ -26,7 +26,16 @@
     "dashboard": "Dashboard",
     "bookNow": "Book Now",
     "learnMore": "Learn More",
-    "contactUs": "Contact Us"
+    "contactUs": "Contact Us",
+    "email": "Email",
+    "phone": "Phone",
+    "password": "Password",
+    "or": "Or",
+    "language": "Language",
+    "more": "More",
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "faq": "FAQ"
   },
   "nav": {
     "gyms": "Gyms",
@@ -38,14 +47,19 @@
     "favorites": "Favorites"
   },
   "hero": {
-    "badge": "🚀 Trusted by 50,000+ users across India",
+    "badge": "🚀 Trusted by 50,000+ users across UAE",
     "title": "Your Gateway to",
     "titleHighlight": "Fitness & Learning",
-    "subtitle": "Skip the crowd. Book your spot. Own your time. Real-time availability for gyms, coaching & libraries near you.",
-    "searchPlaceholder": "Find your vibe...",
-    "locationPlaceholder": "Your location",
+    "subtitle": "Discover and book gyms, coaching centers, and libraries near you. Real-time availability, instant booking, and progress tracking.",
+    "searchPlaceholder": "Search gyms, coaching...",
+    "locationPlaceholder": "Location",
     "exploreVenues": "Explore Venues",
-    "listBusiness": "List Your Business"
+    "listBusiness": "List Your Business",
+    "stats": {
+      "venues": "Venues",
+      "happyUsers": "Happy Users",
+      "bookingsMade": "Bookings Made"
+    }
   },
   "categories": {
     "all": "All",
@@ -54,9 +68,10 @@
     "library": "Libraries"
   },
   "explore": {
-    "searchPlaceholder": "Search gyms, coaching, libraries...",
-    "businessesFound": "{{count}} Spots Found",
+    "searchPlaceholder": "Search for gyms, libraries, coaching centers...",
+    "businessesFound": "{{count}} Businesses Found",
     "nearLocation": "Near {{location}}",
+    "acrossAllLocations": "Across all locations",
     "gpsActive": "(GPS)",
     "activeFilters": "Active filters",
     "distance": "Distance",
@@ -72,7 +87,87 @@
     "verified": "Verified",
     "available": "Available",
     "fillingUp": "Filling Up",
-    "full": "Full"
+    "full": "Full",
+    "showFilters": "Show Filters",
+    "hideFilters": "Hide Filters",
+    "clearDateFilter": "Clear Date Filter",
+    "noAppointments": "No appointments found"
+  },
+  "features": {
+    "badge": "Features",
+    "title": "Everything You Need to",
+    "titleHighlight": "Stay on Track",
+    "subtitle": "Whether you're a fitness enthusiast, a bookworm, or a lifelong learner, Portal has the tools to help you find and book {{categories}}.",
+    "discoverNearby": "Discover Nearby",
+    "discoverNearbyDesc": "Find gyms, libraries, and coaching centers near you with our interactive map and smart filters.",
+    "easyBooking": "Easy Booking",
+    "easyBookingDesc": "Book appointments in seconds. View real-time availability and never miss a slot again.",
+    "trackProgress": "Track Progress",
+    "trackProgressDesc": "Monitor your attendance streaks, achievements, and personal growth over time.",
+    "smartReminders": "Smart Reminders",
+    "smartRemindersDesc": "Get timely notifications for appointments, fee dues, and important updates.",
+    "seamlessPayments": "Seamless Payments",
+    "seamlessPaymentsDesc": "Pay fees online, download receipts, and keep track of all your transactions.",
+    "community": "Community",
+    "communityDesc": "Connect with fellow members, share experiences, and stay motivated together.",
+    "forBusinessOwners": "For Business Owners",
+    "powerfulTools": "Powerful Tools to Grow Your Business",
+    "powerfulToolsDesc": "From member management to analytics, get everything you need to run and scale your gym, library, or coaching center.",
+    "memberManagement": "Member Management",
+    "memberManagementDesc": "Easily manage members, track attendance, and handle fee collection all in one place.",
+    "analyticsDashboard": "Analytics Dashboard",
+    "analyticsDashboardDesc": "Get insights into revenue, member retention, peak hours, and business growth.",
+    "secureCompliant": "Secure & Compliant",
+    "secureCompliantDesc": "Enterprise-grade security with GDPR compliance and role-based access control.",
+    "mobileOptimized": "Mobile Optimized",
+    "mobileOptimizedDesc": "Manage your business on-the-go with our fully responsive mobile experience."
+  },
+  "howItWorks": {
+    "badge": "How It Works",
+    "title": "Get Started in",
+    "titleHighlight": "4 Simple Steps",
+    "subtitle": "Whether you're looking to join a gym, find a quiet library, or get coaching, Portal makes it easy to discover and book what you need.",
+    "discover": "Discover",
+    "discoverDesc": "Browse categories, view venues on an interactive map, and read real reviews from other users.",
+    "discoverDetails": ["Search by location", "Filter by category", "Read reviews"],
+    "compare": "Compare",
+    "compareDesc": "Filter by price, amenities, location, and availability. Find the perfect match for your needs.",
+    "compareDetails": ["Price range filter", "Amenity selection", "Rating comparison"],
+    "book": "Book",
+    "bookDesc": "Select your time slot, check real-time availability, and get instant confirmation.",
+    "bookDetails": ["Real-time slots", "Instant booking", "Email confirmation"],
+    "experience": "Experience",
+    "experienceDesc": "Check-in at the venue, enjoy your session, and leave a review to help others.",
+    "experienceDetails": ["Easy check-in", "Track progress", "Leave reviews"],
+    "getStartedFree": "Get Started Free",
+    "noCreditCard": "No credit card required • Free forever for basic features"
+  },
+  "testimonials": {
+    "badge": "Testimonials",
+    "title": "Loved by",
+    "titleHighlight": "Users & Owners",
+    "subtitle": "Don't just take our word for it. Here's what our community from across India has to say.",
+    "business": "Business",
+    "stats": {
+      "averageRating": "Average Rating",
+      "userSatisfaction": "User Satisfaction",
+      "businessGrowth": "Business Growth",
+      "citiesCovered": "Cities Covered"
+    }
+  },
+  "cta": {
+    "forUsers": {
+      "title": "Ready to Start Your Journey?",
+      "subtitle": "Join thousands of members who are already achieving their goals. Find your perfect gym, library, or coaching center today.",
+      "button": "Create Free Account",
+      "happyUsers": "happy users"
+    },
+    "forBusiness": {
+      "title": "Grow Your Business",
+      "subtitle": "List your gym, library, or coaching center on Portal. Reach thousands of potential customers and streamline your operations.",
+      "button": "List Your Business",
+      "freeToStart": "Free to get started"
+    }
   },
   "booking": {
     "title": "Book Your Session",
@@ -143,22 +238,56 @@
     "studySpaces": "Study Spaces"
   },
   "auth": {
-    "signInTitle": "Welcome Back",
-    "signInSubtitle": "Sign in to continue your journey",
-    "signUpTitle": "Join the Tribe",
-    "signUpSubtitle": "Create your account to get started",
+    "signInTitle": "Welcome back",
+    "signInSubtitle": "Sign in to continue to your account",
+    "signUpTitle": "Create your account",
+    "signUpSubtitle": "Join thousands of users and businesses on Portal",
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "fullName": "Full Name",
-    "phone": "Phone",
+    "phone": "Phone Number",
+    "phoneNumber": "Phone Number",
     "forgotPassword": "Forgot password?",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "createAccount": "Create Account",
-    "orContinueWith": "Or continue with",
+    "orContinueWith": "or continue with",
     "google": "Google",
-    "facebook": "Facebook"
+    "facebook": "Facebook",
+    "apple": "Apple",
+    "emailTab": "Email",
+    "phoneTab": "Phone",
+    "enterEmail": "Enter your email",
+    "enterPhone": "+971-50-123-4567",
+    "enterPassword": "Enter your password",
+    "rememberMe": "Remember me for 30 days",
+    "signingIn": "Signing in...",
+    "demoCredentials": "Demo Credentials:",
+    "demoInfo": "Email: sarah.chen@email.com | Password: Password123!",
+    "rightPanelTitle": "Your Gateway to Fitness & Learning",
+    "rightPanelSubtitle": "Track progress, book venues, and achieve your goals with Portal.",
+    "member": "Member",
+    "memberDesc": "Book & track progress",
+    "businessAccount": "Business",
+    "businessDesc": "List & manage business",
+    "startJourney": "Start Your Journey Today",
+    "startJourneySubtitle": "Join thousands of members achieving their fitness, learning, and wellness goals.",
+    "growBusiness": "Grow Your Business",
+    "growBusinessSubtitle": "Reach thousands of potential customers and streamline your operations.",
+    "memberFeatures": [
+      "Find & book nearby businesses",
+      "Track attendance & streaks",
+      "Earn achievements & rewards",
+      "Manage payments easily"
+    ],
+    "businessFeatures": [
+      "List your business for free",
+      "Manage members & appointments",
+      "Track revenue & analytics",
+      "Send automated reminders"
+    ],
+    "termsAgreement": "By continuing, you agree to our Terms of Service and Privacy Policy"
   },
   "footer": {
     "tagline": "Your gateway to fitness & learning",
@@ -194,6 +323,33 @@
       "engagementDesc": "Built-in messaging, reviews & auto reminders.",
       "payments": "Secure Payments",
       "paymentsDesc": "Get paid on time, every time. Zero hassle."
+    },
+    "appointments": {
+      "title": "Appointments",
+      "subtitle": "Manage bookings and schedules",
+      "newAppointment": "New Appointment",
+      "searchPlaceholder": "Search appointments...",
+      "allStatus": "All Status",
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "memberName": "Member Name",
+      "service": "Service",
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "notes": "Notes",
+      "pickDate": "Pick a date",
+      "additionalNotes": "Additional notes...",
+      "createAppointment": "Create Appointment",
+      "saveChanges": "Save Changes",
+      "editAppointment": "Edit Appointment",
+      "fillDetails": "Fill in the appointment details",
+      "cancelAppointment": "Cancel Appointment",
+      "cancelConfirm": "Are you sure you want to cancel this appointment with {{name}}?",
+      "keep": "Keep",
+      "noAppointments": "No appointments found"
     }
   },
   "errors": {

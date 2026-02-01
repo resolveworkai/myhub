@@ -1,58 +1,61 @@
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, Filter, CalendarCheck, Star, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-const steps = [
-  {
-    number: "01",
-    icon: Search,
-    title: "Discover",
-    description: "Browse categories, view venues on an interactive map, and read real reviews from other users.",
-    color: "from-info to-primary",
-    details: ["Search by location", "Filter by category", "Read reviews"],
-  },
-  {
-    number: "02",
-    icon: Filter,
-    title: "Compare",
-    description: "Filter by price, amenities, location, and availability. Find the perfect match for your needs.",
-    color: "from-primary to-accent",
-    details: ["Price range filter", "Amenity selection", "Rating comparison"],
-  },
-  {
-    number: "03",
-    icon: CalendarCheck,
-    title: "Book",
-    description: "Select your time slot, check real-time availability, and get instant confirmation.",
-    color: "from-accent to-warning",
-    details: ["Real-time slots", "Instant booking", "Email confirmation"],
-  },
-  {
-    number: "04",
-    icon: Star,
-    title: "Experience",
-    description: "Check-in at the venue, enjoy your session, and leave a review to help others.",
-    color: "from-warning to-success",
-    details: ["Easy check-in", "Track progress", "Leave reviews"],
-  },
-];
-
 export function HowItWorksSection() {
+  const { t } = useTranslation();
+
+  const steps = useMemo(() => [
+    {
+      number: "01",
+      icon: Search,
+      title: t("howItWorks.discover"),
+      description: t("howItWorks.discoverDesc"),
+      color: "from-info to-primary",
+      details: t("howItWorks.discoverDetails", { returnObjects: true }) as string[],
+    },
+    {
+      number: "02",
+      icon: Filter,
+      title: t("howItWorks.compare"),
+      description: t("howItWorks.compareDesc"),
+      color: "from-primary to-accent",
+      details: t("howItWorks.compareDetails", { returnObjects: true }) as string[],
+    },
+    {
+      number: "03",
+      icon: CalendarCheck,
+      title: t("howItWorks.book"),
+      description: t("howItWorks.bookDesc"),
+      color: "from-accent to-warning",
+      details: t("howItWorks.bookDetails", { returnObjects: true }) as string[],
+    },
+    {
+      number: "04",
+      icon: Star,
+      title: t("howItWorks.experience"),
+      description: t("howItWorks.experienceDesc"),
+      color: "from-warning to-success",
+      details: t("howItWorks.experienceDetails", { returnObjects: true }) as string[],
+    },
+  ], [t]);
+
   return (
     <section id="how-it-works" className="py-24 bg-muted/50">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-4">
-            How It Works
+            {t("howItWorks.badge")}
           </span>
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Get Started in
-            <span className="gradient-text"> 4 Simple Steps</span>
+            {t("howItWorks.title")}
+            <span className="gradient-text"> {t("howItWorks.titleHighlight")}</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Whether you're looking to join a gym, find a quiet library, or get coaching,
-            Portal makes it easy to discover and book what you need.
+            {t("howItWorks.subtitle")}
           </p>
         </div>
 
@@ -112,12 +115,12 @@ export function HowItWorksSection() {
         <div className="text-center mt-16">
           <Link to="/signup">
             <Button variant="gradient" size="xl">
-              Get Started Free
+              {t("howItWorks.getStartedFree")}
               <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
           </Link>
           <p className="text-sm text-muted-foreground mt-4">
-            No credit card required • Free forever for basic features
+            {t("howItWorks.noCreditCard")}
           </p>
         </div>
       </div>

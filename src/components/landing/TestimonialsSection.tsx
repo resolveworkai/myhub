@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Star, Quote } from "lucide-react";
 
 const testimonials = [
@@ -58,20 +60,29 @@ const testimonials = [
 ];
 
 export function TestimonialsSection() {
+  const { t } = useTranslation();
+
+  const stats = useMemo(() => [
+    { label: t("testimonials.stats.averageRating"), value: "4.9/5" },
+    { label: t("testimonials.stats.userSatisfaction"), value: "98%" },
+    { label: t("testimonials.stats.businessGrowth"), value: "+45%" },
+    { label: t("testimonials.stats.citiesCovered"), value: "50+" },
+  ], [t]);
+
   return (
     <section className="py-24 bg-background overflow-hidden">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-accent text-sm font-semibold mb-4">
-            Testimonials
+            {t("testimonials.badge")}
           </span>
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Loved by
-            <span className="gradient-text"> Users & Owners</span>
+            {t("testimonials.title")}
+            <span className="gradient-text"> {t("testimonials.titleHighlight")}</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Don't just take our word for it. Here's what our community from across India has to say.
+            {t("testimonials.subtitle")}
           </p>
         </div>
 
@@ -122,7 +133,7 @@ export function TestimonialsSection() {
                 </div>
                 {testimonial.type === "business" && (
                   <span className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium">
-                    Business
+                    {t("testimonials.business")}
                   </span>
                 )}
               </div>
@@ -133,12 +144,7 @@ export function TestimonialsSection() {
         {/* Stats Bar */}
         <div className="mt-16 p-8 rounded-2xl gradient-primary">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {[
-              { label: "Average Rating", value: "4.9/5" },
-              { label: "User Satisfaction", value: "98%" },
-              { label: "Business Growth", value: "+45%" },
-              { label: "Cities Covered", value: "50+" },
-            ].map((stat) => (
+            {stats.map((stat) => (
               <div key={stat.label}>
                 <div className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-1">
                   {stat.value}

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { 
   Calendar, 
   MapPin, 
@@ -15,76 +16,77 @@ import {
 } from "lucide-react";
 import { useEnabledCategories } from "@/hooks/useEnabledCategories";
 
-const features = [
-  {
-    icon: MapPin,
-    title: "Discover Nearby",
-    description: "Find gyms, libraries, and coaching centers near you with our interactive map and smart filters.",
-    color: "text-info",
-    bgColor: "bg-info/10",
-  },
-  {
-    icon: Calendar,
-    title: "Easy Booking",
-    description: "Book appointments in seconds. View real-time availability and never miss a slot again.",
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-  },
-  {
-    icon: TrendingUp,
-    title: "Track Progress",
-    description: "Monitor your attendance streaks, achievements, and personal growth over time.",
-    color: "text-success",
-    bgColor: "bg-success/10",
-  },
-  {
-    icon: Bell,
-    title: "Smart Reminders",
-    description: "Get timely notifications for appointments, fee dues, and important updates.",
-    color: "text-warning",
-    bgColor: "bg-warning/10",
-  },
-  {
-    icon: CreditCard,
-    title: "Seamless Payments",
-    description: "Pay fees online, download receipts, and keep track of all your transactions.",
-    color: "text-accent",
-    bgColor: "bg-accent/10",
-  },
-  {
-    icon: MessageSquare,
-    title: "Community",
-    description: "Connect with fellow members, share experiences, and stay motivated together.",
-    color: "text-purple-500",
-    bgColor: "bg-purple-500/10",
-  },
-];
-
-const businessFeatures = [
-  {
-    icon: Users,
-    title: "Member Management",
-    description: "Easily manage members, track attendance, and handle fee collection all in one place.",
-  },
-  {
-    icon: BarChart3,
-    title: "Analytics Dashboard",
-    description: "Get insights into revenue, member retention, peak hours, and business growth.",
-  },
-  {
-    icon: Shield,
-    title: "Secure & Compliant",
-    description: "Enterprise-grade security with GDPR compliance and role-based access control.",
-  },
-  {
-    icon: Smartphone,
-    title: "Mobile Optimized",
-    description: "Manage your business on-the-go with our fully responsive mobile experience.",
-  },
-];
-
 export function FeaturesSection() {
+  const { t } = useTranslation();
   const { categories } = useEnabledCategories();
+
+  const features = useMemo(() => [
+    {
+      icon: MapPin,
+      title: t("features.discoverNearby"),
+      description: t("features.discoverNearbyDesc"),
+      color: "text-info",
+      bgColor: "bg-info/10",
+    },
+    {
+      icon: Calendar,
+      title: t("features.easyBooking"),
+      description: t("features.easyBookingDesc"),
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+    },
+    {
+      icon: TrendingUp,
+      title: t("features.trackProgress"),
+      description: t("features.trackProgressDesc"),
+      color: "text-success",
+      bgColor: "bg-success/10",
+    },
+    {
+      icon: Bell,
+      title: t("features.smartReminders"),
+      description: t("features.smartRemindersDesc"),
+      color: "text-warning",
+      bgColor: "bg-warning/10",
+    },
+    {
+      icon: CreditCard,
+      title: t("features.seamlessPayments"),
+      description: t("features.seamlessPaymentsDesc"),
+      color: "text-accent",
+      bgColor: "bg-accent/10",
+    },
+    {
+      icon: MessageSquare,
+      title: t("features.community"),
+      description: t("features.communityDesc"),
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/10",
+    },
+  ], [t]);
+
+  const businessFeatures = useMemo(() => [
+    {
+      icon: Users,
+      title: t("features.memberManagement"),
+      description: t("features.memberManagementDesc"),
+    },
+    {
+      icon: BarChart3,
+      title: t("features.analyticsDashboard"),
+      description: t("features.analyticsDashboardDesc"),
+    },
+    {
+      icon: Shield,
+      title: t("features.secureCompliant"),
+      description: t("features.secureCompliantDesc"),
+    },
+    {
+      icon: Smartphone,
+      title: t("features.mobileOptimized"),
+      description: t("features.mobileOptimizedDesc"),
+    },
+  ], [t]);
   
   // Build description dynamically based on enabled categories
   const categoryNames = useMemo(() => {
@@ -101,15 +103,14 @@ export function FeaturesSection() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
           <span className="inline-block px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-            Features
+            {t("features.badge")}
           </span>
           <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 sm:mb-6 px-2">
-            Everything You Need to
-            <span className="gradient-text"> Stay on Track</span>
+            {t("features.title")}
+            <span className="gradient-text"> {t("features.titleHighlight")}</span>
           </h2>
           <p className="text-sm sm:text-base lg:text-lg text-muted-foreground px-4">
-            Whether you're a fitness enthusiast, a bookworm, or a lifelong learner,
-            Portal has the tools to help you find and book {categoryNames}.
+            {t("features.subtitle", { categories: categoryNames })}
           </p>
         </div>
 
@@ -144,14 +145,13 @@ export function FeaturesSection() {
               {/* Left Content */}
               <div>
                 <span className="inline-block px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-accent/10 text-accent text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-                  For Business Owners
+                  {t("features.forBusinessOwners")}
                 </span>
                 <h3 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 sm:mb-6">
-                  Powerful Tools to Grow Your Business
+                  {t("features.powerfulTools")}
                 </h3>
                 <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-6 sm:mb-8">
-                  From member management to analytics, get everything you need to run
-                  and scale your gym, library, or coaching center.
+                  {t("features.powerfulToolsDesc")}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   {businessFeatures.map((feature) => (
