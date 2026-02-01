@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, memo, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ import {
 } from "@/components/ui/select";
 
 export default function Explore() {
+  const { t } = useTranslation();
   const location = useLocation();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);
@@ -179,11 +181,11 @@ export default function Explore() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "available":
-        return <Badge variant="available">Available</Badge>;
+        return <Badge variant="available">{t("explore.available")}</Badge>;
       case "filling":
-        return <Badge variant="filling">Filling Up</Badge>;
+        return <Badge variant="filling">{t("explore.fillingUp")}</Badge>;
       case "full":
-        return <Badge variant="full">Full</Badge>;
+        return <Badge variant="full">{t("explore.full")}</Badge>;
       default:
         return null;
     }
@@ -206,7 +208,7 @@ export default function Explore() {
                 <Search className="h-5 w-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search for gyms, libraries, coaching centers..."
+                  placeholder={t("explore.searchPlaceholder")}
                   className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -256,7 +258,7 @@ export default function Explore() {
                   <SheetTrigger asChild>
                     <Button variant="outline" className="lg:hidden relative">
                       <Filter className="h-5 w-5 mr-2" />
-                      Filters
+                      {t("common.filter")}
                       {activeFiltersCount > 0 && (
                         <span className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">
                           {activeFiltersCount}
@@ -266,7 +268,7 @@ export default function Explore() {
                   </SheetTrigger>
                   <SheetContent side="left" className="w-80 overflow-y-auto">
                     <SheetHeader>
-                      <SheetTitle>Filters</SheetTitle>
+                      <SheetTitle>{t("filters.title")}</SheetTitle>
                     </SheetHeader>
                     <div className="mt-6">
                       <FilterPanel activeCategory={effectiveCategory} />
@@ -310,7 +312,7 @@ export default function Explore() {
                 <CollapsibleTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
                     <Filter className="h-4 w-4" />
-                    {filtersOpen ? "Hide Filters" : "Show Filters"}
+                    {filtersOpen ? t("explore.hideFilters") : t("explore.showFilters")}
                     {activeFiltersCount > 0 && (
                       <Badge variant="secondary" className="ml-1">
                         {activeFiltersCount}
@@ -340,15 +342,15 @@ export default function Explore() {
                     {isPending && (
                       <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-muted-foreground" />
                     )}
-                    {totalItems} Businesses Found
+                    {t("explore.businessesFound", { count: totalItems })}
                   </h1>
                   <p className="text-sm sm:text-base text-muted-foreground">
                     {userLocation
-                      ? `Near ${userLocation.city}`
-                      : "Across all locations"}
+                      ? t("explore.nearLocation", { location: userLocation.city })
+                      : t("explore.acrossAllLocations")}
                     {userLocation?.source === "gps" && (
                       <span className="text-xs ml-2 text-success">
-                        (GPS)
+                        {t("explore.gpsActive")}
                       </span>
                     )}
                   </p>
@@ -359,7 +361,7 @@ export default function Explore() {
                   <SavedSearches currentFilters={currentFilters} />
                   <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
                     <SelectTrigger className="w-full sm:w-48 bg-muted border-0">
-                      <SelectValue placeholder="Sort by" />
+                      <SelectValue placeholder={t("common.sortBy")} />
                     </SelectTrigger>
                     <SelectContent>
                       {sortOptions.map((option) => (
@@ -412,7 +414,7 @@ export default function Explore() {
                             <div className="absolute top-3 left-3">
                               <Badge variant="verified" className="gap-1">
                                 <Shield className="h-3 w-3" />
-                                Verified
+                                {t("explore.verified")}
                               </Badge>
                             </div>
                           )}
@@ -486,7 +488,7 @@ export default function Explore() {
                               variant="gradient"
                               onClick={() => setBookingVenue(business)}
                             >
-                              Book Now
+                              {t("common.bookNow")}
                             </Button>
                           </div>
                         </div>
@@ -529,21 +531,16 @@ export default function Explore() {
                     <Search className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">
-                    No results found
+                    {t("common.noResults")}
                   </h3>
-                  <p className="text-muted-foreground mb-2">
-                    No venues match your current filters. Try:
+                  <p className="text-muted-foreground mb-4">
+                    {t("errors.generic")}
                   </p>
-                  <ul className="text-sm text-muted-foreground mb-4 space-y-1">
-                    <li>• Increasing the distance radius</li>
-                    <li>• Adjusting the price range</li>
-                    <li>• Removing some filters</li>
-                  </ul>
                   <Button
                     variant="outline"
                     onClick={() => useFilterStore.getState().clearAllFilters()}
                   >
-                    Clear All Filters
+                    {t("common.clearAll")}
                   </Button>
               </div>
               )}

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Search,
@@ -12,17 +13,18 @@ import {
 } from "lucide-react";
 import { useEnabledCategories } from "@/hooks/useEnabledCategories";
 
-const stats = [
-  { label: "Venues", value: "2,500+", icon: Users },
-  { label: "Happy Users", value: "50,000+", icon: Star },
-  { label: "Bookings Made", value: "1M+", icon: Calendar },
-];
-
 export function HeroSection() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
   const navigate = useNavigate();
   const { categories } = useEnabledCategories();
+
+  const stats = useMemo(() => [
+    { label: t("hero.stats.venues"), value: "2,500+", icon: Users },
+    { label: t("hero.stats.happyUsers"), value: "50,000+", icon: Star },
+    { label: t("hero.stats.bookingsMade"), value: "1M+", icon: Calendar },
+  ], [t]);
 
   // Build categories dynamically based on enabled config
   const quickCategories = useMemo(() => {
@@ -60,22 +62,21 @@ export function HeroSection() {
           <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 mb-6 sm:mb-8 animate-fade-in">
             <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
             <span className="text-primary-foreground/90 text-xs sm:text-sm font-medium">
-              Trusted by 50,000+ users across UAE
+              {t("hero.badge")}
             </span>
           </div>
 
           {/* Headline */}
           <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-primary-foreground mb-4 sm:mb-6 tracking-tight animate-slide-up leading-tight px-2">
-            Your Gateway to
+            {t("hero.title")}
             <span className="block mt-1 sm:mt-2 text-transparent bg-clip-text bg-gradient-to-r from-accent via-warning to-accent">
-              Fitness & Learning
+              {t("hero.titleHighlight")}
             </span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-primary-foreground/80 mb-8 sm:mb-10 max-w-2xl mx-auto animate-slide-up px-4" style={{ animationDelay: "0.1s" }}>
-            Discover and book gyms, coaching centers, and libraries near you.
-            Real-time availability, instant booking, and progress tracking.
+            {t("hero.subtitle")}
           </p>
 
           {/* Search Bar */}
@@ -85,7 +86,7 @@ export function HeroSection() {
                 <Search className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground/60 shrink-0" />
                 <input
                   type="text"
-                  placeholder="Search gyms, coaching..."
+                  placeholder={t("hero.searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-1 bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 outline-none text-sm sm:text-base py-2.5 sm:py-2 min-w-0"
@@ -95,7 +96,7 @@ export function HeroSection() {
                 <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground/60 shrink-0" />
                 <input
                   type="text"
-                  placeholder="Location"
+                  placeholder={t("hero.locationPlaceholder")}
                   value={locationQuery}
                   onChange={(e) => setLocationQuery(e.target.value)}
                   className="flex-1 sm:w-28 md:w-32 bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 outline-none text-sm sm:text-base py-2.5 sm:py-2 min-w-0"
@@ -103,7 +104,7 @@ export function HeroSection() {
               </div>
               <Button type="submit" variant="accent" size="lg" className="rounded-lg sm:rounded-xl w-full sm:w-auto h-11 sm:h-auto touch-target">
                 <Search className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" />
-                <span className="sm:inline">Search</span>
+                <span className="sm:inline">{t("common.search")}</span>
               </Button>
             </div>
           </form>
@@ -126,13 +127,13 @@ export function HeroSection() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mb-12 sm:mb-16 animate-slide-up px-4" style={{ animationDelay: "0.3s" }}>
             <Link to="/explore" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto h-12 sm:h-14 text-sm sm:text-base touch-target">
-                Explore Venues
+                {t("hero.exploreVenues")}
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
               </Button>
             </Link>
             <Link to="/for-business" className="w-full sm:w-auto">
               <Button variant="hero-outline" size="lg" className="w-full sm:w-auto h-12 sm:h-14 text-sm sm:text-base touch-target">
-                List Your Business
+                {t("hero.listBusiness")}
               </Button>
             </Link>
           </div>

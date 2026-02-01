@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Building2, Users } from "lucide-react";
 
 export function CTASection() {
+  const { t } = useTranslation();
+
   return (
     <section className="py-24 bg-muted/50">
       <div className="container mx-auto px-4 lg:px-8">
@@ -15,15 +18,14 @@ export function CTASection() {
                 <Users className="h-7 w-7 text-primary" />
               </div>
               <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
-                Ready to Start Your Journey?
+                {t("cta.forUsers.title")}
               </h3>
               <p className="text-lg text-muted-foreground mb-8">
-                Join thousands of members who are already achieving their goals.
-                Find your perfect gym, library, or coaching center today.
+                {t("cta.forUsers.subtitle")}
               </p>
               <Link to="/signup">
                 <Button variant="gradient" size="lg">
-                  Create Free Account
+                  {t("cta.forUsers.button")}
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </Link>
@@ -43,7 +45,7 @@ export function CTASection() {
                   ))}
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">50,000+</span> happy users
+                  <span className="font-semibold text-foreground">50,000+</span> {t("cta.forUsers.happyUsers")}
                 </span>
               </div>
             </div>
@@ -57,15 +59,14 @@ export function CTASection() {
                 <Building2 className="h-7 w-7 text-accent" />
               </div>
               <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
-                Grow Your Business
+                {t("cta.forBusiness.title")}
               </h3>
               <p className="text-lg text-muted-foreground mb-8">
-                List your gym, library, or coaching center on Portal. Reach thousands
-                of potential customers and streamline your operations.
+                {t("cta.forBusiness.subtitle")}
               </p>
               <Link to="/for-business">
                 <Button variant="accent" size="lg">
-                  List Your Business
+                  {t("cta.forBusiness.button")}
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </Link>
@@ -73,7 +74,7 @@ export function CTASection() {
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-accent" />
                   <span className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">Free</span> to get started
+                    <span className="font-semibold text-foreground">{t("cta.forBusiness.freeToStart")}</span>
                   </span>
                 </div>
               </div>

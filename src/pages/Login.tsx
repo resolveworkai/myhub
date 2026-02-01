@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ import { z } from "zod";
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || '/';
@@ -58,10 +60,9 @@ export default function Login() {
       
       if (!result.success) {
         if (result.requiresVerification) {
-          // Store email for verification page
           const email = data.identifier.includes('@') ? data.identifier : '';
           if (email) {
-            setPendingVerification(email, '000000'); // Mock OTP
+            setPendingVerification(email, '000000');
             toast({
               title: "Email Verification Required",
               description: result.error,
@@ -93,7 +94,6 @@ export default function Login() {
             : "Explore venues near you.",
         });
         
-        // Redirect based on account type
         if (result.user.accountType === 'business') {
           navigate('/business-dashboard');
         } else {
@@ -132,10 +132,10 @@ export default function Login() {
           </Link>
 
           <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-            Welcome back
+            {t("auth.signInTitle")}
           </h1>
           <p className="text-muted-foreground mb-8">
-            Sign in to continue to your account
+            {t("auth.signInSubtitle")}
           </p>
 
           {/* Login Method Toggle */}
@@ -150,7 +150,7 @@ export default function Login() {
               }`}
             >
               <Mail className="h-4 w-4" />
-              Email
+              {t("auth.emailTab")}
             </button>
             <button
               type="button"
@@ -162,7 +162,7 @@ export default function Login() {
               }`}
             >
               <Smartphone className="h-4 w-4" />
-              Phone
+              {t("auth.phoneTab")}
             </button>
           </div>
 
@@ -170,7 +170,7 @@ export default function Login() {
             {/* Identifier Field */}
             <div className="space-y-2">
               <Label htmlFor="identifier">
-                {loginMethod === "email" ? "Email" : "Phone Number"}
+                {loginMethod === "email" ? t("auth.email") : t("auth.phoneNumber")}
               </Label>
               <div className="relative">
                 {loginMethod === "email" ? (
@@ -181,7 +181,7 @@ export default function Login() {
                 <Input
                   id="identifier"
                   type={loginMethod === "email" ? "email" : "tel"}
-                  placeholder={loginMethod === "email" ? "Enter your email" : "+971-50-123-4567"}
+                  placeholder={loginMethod === "email" ? t("auth.enterEmail") : t("auth.enterPhone")}
                   className="pl-10"
                   {...register("identifier")}
                 />
@@ -194,12 +194,12 @@ export default function Login() {
             {/* Password Field */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("auth.password")}</Label>
                 <Link
                   to="/forgot-password"
                   className="text-sm text-primary hover:underline"
                 >
-                  Forgot password?
+                  {t("auth.forgotPassword")}
                 </Link>
               </div>
               <div className="relative">
@@ -207,7 +207,7 @@ export default function Login() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder={t("auth.enterPassword")}
                   className="pl-10 pr-10"
                   {...register("password")}
                 />
@@ -242,7 +242,7 @@ export default function Login() {
                 )}
               />
               <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-                Remember me for 30 days
+                {t("auth.rememberMe")}
               </Label>
             </div>
 
@@ -264,11 +264,11 @@ export default function Login() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Signing in...
+                  {t("auth.signingIn")}
                 </>
               ) : (
                 <>
-                  Sign In
+                  {t("common.signIn")}
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </>
               )}
@@ -277,9 +277,9 @@ export default function Login() {
 
           {/* Demo Credentials */}
           <div className="mt-4 p-3 rounded-lg bg-info/10 border border-info/30">
-            <p className="text-xs text-info font-medium mb-1">Demo Credentials:</p>
+            <p className="text-xs text-info font-medium mb-1">{t("auth.demoCredentials")}</p>
             <p className="text-xs text-muted-foreground">
-              Email: sarah.chen@email.com | Password: Password123!
+              {t("auth.demoInfo")}
             </p>
           </div>
 
@@ -290,7 +290,7 @@ export default function Login() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="bg-background px-4 text-muted-foreground">
-                or continue with
+                {t("auth.orContinueWith")}
               </span>
             </div>
           </div>
@@ -298,9 +298,9 @@ export default function Login() {
           {/* Social Login */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { name: "Google", icon: "G" },
-              { name: "Apple", icon: "" },
-              { name: "Facebook", icon: "f" },
+              { name: t("auth.google"), icon: "G" },
+              { name: t("auth.apple"), icon: "" },
+              { name: t("auth.facebook"), icon: "f" },
             ].map((provider) => (
               <Button 
                 key={provider.name} 
@@ -314,9 +314,9 @@ export default function Login() {
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-8">
-            Don't have an account?{" "}
+            {t("auth.noAccount")}{" "}
             <Link to="/signup" className="text-primary font-semibold hover:underline">
-              Sign up
+              {t("common.signUp")}
             </Link>
           </p>
         </div>
@@ -333,10 +333,10 @@ export default function Login() {
             <span className="text-6xl">🏋️</span>
           </div>
           <h2 className="font-display text-3xl font-bold text-primary-foreground mb-4">
-            Your Gateway to Fitness & Learning
+            {t("auth.rightPanelTitle")}
           </h2>
           <p className="text-primary-foreground/80 text-lg">
-            Track progress, book venues, and achieve your goals with Portal.
+            {t("auth.rightPanelSubtitle")}
           </p>
         </div>
       </div>

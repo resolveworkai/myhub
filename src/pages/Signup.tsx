@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Check, Users, Building2 } from "lucide-react";
 import { NormalUserSignup } from "@/components/auth/signup/NormalUserSignup";
 import { BusinessSignup } from "@/components/auth/signup/BusinessSignup";
@@ -8,9 +9,13 @@ import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 type UserType = "member" | "business";
 
 export default function Signup() {
+  const { t } = useTranslation();
   const location = useLocation();
   const isBusinessPath = location.pathname.includes('/business');
   const [userType, setUserType] = useState<UserType>(isBusinessPath ? "business" : "member");
+
+  const memberFeatures = t("auth.memberFeatures", { returnObjects: true }) as string[];
+  const businessFeatures = t("auth.businessFeatures", { returnObjects: true }) as string[];
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
@@ -26,10 +31,10 @@ export default function Signup() {
           </Link>
 
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">
-            Create your account
+            {t("auth.signUpTitle")}
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
-            Join thousands of users and businesses on Portal
+            {t("auth.signUpSubtitle")}
           </p>
 
           {/* User Type Selection */}
@@ -48,9 +53,9 @@ export default function Signup() {
                 </div>
               )}
               <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-1.5 sm:mb-2" />
-              <h3 className="font-semibold text-sm sm:text-base text-foreground">Member</h3>
+              <h3 className="font-semibold text-sm sm:text-base text-foreground">{t("auth.member")}</h3>
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                Book & track progress
+                {t("auth.memberDesc")}
               </p>
             </button>
             <button
@@ -67,9 +72,9 @@ export default function Signup() {
                 </div>
               )}
               <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-accent mb-1.5 sm:mb-2" />
-              <h3 className="font-semibold text-sm sm:text-base text-foreground">Business</h3>
+              <h3 className="font-semibold text-sm sm:text-base text-foreground">{t("auth.businessAccount")}</h3>
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                List & manage business
+                {t("auth.businessDesc")}
               </p>
             </button>
           </div>
@@ -84,7 +89,7 @@ export default function Signup() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="bg-background px-4 text-muted-foreground text-xs sm:text-sm">
-                    or continue with email
+                    {t("auth.orContinueWith")} {t("auth.email").toLowerCase()}
                   </span>
                 </div>
               </div>
@@ -99,9 +104,9 @@ export default function Signup() {
           )}
 
           <p className="text-center text-xs sm:text-sm text-muted-foreground mt-6 sm:mt-8">
-            Already have an account?{" "}
+            {t("auth.hasAccount")}{" "}
             <Link to="/signin" className="text-primary font-semibold hover:underline">
-              Sign in
+              {t("common.signIn")}
             </Link>
           </p>
         </div>
@@ -120,10 +125,10 @@ export default function Signup() {
                 <span className="text-4xl lg:text-6xl">🎯</span>
               </div>
               <h2 className="font-display text-2xl lg:text-3xl font-bold text-primary-foreground mb-3 lg:mb-4">
-                Start Your Journey Today
+                {t("auth.startJourney")}
               </h2>
               <p className="text-primary-foreground/80 text-base lg:text-lg">
-                Join thousands of members achieving their fitness, learning, and wellness goals.
+                {t("auth.startJourneySubtitle")}
               </p>
             </>
           ) : (
@@ -132,30 +137,17 @@ export default function Signup() {
                 <span className="text-4xl lg:text-6xl">📈</span>
               </div>
               <h2 className="font-display text-2xl lg:text-3xl font-bold text-primary-foreground mb-3 lg:mb-4">
-                Grow Your Business
+                {t("auth.growBusiness")}
               </h2>
               <p className="text-primary-foreground/80 text-base lg:text-lg">
-                Reach thousands of potential customers and streamline your operations.
+                {t("auth.growBusinessSubtitle")}
               </p>
             </>
           )}
 
           {/* Features List */}
           <div className="mt-6 lg:mt-8 space-y-2 lg:space-y-3 text-left">
-            {(userType === "member"
-              ? [
-                  "Find & book nearby businesses",
-                  "Track attendance & streaks",
-                  "Earn achievements & rewards",
-                  "Manage payments easily",
-                ]
-              : [
-                  "List your business for free",
-                  "Manage members & appointments",
-                  "Track revenue & analytics",
-                  "Send automated reminders",
-                ]
-            ).map((feature) => (
+            {(userType === "member" ? memberFeatures : businessFeatures).map((feature) => (
               <div
                 key={feature}
                 className="flex items-center gap-3 text-primary-foreground/90 text-sm lg:text-base"
