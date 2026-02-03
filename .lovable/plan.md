@@ -1,164 +1,224 @@
 
-
-# Plan: Enforce Subscription-Based Booking Hierarchy
+# Plan: Fix Admin Dashboard with Full Tab Functionality
 
 ## Problem Summary
-Currently, the booking flow shows both subscription purchase AND per-session payment options, creating confusion. The requirement is:
-- If user has a valid subscription (daily/weekly/monthly) for the business, book freely (no paywall)
-- If no subscription exists, ONLY show membership selection (daily/weekly/monthly pass purchase)
-- Never show per-session payment - users must buy a pass first
+The Admin Dashboard currently has several issues:
+1. **Navigation links don't work** - Clicking on "Businesses", "Users", "Analytics", etc. changes the URL but the content doesn't change
+2. **Static hardcoded data** - Uses inline dummy data instead of loading from JSON mock files
+3. **No tab content components** - Only the main dashboard overview is rendered, regardless of which tab is selected
+4. **Missing functionality** - Tabs like Businesses, Users, Analytics, Localization, Security, and Settings have no content or actions
 
-## Implementation Changes
+## Solution Overview
+Rebuild the Admin Dashboard with proper route-based content switching using location-based rendering (similar to BusinessDashboard), load real data from mock JSON files, and implement full functionality for each tab.
 
-### 1. Update `BookingModal.tsx` - Remove Per-Session Payment
+---
 
-**Remove the redundant payment step logic:**
-- Remove `showPaymentStep` state and related UI (lines ~94, 158-161, 518-544, 580-680)
-- Remove `selectedPaymentMethod` state and logic
-- Remove per-session price calculation display
+## Technical Implementation
 
-**Enforce subscription-first flow:**
-- When user clicks "Confirm Booking" without subscription, auto-open `MembershipSelectionModal`
-- Only allow booking confirmation if `hasSubscription === true`
+### 1. Update AdminDashboard.tsx Structure
 
-**Updated flow:**
-```
-User opens BookingModal
-  ↓
-Has valid subscription? 
-  → YES: Show date/time selection → Confirm Booking (free)
-  → NO: Show "Get a Pass" prominently → Opens MembershipSelectionModal
-        After purchase → Subscription created → Can now book freely
-```
+Add location-based content rendering to show different content based on the current route:
 
-### 2. Simplify `handleBooking()` Function
-
-```typescript
-const handleBooking = async () => {
-  // Check authentication first
-  if (!isAuthenticated) {
-    setShowGuestPrompt(true);
-    return;
-  }
-  
-  // Check subscription - if none, show membership modal
-  if (!hasSubscription) {
-    setShowMembershipModal(true);
-    return;
-  }
-
-  // User has subscription - proceed with booking
-  if (!selectedDate || !selectedTime) return;
-  
-  setIsSubmitting(true);
-  // ... rest of booking logic (no payment step needed)
-};
+```text
+/admin           → Dashboard Overview (stats, recent activity)
+/admin/businesses → Business Management (list, verify, suspend)
+/admin/users      → User Management (list, view, suspend)
+/admin/analytics  → Platform Analytics (charts, metrics)
+/admin/localization → Language Management (translations)
+/admin/security   → Security Settings (logs, policies)
+/admin/settings   → Admin Settings (platform config)
 ```
 
-### 3. Update Step 3 (Confirmation) UI
+### 2. Data Loading from Mock Files
 
-For subscribers:
-- Show booking summary without payment section
-- "Confirm Booking" button (no price)
-- Show subscription badge confirming free access
+Import and use real data from existing mock files:
 
-For non-subscribers:
-- Instead of showing Step 3, redirect to membership modal
-- Never reach confirmation without active pass
+| Mock File | Used For |
+|-----------|----------|
+| `businessUsers.json` | Business list with verification status |
+| `users.json` | User list with profiles |
+| `gyms.json`, `libraries.json`, `coaching.json` | Venue counts and stats |
+| `bookings.json` | Booking/activity statistics |
 
-### 4. Remove Payment Method Selection
+### 3. Tab Content Components
 
-Remove these sections from the modal:
-- Lines 580-680: Payment method selection (Card/UPI)
-- Lines 518-544: Session price preview box
-- Lines 156-170: `showPaymentStep` logic
+Each tab will be implemented as inline content within AdminDashboard (avoiding creation of separate files):
 
-### 5. Update MembershipSelectionModal Success Handler
+**Dashboard Overview Tab** (existing, enhanced):
+- Load real stats from mock data (total businesses, users, venues)
+- Recent businesses from `businessUsers.json`
+- Recent users from `users.json`
 
-After successful purchase in `MembershipSelectionModal`:
-- Close the membership modal
-- User now has subscription in store
-- Booking modal should auto-refresh subscription status
-- User can now proceed with booking
+**Businesses Tab**:
+- Full list of businesses with search/filter
+- Verify/Suspend/Delete actions
+- Status badges (verified, pending, suspended)
+- Business type filter (gym, library, coaching)
 
-### 6. Add Subscription Check Hook (Optional Enhancement)
+**Users Tab**:
+- Full list of users with search
+- View profile action
+- Suspend/Activate toggle
+- Role filter (member, business)
 
-Create a reusable hook for checking subscription status across the app:
+**Analytics Tab**:
+- Platform metrics from aggregated mock data
+- Charts for bookings over time
+- Revenue breakdown (simulated)
+- User growth trends
 
-```typescript
-// src/hooks/useVenueAccess.ts
-export function useVenueAccess(venueId: string) {
-  const { user } = useAuthStore();
-  const { getActiveSubscription } = useSubscriptionStore();
-  
-  const subscription = useMemo(() => {
-    if (!user?.id) return null;
-    return getActiveSubscription(user.id, venueId);
-  }, [user?.id, venueId]);
-  
-  return {
-    hasAccess: !!subscription,
-    subscriptionType: subscription?.type || null,
-    expiresOn: subscription?.endDate || null,
-    isMonthly: subscription?.type === 'monthly',
-  };
-}
+**Localization Tab**:
+- List of supported languages (en, hi, ar)
+- Translation coverage stats
+- Key count per namespace
+
+**Security Tab**:
+- Simulated security log entries
+- Rate limiting settings display
+- Login attempt monitoring display
+
+**Settings Tab**:
+- Platform configuration display
+- Maintenance mode toggle
+- Email/notification settings
+
+### 4. Actions and Functionality
+
+| Tab | Actions |
+|-----|---------|
+| Businesses | Verify, Suspend, Delete, View Details |
+| Users | Suspend, Activate, View Profile |
+| Analytics | Export Report, Date Range Filter |
+| Localization | View Stats (read-only) |
+| Security | View Logs (read-only) |
+| Settings | Toggle Settings (with toast feedback) |
+
+### 5. Component Structure
+
+```text
+AdminDashboard.tsx
+├── Sidebar Navigation (existing)
+├── Header with Search (existing)
+└── Content Area
+    └── Switch based on location.pathname:
+        ├── "/admin" → DashboardContent
+        ├── "/admin/businesses" → BusinessesContent
+        ├── "/admin/users" → UsersContent
+        ├── "/admin/analytics" → AnalyticsContent
+        ├── "/admin/localization" → LocalizationContent
+        ├── "/admin/security" → SecurityContent
+        └── "/admin/settings" → SettingsContent
 ```
 
-This hook can be used in:
-- BookingModal
-- BusinessDetail page
-- MonthlyBookingModal
-- Any component that needs to check venue access
+---
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/booking/BookingModal.tsx` | Remove per-session payment flow, enforce subscription-first, simplify handleBooking() |
-| `src/hooks/useVenueAccess.ts` | Create new hook for reusable subscription checking |
+| `src/pages/AdminDashboard.tsx` | Complete rewrite with route-based content, data loading from mock files, and functional actions |
+
+---
+
+## Data Flow
+
+```text
+Mock JSON Files
+    │
+    ├── businessUsers.json ──┐
+    ├── users.json ──────────┤
+    ├── gyms.json ───────────┼──> AdminDashboard.tsx
+    ├── libraries.json ──────┤    (imports and aggregates)
+    ├── coaching.json ───────┤
+    └── bookings.json ───────┘
+                                    │
+                                    v
+                            Render based on
+                            location.pathname
+                                    │
+          ┌─────────────────────────┼─────────────────────────┐
+          │                         │                         │
+          v                         v                         v
+    DashboardContent        BusinessesContent          UsersContent
+    (Real stats,           (Filterable list,         (Searchable list,
+     recent activity)       verify/suspend)           suspend/activate)
+```
+
+---
+
+## Implementation Details
+
+### Dashboard Overview (Enhanced)
+- Calculate real totals: `businessUsers.length`, `users.length`, `gyms.length + libraries.length + coaching.length`
+- Show most recent 4 businesses from `businessUsers.json`
+- Show most recent 4 users from `users.json`
+
+### Businesses Management
+- Table with columns: Name, Owner, Type, Status, Actions
+- Search by name or owner
+- Filter by type (gym, library, coaching)
+- Actions: Verify (toggles verified flag), Suspend, Delete (with confirmation)
+
+### Users Management
+- Table with columns: Name, Email, Location, Joined, Status, Actions
+- Search by name or email
+- Actions: View Profile, Suspend/Activate
+
+### Analytics Dashboard
+- Stats cards: Total Venues, Total Bookings, Average Rating
+- Bar chart: Bookings by category (simulated using Recharts)
+- Pie chart: Venue distribution by type
+
+### Localization Display
+- List of languages with translation key counts
+- Show `en.json`, `hi.json`, `ar.json` metadata
+
+### Security Display
+- Static security metrics display
+- Simulated login attempt log
+
+### Settings Panel
+- Toggle switches for platform settings
+- Toast notifications on change
+
+---
 
 ## Expected Behavior After Changes
 
-1. **User with subscription opens booking**: Sees date/time selection → Confirms booking → Done (no payment)
-2. **User without subscription opens booking**: Sees "Get a Pass" prompt → Selects daily/weekly/monthly → Pays → Subscription activated → Can now book
-3. **Consistent across app**: Same logic applies everywhere - no paywall for subscribers, mandatory pass purchase for non-subscribers
+1. **Click "Businesses"** → See full list of businesses from `businessUsers.json` with verify/suspend buttons
+2. **Click "Users"** → See full list of users from `users.json` with suspend toggle
+3. **Click "Analytics"** → See charts and metrics computed from mock data
+4. **Click "Localization"** → See language statistics
+5. **Click "Security"** → See security information display
+6. **Click "Settings"** → See configurable platform settings
+7. **All stats are real** → Computed from actual mock data counts
 
-## Visual Flow Diagram
+---
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    User Opens Booking                    │
-└─────────────────────────┬───────────────────────────────┘
-                          │
-              ┌───────────▼───────────┐
-              │  Has Active Pass for  │
-              │   This Business?      │
-              └───────────┬───────────┘
-                          │
-          ┌───────────────┴───────────────┐
-          │                               │
-        YES                              NO
-          │                               │
-          ▼                               ▼
-   ┌──────────────┐              ┌──────────────────┐
-   │ Select Date  │              │ Show Membership  │
-   │ Select Time  │              │ Selection Modal  │
-   │   Confirm    │              │ (Daily/Weekly/   │
-   │   Booking    │              │  Monthly)        │
-   │   (FREE)     │              └────────┬─────────┘
-   └──────────────┘                       │
-                                          ▼
-                                 ┌──────────────────┐
-                                 │ User Purchases   │
-                                 │ Subscription     │
-                                 └────────┬─────────┘
-                                          │
-                                          ▼
-                                 ┌──────────────────┐
-                                 │ Subscription     │
-                                 │ Created → Can    │
-                                 │ Now Book Freely  │
-                                 └──────────────────┘
+## Mock Data Integration
+
+**Business stats calculation:**
+```typescript
+const businessUsers = require('@/data/mock/businessUsers.json');
+const gyms = require('@/data/mock/gyms.json');
+const libraries = require('@/data/mock/libraries.json');
+const coaching = require('@/data/mock/coaching.json');
+const users = require('@/data/mock/users.json');
+
+const stats = {
+  totalBusinesses: businessUsers.length,
+  totalUsers: users.length,
+  totalVenues: gyms.length + libraries.length + coaching.length,
+  verifiedBusinesses: businessUsers.filter(b => b.verified).length,
+  pendingBusinesses: businessUsers.filter(b => !b.verified).length,
+};
 ```
 
+---
+
+## UI Consistency
+
+- Maintain existing dark sidebar theme
+- Use same Badge variants (success, warning, destructive)
+- Use same Button variants and sizes
+- Consistent spacing and typography with existing BusinessDashboard
