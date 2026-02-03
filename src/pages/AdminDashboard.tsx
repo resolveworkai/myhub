@@ -180,8 +180,18 @@ export default function AdminDashboard() {
   });
   const location = useLocation();
 
-  // Get current path for content routing
-  const currentPath = location.pathname;
+  // Get current path for content routing.
+  // IMPORTANT: When the app is hosted under a sub-path, react-router's `location.pathname`
+  // can include the Vite `BASE_URL` prefix (e.g. "/myapp/admin/users").
+  // Normalize it so our admin route comparisons work reliably.
+  const currentPath = (() => {
+    const raw = location.pathname;
+    const base = (import.meta.env.BASE_URL ?? "/").replace(/\/+$/, "");
+    if (!base || base === "/") return raw;
+    if (raw === base) return "/";
+    if (raw.startsWith(base + "/")) return raw.slice(base.length);
+    return raw;
+  })();
 
   // Business actions
   const handleVerifyBusiness = (id: string) => {
@@ -1023,7 +1033,7 @@ export default function AdminDashboard() {
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                  location.pathname === item.href
+                  currentPath === item.href
                     ? "bg-primary text-primary-foreground"
                     : "text-background/70 hover:text-background hover:bg-background/10"
                 )}
