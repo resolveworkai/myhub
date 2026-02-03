@@ -277,686 +277,693 @@ export default function AdminDashboard() {
 
   // Render content based on current route
   const renderContent = () => {
-    switch (currentPath) {
-      case "/admin/businesses":
-        return (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
-                  Business Management
-                </h1>
-                <p className="text-muted-foreground">Manage all registered businesses</p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Search businesses..." 
-                    className="pl-10 w-full sm:w-64"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <Select value={businessFilter} onValueChange={setBusinessFilter}>
-                  <SelectTrigger className="w-full sm:w-40">
-                    <SelectValue placeholder="Filter by type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="gym">Gym</SelectItem>
-                    <SelectItem value="library">Library</SelectItem>
-                    <SelectItem value="coaching">Coaching</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+    // Business Management
+    if (currentPath === "/admin/businesses" || currentPath.startsWith("/admin/businesses/")) {
+      return (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
+                Business Management
+              </h1>
+              <p className="text-muted-foreground">Manage all registered businesses</p>
             </div>
-
-            <div className="bg-card rounded-2xl border border-border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Business Name</TableHead>
-                    <TableHead>Owner</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Tier</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBusinesses.map((business) => (
-                    <TableRow key={business.id}>
-                      <TableCell className="font-medium">{business.businessName}</TableCell>
-                      <TableCell>{business.ownerName}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="capitalize">
-                          {business.businessType}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {business.suspended ? (
-                          <Badge variant="destructive">Suspended</Badge>
-                        ) : business.verified ? (
-                          <Badge variant="success">Verified</Badge>
-                        ) : (
-                          <Badge variant="warning">Pending</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {business.subscriptionTier}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          {!business.verified && !business.suspended && (
-                            <Button 
-                              variant="ghost" 
-                              size="icon-sm"
-                              onClick={() => handleVerifyBusiness(business.id)}
-                              title="Verify"
-                            >
-                              <Check className="h-4 w-4 text-success" />
-                            </Button>
-                          )}
-                          <Button 
-                            variant="ghost" 
-                            size="icon-sm"
-                            onClick={() => handleSuspendBusiness(business.id)}
-                            title={business.suspended ? "Activate" : "Suspend"}
-                          >
-                            {business.suspended ? (
-                              <CheckCircle2 className="h-4 w-4 text-success" />
-                            ) : (
-                              <Ban className="h-4 w-4 text-warning" />
-                            )}
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon-sm"
-                            onClick={() => handleDeleteBusiness(business.id)}
-                            title="Delete"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              {filteredBusinesses.length === 0 && (
-                <div className="p-8 text-center text-muted-foreground">
-                  No businesses found matching your criteria.
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      case "/admin/users":
-        return (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
-                  User Management
-                </h1>
-                <p className="text-muted-foreground">Manage all registered users</p>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Search users..." 
+                  placeholder="Search businesses..." 
                   className="pl-10 w-full sm:w-64"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
+              <Select value={businessFilter} onValueChange={setBusinessFilter}>
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="gym">Gym</SelectItem>
+                  <SelectItem value="library">Library</SelectItem>
+                  <SelectItem value="coaching">Coaching</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+          </div>
 
-            <div className="bg-card rounded-2xl border border-border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={user.avatar} 
-                            alt={user.name}
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                          <span className="font-medium">{user.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{user.location.address}</TableCell>
-                      <TableCell>{new Date(user.joinDate).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        {user.suspended ? (
-                          <Badge variant="destructive">Suspended</Badge>
-                        ) : (
-                          <Badge variant="success">Active</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon-sm" title="View Profile">
-                            <Eye className="h-4 w-4" />
-                          </Button>
+          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Business Name</TableHead>
+                  <TableHead>Owner</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Tier</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredBusinesses.map((business) => (
+                  <TableRow key={business.id}>
+                    <TableCell className="font-medium">{business.businessName}</TableCell>
+                    <TableCell>{business.ownerName}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="capitalize">
+                        {business.businessType}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {business.suspended ? (
+                        <Badge variant="destructive">Suspended</Badge>
+                      ) : business.verified ? (
+                        <Badge variant="success">Verified</Badge>
+                      ) : (
+                        <Badge variant="warning">Pending</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {business.subscriptionTier}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        {!business.verified && !business.suspended && (
                           <Button 
                             variant="ghost" 
                             size="icon-sm"
-                            onClick={() => handleSuspendUser(user.id)}
-                            title={user.suspended ? "Activate" : "Suspend"}
+                            onClick={() => handleVerifyBusiness(business.id)}
+                            title="Verify"
                           >
-                            {user.suspended ? (
-                              <CheckCircle2 className="h-4 w-4 text-success" />
-                            ) : (
-                              <Ban className="h-4 w-4 text-warning" />
-                            )}
+                            <Check className="h-4 w-4 text-success" />
                           </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              {filteredUsers.length === 0 && (
-                <div className="p-8 text-center text-muted-foreground">
-                  No users found matching your criteria.
-                </div>
-              )}
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="icon-sm"
+                          onClick={() => handleSuspendBusiness(business.id)}
+                          title={business.suspended ? "Activate" : "Suspend"}
+                        >
+                          {business.suspended ? (
+                            <CheckCircle2 className="h-4 w-4 text-success" />
+                          ) : (
+                            <Ban className="h-4 w-4 text-warning" />
+                          )}
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon-sm"
+                          onClick={() => handleDeleteBusiness(business.id)}
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {filteredBusinesses.length === 0 && (
+              <div className="p-8 text-center text-muted-foreground">
+                No businesses found matching your criteria.
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // User Management
+    if (currentPath === "/admin/users" || currentPath.startsWith("/admin/users/")) {
+      return (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
+                User Management
+              </h1>
+              <p className="text-muted-foreground">Manage all registered users</p>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search users..." 
+                className="pl-10 w-full sm:w-64"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
           </div>
-        );
 
-      case "/admin/analytics":
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
-                  Platform Analytics
-                </h1>
-                <p className="text-muted-foreground">Platform performance metrics and insights</p>
+          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={user.avatar} 
+                          alt={user.name}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <span className="font-medium">{user.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{user.location.address}</TableCell>
+                    <TableCell>{new Date(user.joinDate).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {user.suspended ? (
+                        <Badge variant="destructive">Suspended</Badge>
+                      ) : (
+                        <Badge variant="success">Active</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon-sm" title="View Profile">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon-sm"
+                          onClick={() => handleSuspendUser(user.id)}
+                          title={user.suspended ? "Activate" : "Suspend"}
+                        >
+                          {user.suspended ? (
+                            <CheckCircle2 className="h-4 w-4 text-success" />
+                          ) : (
+                            <Ban className="h-4 w-4 text-warning" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {filteredUsers.length === 0 && (
+              <div className="p-8 text-center text-muted-foreground">
+                No users found matching your criteria.
               </div>
-              <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Export Report
-              </Button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Analytics
+    if (currentPath === "/admin/analytics" || currentPath.startsWith("/admin/analytics/")) {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
+                Platform Analytics
+              </h1>
+              <p className="text-muted-foreground">Platform performance metrics and insights</p>
+            </div>
+            <Button variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export Report
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {stats.map((stat) => (
+              <div key={stat.name} className="p-6 rounded-2xl bg-card border border-border">
+                <div className="flex items-center justify-between mb-4">
+                  <stat.icon className={cn("h-8 w-8", stat.color)} />
+                  <div className="flex items-center gap-1 text-sm font-medium text-success">
+                    <TrendingUp className="h-4 w-4" />
+                    {stat.change}
+                  </div>
+                </div>
+                <div className="text-2xl font-bold mb-1">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.name}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <h2 className="font-display text-lg font-semibold mb-4">Bookings by Category</h2>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={bookingsByType}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: "hsl(var(--card))", 
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px"
+                      }}
+                    />
+                    <Bar dataKey="bookings" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {stats.map((stat) => (
-                <div key={stat.name} className="p-6 rounded-2xl bg-card border border-border">
-                  <div className="flex items-center justify-between mb-4">
-                    <stat.icon className={cn("h-8 w-8", stat.color)} />
-                    <div className="flex items-center gap-1 text-sm font-medium text-success">
-                      <TrendingUp className="h-4 w-4" />
-                      {stat.change}
-                    </div>
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <h2 className="font-display text-lg font-semibold mb-4">Venue Distribution</h2>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={venueDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                      label
+                    >
+                      {venueDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Localization
+    if (currentPath === "/admin/localization" || currentPath.startsWith("/admin/localization/")) {
+      return (
+        <div className="space-y-6">
+          <div>
+            <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
+              Localization
+            </h1>
+            <p className="text-muted-foreground">Language and translation management</p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {languages.map((lang) => (
+              <div key={lang.code} className="bg-card rounded-2xl border border-border p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Languages className="h-5 w-5 text-primary" />
                   </div>
-                  <div className="text-2xl font-bold mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.name}</div>
+                  <div>
+                    <div className="font-medium">{lang.name}</div>
+                    <div className="text-sm text-muted-foreground uppercase">{lang.code}</div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Translation Keys</span>
+                    <span className="font-medium">{lang.keys}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Coverage</span>
+                    <span className="font-medium">{lang.coverage}%</span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary rounded-full" 
+                      style={{ width: `${lang.coverage}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-card rounded-2xl border border-border p-6">
+            <h2 className="font-display text-lg font-semibold mb-4">Translation Files</h2>
+            <div className="space-y-3">
+              {["en.json", "hi.json", "ar.json"].map((file) => (
+                <div key={file} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <span className="font-medium">src/i18n/locales/{file}</span>
+                  </div>
+                  <Badge variant="outline">Active</Badge>
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      );
+    }
 
-            <div className="grid lg:grid-cols-2 gap-6">
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <h2 className="font-display text-lg font-semibold mb-4">Bookings by Category</h2>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={bookingsByType}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: "hsl(var(--card))", 
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "8px"
-                        }}
-                      />
-                      <Bar dataKey="bookings" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+    // Security
+    if (currentPath === "/admin/security" || currentPath.startsWith("/admin/security/")) {
+      return (
+        <div className="space-y-6">
+          <div>
+            <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
+              Security
+            </h1>
+            <p className="text-muted-foreground">Security logs and settings</p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <Lock className="h-5 w-5 text-success" />
+                <span className="font-medium">SSL/TLS</span>
+              </div>
+              <Badge variant="success">Active</Badge>
+            </div>
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <Shield className="h-5 w-5 text-success" />
+                <span className="font-medium">Firewall</span>
+              </div>
+              <Badge variant="success">Enabled</Badge>
+            </div>
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <RefreshCw className="h-5 w-5 text-warning" />
+                <span className="font-medium">Rate Limiting</span>
+              </div>
+              <Badge variant="warning">100 req/min</Badge>
+            </div>
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <Database className="h-5 w-5 text-success" />
+                <span className="font-medium">Backup</span>
+              </div>
+              <Badge variant="success">Daily</Badge>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-2xl border border-border p-6">
+            <h2 className="font-display text-lg font-semibold mb-4">Security Logs</h2>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Event</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>IP Address</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {securityLogs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="font-medium">{log.event}</TableCell>
+                    <TableCell>{log.user}</TableCell>
+                    <TableCell className="font-mono text-sm">{log.ip}</TableCell>
+                    <TableCell>{log.time}</TableCell>
+                    <TableCell>
+                      <Badge variant={
+                        log.status === "success" ? "success" : 
+                        log.status === "warning" ? "warning" : "destructive"
+                      }>
+                        {log.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      );
+    }
+
+    // Settings
+    if (currentPath === "/admin/settings" || currentPath.startsWith("/admin/settings/")) {
+      return (
+        <div className="space-y-6">
+          <div>
+            <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
+              Platform Settings
+            </h1>
+            <p className="text-muted-foreground">Configure platform-wide settings</p>
+          </div>
+
+          <div className="bg-card rounded-2xl border border-border p-6">
+            <h2 className="font-display text-lg font-semibold mb-6">General Settings</h2>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-base flex items-center gap-2">
+                    <Server className="h-4 w-4" />
+                    Maintenance Mode
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable to show maintenance page to all users
+                  </p>
                 </div>
+                <Switch 
+                  checked={platformSettings.maintenanceMode}
+                  onCheckedChange={() => handleSettingChange('maintenanceMode')}
+                />
               </div>
 
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <h2 className="font-display text-lg font-semibold mb-4">Venue Distribution</h2>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={venueDistribution}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                        label
-                      >
-                        {venueDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-base flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email Notifications
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Send email notifications for platform events
+                  </p>
                 </div>
+                <Switch 
+                  checked={platformSettings.emailNotifications}
+                  onCheckedChange={() => handleSettingChange('emailNotifications')}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-base flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Auto-Verification
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically verify new businesses
+                  </p>
+                </div>
+                <Switch 
+                  checked={platformSettings.autoVerification}
+                  onCheckedChange={() => handleSettingChange('autoVerification')}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-base flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Rate Limiting
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable API rate limiting for security
+                  </p>
+                </div>
+                <Switch 
+                  checked={platformSettings.rateLimit}
+                  onCheckedChange={() => handleSettingChange('rateLimit')}
+                />
               </div>
             </div>
           </div>
-        );
 
-      case "/admin/localization":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
-                Localization
-              </h1>
-              <p className="text-muted-foreground">Language and translation management</p>
+          <div className="bg-card rounded-2xl border border-border p-6">
+            <h2 className="font-display text-lg font-semibold mb-4">Platform Information</h2>
+            <div className="space-y-3">
+              <div className="flex justify-between py-2 border-b border-border">
+                <span className="text-muted-foreground">Platform Version</span>
+                <span className="font-medium">1.0.0</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border">
+                <span className="text-muted-foreground">Last Updated</span>
+                <span className="font-medium">Feb 3, 2026</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border">
+                <span className="text-muted-foreground">Total Businesses</span>
+                <span className="font-medium">{businessUsers.length}</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-muted-foreground">Total Users</span>
+                <span className="font-medium">{users.length}</span>
+              </div>
             </div>
+          </div>
+        </div>
+      );
+    }
 
-            <div className="grid gap-4 md:grid-cols-3">
-              {languages.map((lang) => (
-                <div key={lang.code} className="bg-card rounded-2xl border border-border p-6">
-                  <div className="flex items-center gap-3 mb-4">
+    // Dashboard Overview (default)
+    return (
+      <div className="space-y-8">
+        <div className="mb-8">
+          <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
+            Super Admin Dashboard
+          </h1>
+          <p className="text-muted-foreground">Platform overview and management</p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((stat) => (
+            <div key={stat.name} className="p-6 rounded-2xl bg-card border border-border">
+              <div className="flex items-center justify-between mb-4">
+                <stat.icon className={cn("h-8 w-8", stat.color)} />
+                <div className="flex items-center gap-1 text-sm font-medium text-success">
+                  <TrendingUp className="h-4 w-4" />
+                  {stat.change}
+                </div>
+              </div>
+              <div className="text-2xl font-bold mb-1">{stat.value}</div>
+              <div className="text-sm text-muted-foreground">{stat.name}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Recent Businesses */}
+          <div className="bg-card rounded-2xl border border-border p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display text-lg font-semibold">Recent Businesses</h2>
+              <Link to="/admin/businesses">
+                <Button variant="outline" size="sm">View All</Button>
+              </Link>
+            </div>
+            <div className="space-y-4">
+              {businessUsers.slice(0, 4).map((business) => (
+                <div
+                  key={business.id}
+                  className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
+                >
+                  <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Languages className="h-5 w-5 text-primary" />
+                      <Building2 className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <div className="font-medium">{lang.name}</div>
-                      <div className="text-sm text-muted-foreground uppercase">{lang.code}</div>
+                      <div className="font-medium">{business.businessName}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {business.ownerName} · {business.businessType}
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Translation Keys</span>
-                      <span className="font-medium">{lang.keys}</span>
+                  <Badge variant={business.verified ? "success" : "warning"}>
+                    {business.verified ? "verified" : "pending"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Users */}
+          <div className="bg-card rounded-2xl border border-border p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display text-lg font-semibold">Recent Users</h2>
+              <Link to="/admin/users">
+                <Button variant="outline" size="sm">View All</Button>
+              </Link>
+            </div>
+            <div className="space-y-4">
+              {users.slice(0, 4).map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
+                >
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div>
+                      <div className="font-medium">{user.name}</div>
+                      <div className="text-sm text-muted-foreground">{user.email}</div>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Coverage</span>
-                      <span className="font-medium">{lang.coverage}%</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary rounded-full" 
-                        style={{ width: `${lang.coverage}%` }}
-                      />
-                    </div>
+                  </div>
+                  <Badge variant="success">active</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* System Health */}
+          <div className="bg-card rounded-2xl border border-border p-6">
+            <h2 className="font-display text-lg font-semibold mb-6">System Health</h2>
+            <div className="space-y-4">
+              {[
+                { name: "API Response Time", value: "124ms", status: "good" },
+                { name: "Database Load", value: "42%", status: "good" },
+                { name: "Storage Usage", value: "68%", status: "warning" },
+                { name: "Active Connections", value: totalBookings.toString(), status: "good" },
+              ].map((metric) => (
+                <div key={metric.name} className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{metric.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{metric.value}</span>
+                    <span className={cn(
+                      "w-2 h-2 rounded-full",
+                      metric.status === "good" ? "bg-success" : "bg-warning"
+                    )} />
                   </div>
                 </div>
               ))}
             </div>
+          </div>
 
-            <div className="bg-card rounded-2xl border border-border p-6">
-              <h2 className="font-display text-lg font-semibold mb-4">Translation Files</h2>
-              <div className="space-y-3">
-                {["en.json", "hi.json", "ar.json"].map((file) => (
-                  <div key={file} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <span className="font-medium">src/i18n/locales/{file}</span>
-                    </div>
-                    <Badge variant="outline">Active</Badge>
-                  </div>
-                ))}
-              </div>
+          {/* Quick Actions */}
+          <div className="bg-card rounded-2xl border border-border p-6">
+            <h2 className="font-display text-lg font-semibold mb-6">Quick Actions</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <Link to="/admin/businesses">
+                <Button variant="outline" className="h-auto py-4 flex-col w-full">
+                  <Building2 className="h-6 w-6 mb-2" />
+                  <span>Verify Business</span>
+                </Button>
+              </Link>
+              <Link to="/admin/users">
+                <Button variant="outline" className="h-auto py-4 flex-col w-full">
+                  <Users className="h-6 w-6 mb-2" />
+                  <span>Manage Users</span>
+                </Button>
+              </Link>
+              <Link to="/admin/localization">
+                <Button variant="outline" className="h-auto py-4 flex-col w-full">
+                  <Globe className="h-6 w-6 mb-2" />
+                  <span>Translations</span>
+                </Button>
+              </Link>
+              <Link to="/admin/analytics">
+                <Button variant="outline" className="h-auto py-4 flex-col w-full">
+                  <FileText className="h-6 w-6 mb-2" />
+                  <span>View Reports</span>
+                </Button>
+              </Link>
             </div>
           </div>
-        );
-
-      case "/admin/security":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
-                Security
-              </h1>
-              <p className="text-muted-foreground">Security logs and settings</p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Lock className="h-5 w-5 text-success" />
-                  <span className="font-medium">SSL/TLS</span>
-                </div>
-                <Badge variant="success">Active</Badge>
-              </div>
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Shield className="h-5 w-5 text-success" />
-                  <span className="font-medium">Firewall</span>
-                </div>
-                <Badge variant="success">Enabled</Badge>
-              </div>
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <RefreshCw className="h-5 w-5 text-warning" />
-                  <span className="font-medium">Rate Limiting</span>
-                </div>
-                <Badge variant="warning">100 req/min</Badge>
-              </div>
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Database className="h-5 w-5 text-success" />
-                  <span className="font-medium">Backup</span>
-                </div>
-                <Badge variant="success">Daily</Badge>
-              </div>
-            </div>
-
-            <div className="bg-card rounded-2xl border border-border p-6">
-              <h2 className="font-display text-lg font-semibold mb-4">Security Logs</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Event</TableHead>
-                    <TableHead>User</TableHead>
-                    <TableHead>IP Address</TableHead>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {securityLogs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="font-medium">{log.event}</TableCell>
-                      <TableCell>{log.user}</TableCell>
-                      <TableCell className="font-mono text-sm">{log.ip}</TableCell>
-                      <TableCell>{log.time}</TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={
-                            log.status === "success" ? "success" : 
-                            log.status === "blocked" ? "destructive" : "warning"
-                          }
-                        >
-                          {log.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        );
-
-      case "/admin/settings":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
-                Platform Settings
-              </h1>
-              <p className="text-muted-foreground">Configure platform-wide settings</p>
-            </div>
-
-            <div className="bg-card rounded-2xl border border-border p-6">
-              <h2 className="font-display text-lg font-semibold mb-6">General Settings</h2>
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-base flex items-center gap-2">
-                      <Server className="h-4 w-4" />
-                      Maintenance Mode
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      Enable to show maintenance page to all users
-                    </p>
-                  </div>
-                  <Switch 
-                    checked={platformSettings.maintenanceMode}
-                    onCheckedChange={() => handleSettingChange('maintenanceMode')}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-base flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      Email Notifications
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      Send email notifications for platform events
-                    </p>
-                  </div>
-                  <Switch 
-                    checked={platformSettings.emailNotifications}
-                    onCheckedChange={() => handleSettingChange('emailNotifications')}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-base flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4" />
-                      Auto-Verification
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      Automatically verify new businesses
-                    </p>
-                  </div>
-                  <Switch 
-                    checked={platformSettings.autoVerification}
-                    onCheckedChange={() => handleSettingChange('autoVerification')}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-base flex items-center gap-2">
-                      <Shield className="h-4 w-4" />
-                      Rate Limiting
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      Enable API rate limiting for security
-                    </p>
-                  </div>
-                  <Switch 
-                    checked={platformSettings.rateLimit}
-                    onCheckedChange={() => handleSettingChange('rateLimit')}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-card rounded-2xl border border-border p-6">
-              <h2 className="font-display text-lg font-semibold mb-4">Platform Information</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Platform Version</span>
-                  <span className="font-medium">1.0.0</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Last Updated</span>
-                  <span className="font-medium">Feb 3, 2026</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Total Businesses</span>
-                  <span className="font-medium">{businessUsers.length}</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-muted-foreground">Total Users</span>
-                  <span className="font-medium">{users.length}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      default:
-        // Dashboard Overview
-        return (
-          <div className="space-y-8">
-            <div className="mb-8">
-              <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
-                Super Admin Dashboard
-              </h1>
-              <p className="text-muted-foreground">Platform overview and management</p>
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {stats.map((stat) => (
-                <div key={stat.name} className="p-6 rounded-2xl bg-card border border-border">
-                  <div className="flex items-center justify-between mb-4">
-                    <stat.icon className={cn("h-8 w-8", stat.color)} />
-                    <div className="flex items-center gap-1 text-sm font-medium text-success">
-                      <TrendingUp className="h-4 w-4" />
-                      {stat.change}
-                    </div>
-                  </div>
-                  <div className="text-2xl font-bold mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.name}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* Recent Businesses */}
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-display text-lg font-semibold">Recent Businesses</h2>
-                  <Link to="/admin/businesses">
-                    <Button variant="outline" size="sm">View All</Button>
-                  </Link>
-                </div>
-                <div className="space-y-4">
-                  {businessUsers.slice(0, 4).map((business) => (
-                    <div
-                      key={business.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Building2 className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <div className="font-medium">{business.businessName}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {business.ownerName} · {business.businessType}
-                          </div>
-                        </div>
-                      </div>
-                      <Badge variant={business.verified ? "success" : "warning"}>
-                        {business.verified ? "verified" : "pending"}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recent Users */}
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-display text-lg font-semibold">Recent Users</h2>
-                  <Link to="/admin/users">
-                    <Button variant="outline" size="sm">View All</Button>
-                  </Link>
-                </div>
-                <div className="space-y-4">
-                  {users.slice(0, 4).map((user) => (
-                    <div
-                      key={user.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
-                    >
-                      <div className="flex items-center gap-4">
-                        <img
-                          src={user.avatar}
-                          alt={user.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div>
-                          <div className="font-medium">{user.name}</div>
-                          <div className="text-sm text-muted-foreground">{user.email}</div>
-                        </div>
-                      </div>
-                      <Badge variant="success">active</Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* System Health */}
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <h2 className="font-display text-lg font-semibold mb-6">System Health</h2>
-                <div className="space-y-4">
-                  {[
-                    { name: "API Response Time", value: "124ms", status: "good" },
-                    { name: "Database Load", value: "42%", status: "good" },
-                    { name: "Storage Usage", value: "68%", status: "warning" },
-                    { name: "Active Connections", value: totalBookings.toString(), status: "good" },
-                  ].map((metric) => (
-                    <div key={metric.name} className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{metric.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{metric.value}</span>
-                        <span className={cn(
-                          "w-2 h-2 rounded-full",
-                          metric.status === "good" ? "bg-success" : "bg-warning"
-                        )} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <h2 className="font-display text-lg font-semibold mb-6">Quick Actions</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <Link to="/admin/businesses">
-                    <Button variant="outline" className="h-auto py-4 flex-col w-full">
-                      <Building2 className="h-6 w-6 mb-2" />
-                      <span>Verify Business</span>
-                    </Button>
-                  </Link>
-                  <Link to="/admin/users">
-                    <Button variant="outline" className="h-auto py-4 flex-col w-full">
-                      <Users className="h-6 w-6 mb-2" />
-                      <span>Manage Users</span>
-                    </Button>
-                  </Link>
-                  <Link to="/admin/localization">
-                    <Button variant="outline" className="h-auto py-4 flex-col w-full">
-                      <Globe className="h-6 w-6 mb-2" />
-                      <span>Translations</span>
-                    </Button>
-                  </Link>
-                  <Link to="/admin/analytics">
-                    <Button variant="outline" className="h-auto py-4 flex-col w-full">
-                      <FileText className="h-6 w-6 mb-2" />
-                      <span>View Reports</span>
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-    }
+        </div>
+      </div>
+    );
   };
 
   return (
