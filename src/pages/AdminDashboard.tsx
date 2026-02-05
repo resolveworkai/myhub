@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, matchPath, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -187,11 +187,16 @@ export default function AdminDashboard() {
   const currentPath = (() => {
     const raw = location.pathname;
     const base = (import.meta.env.BASE_URL ?? "/").replace(/\/+$/, "");
-    if (!base || base === "/") return raw;
+    const stripTrailingSlash = (p: string) => (p.length > 1 ? p.replace(/\/+$/, "") : p);
+    if (!base || base === "/") return stripTrailingSlash(raw);
     if (raw === base) return "/";
-    if (raw.startsWith(base + "/")) return raw.slice(base.length);
-    return raw;
+    if (raw.startsWith(base + "/")) return stripTrailingSlash(raw.slice(base.length));
+    return stripTrailingSlash(raw);
   })();
+
+  // Route matching helper (more robust than string compares)
+  const matches = (pattern: string) =>
+    !!matchPath({ path: pattern, end: false }, currentPath);
 
   // Business actions
   const handleVerifyBusiness = (id: string) => {
@@ -288,7 +293,7 @@ export default function AdminDashboard() {
   // Render content based on current route
   const renderContent = () => {
     // Business Management
-    if (currentPath === "/admin/businesses" || currentPath.startsWith("/admin/businesses/")) {
+    if (matches("/admin/businesses") || matches("/admin/businesses/*")) {
       return (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -407,7 +412,7 @@ export default function AdminDashboard() {
     }
 
     // User Management
-    if (currentPath === "/admin/users" || currentPath.startsWith("/admin/users/")) {
+    if (matches("/admin/users") || matches("/admin/users/*")) {
       return (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -497,7 +502,7 @@ export default function AdminDashboard() {
     }
 
     // Analytics
-    if (currentPath === "/admin/analytics" || currentPath.startsWith("/admin/analytics/")) {
+    if (matches("/admin/analytics") || matches("/admin/analytics/*")) {
       return (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -582,7 +587,7 @@ export default function AdminDashboard() {
     }
 
     // Localization
-    if (currentPath === "/admin/localization" || currentPath.startsWith("/admin/localization/")) {
+    if (matches("/admin/localization") || matches("/admin/localization/*")) {
       return (
         <div className="space-y-6">
           <div>
@@ -643,7 +648,7 @@ export default function AdminDashboard() {
     }
 
     // Security
-    if (currentPath === "/admin/security" || currentPath.startsWith("/admin/security/")) {
+    if (matches("/admin/security") || matches("/admin/security/*")) {
       return (
         <div className="space-y-6">
           <div>
@@ -721,7 +726,7 @@ export default function AdminDashboard() {
     }
 
     // Settings
-    if (currentPath === "/admin/settings" || currentPath.startsWith("/admin/settings/")) {
+    if (matches("/admin/settings") || matches("/admin/settings/*")) {
       return (
         <div className="space-y-6">
           <div>
