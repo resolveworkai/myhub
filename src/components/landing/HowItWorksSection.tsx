@@ -43,10 +43,10 @@ export function HowItWorksSection() {
   ], [t]);
 
   return (
-    <section id="how-it-works" className="py-24 bg-muted/50">
+    <section id="how-it-works" className="py-12 sm:py-16 lg:py-20 bg-muted/50">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
           <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-4">
             {t("howItWorks.badge")}
           </span>
@@ -112,7 +112,7 @@ export function HowItWorksSection() {
         </div>
 
         {/* CTA */}
-        <div className="text-center mt-16">
+        <div className="text-center mt-10 sm:mt-12">
           <Link to="/signup">
             <Button variant="gradient" size="xl">
               {t("howItWorks.getStartedFree")}

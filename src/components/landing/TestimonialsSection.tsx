@@ -70,10 +70,10 @@ export function TestimonialsSection() {
   ], [t]);
 
   return (
-    <section className="py-24 bg-background overflow-hidden">
+    <section className="py-12 sm:py-16 lg:py-20 bg-background overflow-hidden">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
           <span className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-accent text-sm font-semibold mb-4">
             {t("testimonials.badge")}
           </span>
@@ -142,7 +142,7 @@ export function TestimonialsSection() {
         </div>
 
         {/* Stats Bar */}
-        <div className="mt-16 p-8 rounded-2xl gradient-primary">
+        <div className="mt-10 sm:mt-12 p-8 rounded-2xl gradient-primary">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {stats.map((stat) => (
               <div key={stat.label}>
