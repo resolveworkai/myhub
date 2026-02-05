@@ -56,7 +56,7 @@ export function HeroSection() {
       {/* Pattern Overlay */}
       <div className="absolute inset-0 bg-hero-pattern opacity-30" />
 
-      <div className="container relative mx-auto px-4 lg:px-8 pt-20 sm:pt-24 lg:pt-32 pb-12 sm:pb-16">
+      <div className="container relative mx-auto px-4 lg:px-8 pt-20 sm:pt-24 lg:pt-32 pb-8 sm:pb-12">
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 mb-6 sm:mb-8 animate-fade-in">

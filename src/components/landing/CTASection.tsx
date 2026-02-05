@@ -7,7 +7,7 @@ export function CTASection() {
   const { t } = useTranslation();
 
   return (
-    <section className="py-24 bg-muted/50">
+    <section className="py-12 sm:py-16 lg:py-20 bg-muted/50">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-8">
           {/* For Users */}
