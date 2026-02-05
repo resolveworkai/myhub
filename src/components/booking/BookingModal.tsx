@@ -142,12 +142,6 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
       setShowGuestPrompt(true);
       return;
     }
-    
-    // If no subscription, show membership modal (subscription-first enforcement)
-    if (!hasSubscription) {
-      setShowMembershipModal(true);
-      return;
-    }
 
     if (!selectedDate || !selectedTime) return;
 
@@ -233,7 +227,7 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
 
           {/* Subscription Status Badge - for subscribers */}
           {hasSubscription && step === 1 && (
-            <div className="p-3 sm:p-4 rounded-xl bg-success/5 border border-success/20 mb-4">
+            <div className="p-3 sm:p-4 rounded-xl bg-success/5 border border-success/20">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <Crown className="h-5 w-5 text-success shrink-0" />
@@ -261,28 +255,21 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
             </div>
           )}
           
-          {/* No Subscription - Show "Get a Pass" prompt (for authenticated users only) */}
+          {/* Optional Pass Upgrade - for authenticated users without subscription */}
           {isAuthenticated && !hasSubscription && step === 1 && (
-            <div className="p-3 sm:p-4 rounded-xl bg-warning/5 border border-warning/20 mb-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center shrink-0">
-                    <CreditCard className="h-5 w-5 text-warning" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">No Active Pass</p>
-                    <p className="text-xs text-muted-foreground">
-                      Get a pass to book sessions at this venue
-                    </p>
-                  </div>
+            <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <Crown className="h-4 w-4 text-primary" />
+                  <span className="text-muted-foreground">Save with a pass</span>
                 </div>
                 <Button
                   size="sm"
-                  variant="gradient"
-                  className="w-full sm:w-auto"
+                  variant="outline"
+                  className="text-xs h-8"
                   onClick={() => setShowMembershipModal(true)}
                 >
-                  Get a Pass
+                  View Passes
                 </Button>
               </div>
             </div>
