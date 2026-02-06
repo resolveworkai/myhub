@@ -36,6 +36,7 @@ import { useVenueStore } from "@/store/venueStore";
 import { LocationPicker } from "@/components/business/LocationPicker";
 import { BusinessImageUpload } from "@/components/business/BusinessImageUpload";
 import { BusinessAttributesEditor } from "@/components/business/BusinessAttributesEditor";
+import { PassConfigCard } from "@/components/business/PassConfigCard";
 import { cn } from "@/lib/utils";
 
 export default function BusinessSettings() {
@@ -555,117 +556,123 @@ export default function BusinessSettings() {
           </Card>
         </TabsContent>
 
-        {/* Pricing Tab */}
+        {/* Pricing Tab - Now uses PassConfigCard */}
         <TabsContent value="pricing">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IndianRupee className="h-5 w-5" />
-                Membership Packages
-              </CardTitle>
-              <CardDescription>
-                Set pricing for daily, weekly, and monthly passes. These prices will be shown to customers during booking.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl border-2 border-border space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-sm font-bold">1D</span>
+          <div className="space-y-6">
+            {/* Pass Configuration Card */}
+            <PassConfigCard businessId={businessUser.id} />
+            
+            {/* Legacy Package Pricing Card (for reference) */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <IndianRupee className="h-5 w-5" />
+                  Default Package Pricing
+                </CardTitle>
+                <CardDescription>
+                  Set base pricing for your membership packages. These prices are used when pass-specific pricing isn't configured.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-xl border-2 border-border space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-sm font-bold">1D</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Daily Pass</p>
+                        <p className="text-xs text-muted-foreground">1 day access</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold">Daily Pass</p>
-                      <p className="text-xs text-muted-foreground">1 day access</p>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                      <Input
+                        type="number"
+                        value={pricing.daily}
+                        onChange={(e) => setPricing({ ...pricing, daily: parseInt(e.target.value) || 0 })}
+                        className="pl-8"
+                        min={0}
+                      />
                     </div>
                   </div>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
-                    <Input
-                      type="number"
-                      value={pricing.daily}
-                      onChange={(e) => setPricing({ ...pricing, daily: parseInt(e.target.value) || 0 })}
-                      className="pl-8"
-                      min={0}
-                    />
+                  
+                  <div className="p-4 rounded-xl border-2 border-border space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-info/10 flex items-center justify-center">
+                        <span className="text-sm font-bold">7D</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Weekly Pass</p>
+                        <p className="text-xs text-muted-foreground">7 days access</p>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                      <Input
+                        type="number"
+                        value={pricing.weekly}
+                        onChange={(e) => setPricing({ ...pricing, weekly: parseInt(e.target.value) || 0 })}
+                        className="pl-8"
+                        min={0}
+                      />
+                    </div>
+                    {pricing.daily > 0 && (
+                      <p className="text-xs text-success">
+                        {Math.round((1 - pricing.weekly / (pricing.daily * 7)) * 100)}% savings vs daily
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 space-y-3 relative">
+                    <div className="absolute -top-2 right-3 px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded-full">
+                      Popular
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-sm font-bold">30D</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Monthly Pass</p>
+                        <p className="text-xs text-muted-foreground">30 days access</p>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                      <Input
+                        type="number"
+                        value={pricing.monthly}
+                        onChange={(e) => setPricing({ ...pricing, monthly: parseInt(e.target.value) || 0 })}
+                        className="pl-8"
+                        min={0}
+                      />
+                    </div>
+                    {pricing.daily > 0 && (
+                      <p className="text-xs text-success">
+                        {Math.round((1 - pricing.monthly / (pricing.daily * 30)) * 100)}% savings vs daily
+                      </p>
+                    )}
                   </div>
                 </div>
-                
-                <div className="p-4 rounded-xl border-2 border-border space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-info/10 flex items-center justify-center">
-                      <span className="text-sm font-bold">7D</span>
-                    </div>
-                    <div>
-                      <p className="font-semibold">Weekly Pass</p>
-                      <p className="text-xs text-muted-foreground">7 days access</p>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
-                    <Input
-                      type="number"
-                      value={pricing.weekly}
-                      onChange={(e) => setPricing({ ...pricing, weekly: parseInt(e.target.value) || 0 })}
-                      className="pl-8"
-                      min={0}
-                    />
-                  </div>
-                  {pricing.daily > 0 && (
-                    <p className="text-xs text-success">
-                      {Math.round((1 - pricing.weekly / (pricing.daily * 7)) * 100)}% savings vs daily
-                    </p>
-                  )}
-                </div>
-                
-                <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 space-y-3 relative">
-                  <div className="absolute -top-2 right-3 px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded-full">
-                    Popular
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      <span className="text-sm font-bold">30D</span>
-                    </div>
-                    <div>
-                      <p className="font-semibold">Monthly Pass</p>
-                      <p className="text-xs text-muted-foreground">30 days access</p>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
-                    <Input
-                      type="number"
-                      value={pricing.monthly}
-                      onChange={(e) => setPricing({ ...pricing, monthly: parseInt(e.target.value) || 0 })}
-                      className="pl-8"
-                      min={0}
-                    />
-                  </div>
-                  {pricing.daily > 0 && (
-                    <p className="text-xs text-success">
-                      {Math.round((1 - pricing.monthly / (pricing.daily * 30)) * 100)}% savings vs daily
-                    </p>
-                  )}
-                </div>
-              </div>
 
-              <div className="p-4 rounded-lg bg-muted/50 text-sm text-muted-foreground">
-                <p><strong>Note:</strong> Monthly members who pay in cash cannot be removed for 30 days after assignment. This ensures commitment from both parties.</p>
-              </div>
+                <div className="p-4 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+                  <p><strong>Note:</strong> Monthly members who pay in cash cannot be removed for 30 days after assignment. This ensures commitment from both parties.</p>
+                </div>
 
-              <Button onClick={() => {
-                updateUser({
-                  dailyPackagePrice: pricing.daily,
-                  weeklyPackagePrice: pricing.weekly,
-                  monthlyPackagePrice: pricing.monthly,
-                } as Partial<BusinessUser>);
-                toast.success("Pricing updated successfully");
-              }}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Pricing
-              </Button>
-            </CardContent>
-          </Card>
+                <Button onClick={() => {
+                  updateUser({
+                    dailyPackagePrice: pricing.daily,
+                    weeklyPackagePrice: pricing.weekly,
+                    monthlyPackagePrice: pricing.monthly,
+                  } as Partial<BusinessUser>);
+                  toast.success("Pricing updated successfully");
+                }}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Pricing
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Operating Hours */}

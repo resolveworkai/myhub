@@ -29,6 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useSchedules } from "@/hooks/useSchedules";
 import { useVenueAccess } from "@/hooks/useVenueAccess";
+import { usePassConfig } from "@/hooks/usePassConfig";
 import { toast } from "@/hooks/use-toast";
 import { GuestAuthPrompt } from "@/components/auth/GuestAuthPrompt";
 import { MonthlyBookingModal } from "@/components/booking/MonthlyBookingModal";
@@ -87,6 +88,17 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
     user,
     refresh: refreshSubscription
   } = useVenueAccess(venue.id);
+  
+  // Check pass configuration for this venue
+  const { 
+    isDailyPassActive, 
+    isWeeklyPassActive, 
+    isMonthlyPassActive,
+    hasAnyActivePass,
+    dailyPrice,
+    weeklyPrice,
+    monthlyPrice 
+  } = usePassConfig(venue.id);
   
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -255,8 +267,8 @@ export function BookingModal({ isOpen, onClose, venue }: BookingModalProps) {
             </div>
           )}
           
-          {/* Optional Pass Upgrade - for authenticated users without subscription */}
-          {isAuthenticated && !hasSubscription && step === 1 && (
+          {/* Optional Pass Upgrade - only show if any pass type is enabled for this venue */}
+          {isAuthenticated && !hasSubscription && step === 1 && hasAnyActivePass && (
             <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-sm">

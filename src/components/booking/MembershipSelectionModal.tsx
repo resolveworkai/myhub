@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSubscriptionStore } from "@/store/subscriptionStore";
 import { useAuthStore } from "@/store/authStore";
+import { usePassConfig } from "@/hooks/usePassConfig";
 import { addDays, format } from "date-fns";
 
 interface MembershipSelectionModalProps {
@@ -39,42 +40,68 @@ export function MembershipSelectionModal({
   const { user, isAuthenticated } = useAuthStore();
   const { addSubscription } = useSubscriptionStore();
   
+  // Get pass configuration for this venue
+  const { 
+    isDailyPassActive, 
+    isWeeklyPassActive, 
+    isMonthlyPassActive,
+    dailyPrice,
+    weeklyPrice,
+    monthlyPrice 
+  } = usePassConfig(venue.id);
+  
   const [selectedPlan, setSelectedPlan] = useState<'daily' | 'weekly' | 'monthly' | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi' | null>(null);
   const [showPayment, setShowPayment] = useState(false);
 
-  // Use business-configured prices or defaults
-  const plans = [
-    {
-      id: 'daily' as const,
-      name: t('membership.daily'),
-      description: t('membership.dailyDesc'),
-      price: venue.dailyPrice || 299,
-      period: t('membership.perDay'),
-      duration: 1,
-      savings: null,
-    },
-    {
-      id: 'weekly' as const,
-      name: t('membership.weekly'),
-      description: t('membership.weeklyDesc'),
-      price: venue.weeklyPrice || 1499,
-      period: t('membership.perWeek'),
-      duration: 7,
-      savings: venue.dailyPrice ? Math.round((1 - (venue.weeklyPrice || 1499) / ((venue.dailyPrice || 299) * 7)) * 100) + '%' : '25%',
-    },
-    {
-      id: 'monthly' as const,
-      name: t('membership.monthly'),
-      description: t('membership.monthlyDesc'),
-      price: venue.monthlyPrice || 4999,
-      period: t('membership.perMonth'),
-      duration: 30,
-      savings: venue.dailyPrice ? Math.round((1 - (venue.monthlyPrice || 4999) / ((venue.dailyPrice || 299) * 30)) * 100) + '%' : '50%',
-      popular: true,
-    },
-  ];
+  // Build plans array based on what's enabled
+  const plans = useMemo(() => {
+    const availablePlans = [];
+    
+    if (isDailyPassActive) {
+      availablePlans.push({
+        id: 'daily' as const,
+        name: t('membership.daily'),
+        description: t('membership.dailyDesc'),
+        price: venue.dailyPrice || dailyPrice,
+        period: t('membership.perDay'),
+        duration: 1,
+        savings: null,
+      });
+    }
+    
+    if (isWeeklyPassActive) {
+      const baseDaily = venue.dailyPrice || dailyPrice;
+      const weeklyPriceVal = venue.weeklyPrice || weeklyPrice;
+      availablePlans.push({
+        id: 'weekly' as const,
+        name: t('membership.weekly'),
+        description: t('membership.weeklyDesc'),
+        price: weeklyPriceVal,
+        period: t('membership.perWeek'),
+        duration: 7,
+        savings: baseDaily > 0 ? Math.round((1 - weeklyPriceVal / (baseDaily * 7)) * 100) + '%' : null,
+      });
+    }
+    
+    if (isMonthlyPassActive) {
+      const baseDaily = venue.dailyPrice || dailyPrice;
+      const monthlyPriceVal = venue.monthlyPrice || monthlyPrice;
+      availablePlans.push({
+        id: 'monthly' as const,
+        name: t('membership.monthly'),
+        description: t('membership.monthlyDesc'),
+        price: monthlyPriceVal,
+        period: t('membership.perMonth'),
+        duration: 30,
+        savings: baseDaily > 0 ? Math.round((1 - monthlyPriceVal / (baseDaily * 30)) * 100) + '%' : null,
+        popular: true,
+      });
+    }
+    
+    return availablePlans;
+  }, [isDailyPassActive, isWeeklyPassActive, isMonthlyPassActive, venue, dailyPrice, weeklyPrice, monthlyPrice, t]);
 
   const handleProceedToPayment = () => {
     if (!selectedPlan) return;
