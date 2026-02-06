@@ -51,6 +51,7 @@ import {
   Mail,
   Server,
   Database,
+  Ticket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -75,6 +76,7 @@ import gymsData from "@/data/mock/gyms.json";
 import librariesData from "@/data/mock/libraries.json";
 import coachingData from "@/data/mock/coaching.json";
 import bookingsData from "@/data/mock/bookings.json";
+import { PassApprovalSection } from "@/components/admin/PassApprovalSection";
 
 // Types
 interface BusinessUser {
@@ -110,6 +112,7 @@ const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Businesses", href: "/admin/businesses", icon: Building2 },
   { name: "Users", href: "/admin/users", icon: Users },
+  { name: "Pass Management", href: "/admin/passes", icon: Ticket },
   { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { name: "Localization", href: "/admin/localization", icon: Globe },
   { name: "Security", href: "/admin/security", icon: Shield },
@@ -499,6 +502,11 @@ export default function AdminDashboard() {
           </div>
         </div>
       );
+    }
+
+    // Pass Management
+    if (matches("/admin/passes") || matches("/admin/passes/*")) {
+      return <PassApprovalSection />;
     }
 
     // Analytics
