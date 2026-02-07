@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS payments (
   transaction_id VARCHAR(100),
   gateway_response JSONB,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   completed_at TIMESTAMP,
   refunded_at TIMESTAMP
 );

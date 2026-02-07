@@ -29,6 +29,8 @@ import {
   AlertCircle,
   DollarSign,
   IndianRupee,
+  Plus,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore, BusinessUser } from "@/store/authStore";
@@ -49,15 +51,24 @@ import {
   changeBusinessPassword,
   getBusinessProfile,
 } from "@/lib/apiService";
+import isEqual from "lodash/isEqual";
 
 export default function BusinessSettings() {
   const { user, updateUser } = useAuthStore();
   const { publishVenue, unpublishVenue, isVenuePublished } = useVenueStore();
   
   const businessUser = user as BusinessUser | null;
+
+  // Reusable deep compare handler using lodash
+  const hasNoChanges = <T,>(oldData: T, newData: T) => {
+    if (isEqual(oldData, newData)) {
+      toast.info("No changes to save");
+      return true;
+    }
+    return false;
+  };
   
   // Local state for form fields
-  console.log('user', user, businessUser)
   const [businessInfo, setBusinessInfo] = useState({
     name: businessUser?.businessName || "",
     email: businessUser?.email || "",
@@ -67,29 +78,49 @@ export default function BusinessSettings() {
     website: businessUser?.website || "",
   });
 
-  const defaultHours = {
-    monday: { open: "06:00", close: "22:00", closed: false },
-    tuesday: { open: "06:00", close: "22:00", closed: false },
-    wednesday: { open: "06:00", close: "22:00", closed: false },
-    thursday: { open: "06:00", close: "22:00", closed: false },
-    friday: { open: "06:00", close: "22:00", closed: false },
-    saturday: { open: "08:00", close: "20:00", closed: false },
-    sunday: { open: "08:00", close: "18:00", closed: false },
+  // Type for operating hours with multiple time slots
+  type TimeSlot = { open: string; close: string };
+  type DayHours = { timeSlots: TimeSlot[]; closed: boolean };
+
+  const defaultHours: Record<string, DayHours> = {
+    monday: { timeSlots: [{ open: "06:00", close: "22:00" }], closed: false },
+    tuesday: { timeSlots: [{ open: "06:00", close: "22:00" }], closed: false },
+    wednesday: { timeSlots: [{ open: "06:00", close: "22:00" }], closed: false },
+    thursday: { timeSlots: [{ open: "06:00", close: "22:00" }], closed: false },
+    friday: { timeSlots: [{ open: "06:00", close: "22:00" }], closed: false },
+    saturday: { timeSlots: [{ open: "08:00", close: "20:00" }], closed: false },
+    sunday: { timeSlots: [{ open: "08:00", close: "18:00" }], closed: false },
   };
 
-  const [operatingHours, setOperatingHours] = useState<Record<string, { open: string; close: string; closed: boolean }>>(
+  // Helper function to normalize old format to new format
+  const normalizeHours = (savedHours: any): Record<string, DayHours> => {
+    const normalized: Record<string, DayHours> = {};
+    Object.entries(savedHours || {}).forEach(([day, hours]: [string, any]) => {
+      // Check if it's the new format (has timeSlots array)
+      if (hours.timeSlots && Array.isArray(hours.timeSlots)) {
+        normalized[day] = {
+          timeSlots: hours.timeSlots,
+          closed: hours.closed ?? false,
+        };
+      } else if (hours.open && hours.close) {
+        // Old format: convert single time slot to array
+        normalized[day] = {
+          timeSlots: [{ open: hours.open, close: hours.close }],
+          closed: hours.closed ?? false,
+        };
+      } else {
+        // Fallback to default
+        normalized[day] = defaultHours[day] || { timeSlots: [], closed: true };
+      }
+    });
+    return normalized;
+  };
+
+  const [operatingHours, setOperatingHours] = useState<Record<string, DayHours>>(
     () => {
       const savedHours = businessUser?.operatingHours;
       if (savedHours) {
-        // Ensure closed field exists for all entries
-        const normalized: Record<string, { open: string; close: string; closed: boolean }> = {};
-        Object.entries(savedHours).forEach(([day, hours]) => {
-          normalized[day] = {
-            open: hours.open,
-            close: hours.close,
-            closed: hours.closed ?? false,
-          };
-        });
+        const normalized = normalizeHours(savedHours);
         return { ...defaultHours, ...normalized };
       }
       return defaultHours;
@@ -144,9 +175,9 @@ export default function BusinessSettings() {
 
   // Package pricing state
   const [pricing, setPricing] = useState({
-    daily: businessUser?.dailyPackagePrice || 299,
-    weekly: businessUser?.weeklyPackagePrice || 1499,
-    monthly: businessUser?.monthlyPackagePrice || 4999,
+    daily: businessUser?.dailyPackagePrice || 199,
+    weekly: businessUser?.weeklyPackagePrice || 999,
+    monthly: businessUser?.monthlyPackagePrice || 1999,
   });
 
   // Fetch business profile on mount
@@ -201,14 +232,7 @@ export default function BusinessSettings() {
       // Update operating hours
       if (businessUser.operatingHours) {
         setOperatingHours(prev => {
-          const normalized: Record<string, { open: string; close: string; closed: boolean }> = {};
-          Object.entries(businessUser.operatingHours || {}).forEach(([day, hours]: [string, any]) => {
-            normalized[day] = {
-              open: hours.open || prev[day]?.open || "06:00",
-              close: hours.close || prev[day]?.close || "22:00",
-              closed: hours.closed ?? false,
-            };
-          });
+          const normalized = normalizeHours(businessUser.operatingHours);
           return { ...defaultHours, ...normalized };
         });
       }
@@ -269,24 +293,28 @@ export default function BusinessSettings() {
     facilities.length > 0;
 
   const handleSaveBusinessInfo = async () => {
+    const original = {
+      businessName: businessUser?.businessName || "",
+      email: businessUser?.email || "",
+      phone: businessUser?.phone || "",
+      website: businessUser?.website || "",
+      address: businessUser?.address?.street || "",
+      description: businessUser?.description || businessUser?.serviceAreas || "",
+    };
+
+    const updatedPayload = {
+      businessName: businessInfo.name,
+      email: businessInfo.email,
+      phone: businessInfo.phone,
+      website: businessInfo.website,
+      address: businessInfo.address,
+      description: businessInfo.description,
+    };
+
+    if (hasNoChanges(original, updatedPayload)) return;
+
     try {
-      const updated = await updateBusinessInfo({
-        businessName: businessInfo.name,
-        email: businessInfo.email,
-        phone: businessInfo.phone,
-        website: businessInfo.website,
-        address: businessInfo.address,
-        description: businessInfo.description,
-      });
-      // Update local state immediately
-      setBusinessInfo({
-        name: updated.businessName || businessInfo.name,
-        email: updated.email || businessInfo.email,
-        phone: updated.phone || businessInfo.phone,
-        website: updated.website || businessInfo.website,
-        address: updated.address?.street || businessInfo.address,
-        description: updated.description || businessInfo.description,
-      });
+      const updated = await updateBusinessInfo(updatedPayload);
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Business information updated");
     } catch (error: any) {
@@ -296,10 +324,22 @@ export default function BusinessSettings() {
 
   const handleSaveHours = async () => {
     try {
-      const updated = await updateOperatingHours(operatingHours);
+      // Format data for backend: convert to the format expected by API
+      const formattedHours: Record<string, any> = {};
+      Object.entries(operatingHours).forEach(([day, dayHours]) => {
+        formattedHours[day] = {
+          timeSlots: dayHours.timeSlots,
+          closed: dayHours.closed,
+        };
+      });
+      
+      const updated = await updateOperatingHours(formattedHours);
       // Update local state immediately
       if (updated.operatingHours) {
-        setOperatingHours(prev => ({ ...prev, ...updated.operatingHours }));
+        setOperatingHours(prev => {
+          const normalized = normalizeHours(updated.operatingHours);
+          return { ...prev, ...normalized };
+        });
       }
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Operating hours updated");
@@ -308,13 +348,52 @@ export default function BusinessSettings() {
     }
   };
 
+  // Helper functions for managing time slots
+  const addTimeSlot = (day: string) => {
+    setOperatingHours(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        timeSlots: [...(prev[day]?.timeSlots || []), { open: "09:00", close: "17:00" }],
+      },
+    }));
+  };
+
+  const removeTimeSlot = (day: string, index: number) => {
+    setOperatingHours(prev => {
+      const currentSlots = prev[day]?.timeSlots || [];
+      // Prevent removing the last time slot - keep at least one
+      if (currentSlots.length <= 1) {
+        toast.info("At least one time slot is required for open days");
+        return prev;
+      }
+      return {
+        ...prev,
+        [day]: {
+          ...prev[day],
+          timeSlots: currentSlots.filter((_, i) => i !== index),
+        },
+      };
+    });
+  };
+
+  const updateTimeSlot = (day: string, index: number, field: 'open' | 'close', value: string) => {
+    setOperatingHours(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        timeSlots: prev[day]?.timeSlots.map((slot, i) => 
+          i === index ? { ...slot, [field]: value } : slot
+        ) || [],
+      },
+    }));
+  };
+
   const handleSaveNotifications = async () => {
+    if (hasNoChanges(businessUser?.notificationPreferences || {}, notifications)) return;
+
     try {
       const updated = await updateNotificationPreferences(notifications);
-      // Update local state immediately
-      if (updated.notificationPreferences) {
-        setNotifications(prev => ({ ...prev, ...updated.notificationPreferences }));
-      }
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Notification preferences saved");
     } catch (error: any) {
@@ -322,13 +401,12 @@ export default function BusinessSettings() {
     }
   };
 
+
   const handleSaveSecurity = async () => {
+    if (hasNoChanges(businessUser?.securitySettings || {}, security)) return;
+
     try {
       const updated = await updateSecuritySettings(security);
-      // Update local state immediately
-      if (updated.securitySettings) {
-        setSecurity(prev => ({ ...prev, ...updated.securitySettings }));
-      }
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Security settings updated");
     } catch (error: any) {
@@ -341,24 +419,27 @@ export default function BusinessSettings() {
       toast.error("Please select a location on the map");
       return;
     }
+
+    const original = {
+      lat: businessUser?.address?.lat,
+      lng: businessUser?.address?.lng,
+      logo: businessUser?.logo || "",
+      coverImage: businessUser?.coverImage || "",
+      galleryImages: businessUser?.galleryImages || [],
+    };
+
+    const updatedPayload = {
+      lat: location.lat,
+      lng: location.lng,
+      logo,
+      coverImage,
+      galleryImages,
+    };
+
+    if (hasNoChanges(original, updatedPayload)) return;
+
     try {
-      const updated = await updateLocationAndMedia({
-        lat: location.lat,
-        lng: location.lng,
-        logo,
-        coverImage,
-        galleryImages,
-      });
-      // Update local state immediately
-      if (updated.address) {
-        setLocation({
-          lat: updated.address.lat || location.lat,
-          lng: updated.address.lng || location.lng,
-        });
-      }
-      if (updated.logo) setLogo(updated.logo);
-      if (updated.coverImage) setCoverImage(updated.coverImage);
-      if (updated.galleryImages) setGalleryImages(updated.galleryImages);
+      const updated = await updateLocationAndMedia(updatedPayload);
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Location and media updated");
     } catch (error: any) {
@@ -366,49 +447,35 @@ export default function BusinessSettings() {
     }
   };
 
+
   const handleSaveAttributes = async () => {
+    const attributes: Record<string, any> = { amenities, membershipOptions };
+
+    if (businessUser?.businessType === "gym") {
+      attributes.equipment = equipment;
+      attributes.classTypes = classTypes;
+    } else if (businessUser?.businessType === "coaching") {
+      attributes.subjects = subjects;
+      attributes.levels = levels;
+      attributes.teachingModes = teachingModes;
+      attributes.batchSizes = batchSizes;
+    } else if (businessUser?.businessType === "library") {
+      attributes.facilities = facilities;
+      attributes.collections = collections;
+      attributes.spaceTypes = spaceTypes;
+    }
+
+    if (hasNoChanges(businessUser?.businessAttributes || {}, attributes)) return;
+
     try {
-      const attributes: Record<string, any> = {
-        amenities,
-        membershipOptions,
-      };
-      
-      if (businessUser?.businessType === 'gym') {
-        attributes.equipment = equipment;
-        attributes.classTypes = classTypes;
-      } else if (businessUser?.businessType === 'coaching') {
-        attributes.subjects = subjects;
-        attributes.levels = levels;
-        attributes.teachingModes = teachingModes;
-        attributes.batchSizes = batchSizes;
-      } else if (businessUser?.businessType === 'library') {
-        attributes.facilities = facilities;
-        attributes.collections = collections;
-        attributes.spaceTypes = spaceTypes;
-      }
-      
       const updated = await updateBusinessAttributes(attributes);
-      // Update local state immediately
-      if (updated.businessAttributes) {
-        const attrs = updated.businessAttributes as any;
-        if (attrs.amenities) setAmenities(attrs.amenities);
-        if (attrs.equipment) setEquipment(attrs.equipment);
-        if (attrs.classTypes) setClassTypes(attrs.classTypes);
-        if (attrs.subjects) setSubjects(attrs.subjects);
-        if (attrs.levels) setLevels(attrs.levels);
-        if (attrs.teachingModes) setTeachingModes(attrs.teachingModes);
-        if (attrs.batchSizes) setBatchSizes(attrs.batchSizes);
-        if (attrs.facilities) setFacilities(attrs.facilities);
-        if (attrs.collections) setCollections(attrs.collections);
-        if (attrs.spaceTypes) setSpaceTypes(attrs.spaceTypes);
-        if (attrs.membershipOptions) setMembershipOptions(attrs.membershipOptions);
-      }
       updateUser(updated as Partial<BusinessUser>);
       toast.success("Business attributes updated");
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || "Failed to update business attributes");
     }
   };
+
 
   const handleTogglePublish = async () => {
     if (!isPublished && !canPublish) {
@@ -457,6 +524,34 @@ export default function BusinessSettings() {
       toast.error(error.response?.data?.error?.message || "Failed to update publish status");
     }
   };
+
+  const handleUpdatePricing = async () => {
+    if (!businessUser) return;
+
+    const originalPricing = {
+      dailyPackagePrice: businessUser.dailyPackagePrice || 0,
+      weeklyPackagePrice: businessUser.weeklyPackagePrice || 0,
+      monthlyPackagePrice: businessUser.monthlyPackagePrice || 0,
+    };
+
+    const newPricing = {
+      dailyPackagePrice: pricing.daily,
+      weeklyPackagePrice: pricing.weekly,
+      monthlyPackagePrice: pricing.monthly,
+    };
+
+    // 🔥 STOP HERE if nothing changed
+    if (hasNoChanges(originalPricing, newPricing)) return;
+
+    try {
+      const updated = await updatePricing(newPricing);
+      updateUser(updated as Partial<BusinessUser>);
+      toast.success("Pricing updated successfully");
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Failed to update pricing");
+    }
+  };
+
 
   const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
 
@@ -839,19 +934,9 @@ export default function BusinessSettings() {
                 <p><strong>Note:</strong> Monthly members who pay in cash cannot be removed for 30 days after assignment. This ensures commitment from both parties.</p>
               </div>
 
-              <Button onClick={async () => {
-                try {
-                  const updated = await updatePricing({
-                    dailyPackagePrice: pricing.daily,
-                    weeklyPackagePrice: pricing.weekly,
-                    monthlyPackagePrice: pricing.monthly,
-                  });
-                  updateUser(updated as Partial<BusinessUser>);
-                  toast.success("Pricing updated successfully");
-                } catch (error: any) {
-                  toast.error(error.response?.data?.error?.message || "Failed to update pricing");
-                }
-              }}>
+              <Button
+                onClick={handleUpdatePricing}
+              >
                 <Save className="h-4 w-4 mr-2" />
                 Save Pricing
               </Button>
@@ -864,45 +949,89 @@ export default function BusinessSettings() {
           <Card>
             <CardHeader>
               <CardTitle>Operating Hours</CardTitle>
-              <CardDescription>Set your business hours for each day</CardDescription>
+              <CardDescription>Set your business hours for each day. You can add multiple time slots per day.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 sm:space-y-6">
               {days.map((day) => (
-                <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-2 border-b border-border last:border-0">
-                  <div className="w-24 font-medium capitalize">{day}</div>
-                  <div className="flex items-center gap-4">
-                    <Switch
-                      checked={!operatingHours[day]?.closed}
-                      onCheckedChange={(checked) => setOperatingHours({
-                        ...operatingHours,
-                        [day]: { ...operatingHours[day], closed: !checked }
-                      })}
-                    />
-                    {!operatingHours[day]?.closed ? (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="time"
-                          value={operatingHours[day]?.open || "06:00"}
-                          onChange={(e) => setOperatingHours({
+                <div key={day} className="py-3 sm:py-4 border-b border-border last:border-0">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                    <div className="flex items-center justify-between sm:justify-start gap-3 sm:w-28">
+                      <span className="font-medium capitalize text-sm sm:text-base min-w-[70px]">{day}</span>
+                      <Switch
+                        checked={!operatingHours[day]?.closed}
+                        onCheckedChange={(checked) => {
+                          const currentDay = operatingHours[day];
+                          setOperatingHours({
                             ...operatingHours,
-                            [day]: { ...operatingHours[day], open: e.target.value }
-                          })}
-                          className="w-28"
-                        />
-                        <span className="text-muted-foreground">to</span>
-                        <Input
-                          type="time"
-                          value={operatingHours[day]?.close || "22:00"}
-                          onChange={(e) => setOperatingHours({
-                            ...operatingHours,
-                            [day]: { ...operatingHours[day], close: e.target.value }
-                          })}
-                          className="w-28"
-                        />
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">Closed</span>
-                    )}
+                            [day]: { 
+                              closed: !checked,
+                              timeSlots: (!checked && currentDay?.timeSlots && currentDay.timeSlots.length > 0) 
+                                ? currentDay.timeSlots 
+                                : [{ open: "09:00", close: "17:00" }]
+                            }
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2 sm:space-y-3">
+                      {!operatingHours[day]?.closed ? (
+                        <>
+                          {operatingHours[day]?.timeSlots?.map((slot, index) => (
+                            <div
+                              key={index}
+                              className="
+                                grid grid-cols-2 gap-6 items-center
+                                sm:flex sm:flex-row sm:items-center sm:gap-3
+                              "
+                            >
+                              {/* OPEN TIME */}
+                              <Input
+                                type="time"
+                                value={slot.open}
+                                onChange={(e) => updateTimeSlot(day, index, "open", e.target.value)}
+                                className="w-full sm:w-36"
+                              />
+
+                              {/* CLOSE TIME */}
+                              <Input
+                                type="time"
+                                value={slot.close}
+                                onChange={(e) => updateTimeSlot(day, index, "close", e.target.value)}
+                                className="w-full sm:w-36"
+                              />
+
+                              {/* "to" only on desktop */}
+                              <span className="hidden sm:block text-muted-foreground text-sm">
+                                to
+                              </span>
+
+                              {/* DELETE BUTTON */}
+                              {operatingHours[day]?.timeSlots.length > 1 && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => removeTimeSlot(day, index)}
+                                  className="col-span-2 sm:col-span-1 h-9 w-9 text-destructive"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addTimeSlot(day)}
+                            className="w-full sm:w-auto mt-2"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Time Slot
+                          </Button>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">Closed</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

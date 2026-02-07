@@ -69,7 +69,7 @@ export default function BusinessAppointments() {
   const [loading, setLoading] = useState(true);
   const [venueId, setVenueId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<'pending' | 'confirmed' | 'cancelled' | 'completed' | 'all'>("all");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -106,7 +106,7 @@ export default function BusinessAppointments() {
     const fetchAppointments = async () => {
       setLoading(true);
       try {
-        const filters: { status?: string; date?: string } = {};
+        const filters: { status?: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'all'; date?: string } = {};
         if (filterStatus !== "all") filters.status = filterStatus;
         if (selectedDate) filters.date = format(selectedDate, "yyyy-MM-dd");
         
@@ -122,17 +122,17 @@ export default function BusinessAppointments() {
           time?: string;
           bookingTime?: string;
           duration?: number;
-          status?: string;
+          status?: 'pending' | 'confirmed' | 'cancelled' | 'completed';
           specialRequests?: string;
         }) => ({
           id: booking.id,
           memberName: booking.userName || "Guest",
           memberEmail: booking.userEmail || "",
           service: booking.venueName || booking.venueType || "Service",
-          date: booking.date || booking.bookingDate,
-          time: booking.time || booking.bookingTime || "00:00",
+          date: format(new Date(booking.date || booking.bookingDate), "yyyy-MM-dd"),
+          time: (booking.time || booking.bookingTime)?.slice(0,5),
           duration: booking.duration || 60,
-          status: booking.status === "confirmed" ? "confirmed" : booking.status === "completed" ? "completed" : booking.status === "cancelled" ? "cancelled" : "pending",
+          status: booking.status || "pending",
           notes: booking.specialRequests || "",
         }));
         setAppointments(formatted);
@@ -184,7 +184,7 @@ export default function BusinessAppointments() {
       toast.success("Appointment created successfully");
       
       // Refresh appointments
-      const filters: { status?: string; date?: string } = {};
+      const filters: { status?: 'pending' | 'confirmed' | 'cancelled' | 'completed'; date?: string } = {};
       if (filterStatus !== "all") filters.status = filterStatus;
       if (selectedDate) filters.date = format(selectedDate, "yyyy-MM-dd");
       const result = await getBusinessBookings(filters);
@@ -199,7 +199,7 @@ export default function BusinessAppointments() {
         time?: string;
         bookingTime?: string;
         duration?: number;
-        status?: string;
+        status?: 'pending' | 'confirmed' | 'cancelled' | 'completed';
         specialRequests?: string;
       }) => ({
         id: booking.id,
@@ -209,7 +209,7 @@ export default function BusinessAppointments() {
         date: booking.date || booking.bookingDate,
         time: booking.time || booking.bookingTime || "00:00",
         duration: booking.duration || 60,
-        status: booking.status === "confirmed" ? "confirmed" : booking.status === "completed" ? "completed" : booking.status === "cancelled" ? "cancelled" : "pending",
+        status: (booking.status === "confirmed" ? "confirmed" : booking.status === "completed" ? "completed" : booking.status === "cancelled" ? "cancelled" : "pending") as 'pending' | 'confirmed' | 'cancelled' | 'completed',
         notes: booking.specialRequests || "",
       }));
       setAppointments(formatted);

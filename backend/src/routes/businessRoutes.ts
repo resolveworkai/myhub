@@ -7,6 +7,7 @@ import {
   getBusinessAnalytics,
   sendAnnouncement,
   cancelMembership,
+  renewMembership,
   getDashboardStats,
   updateBusinessInfo,
   updateLocationAndMedia,
@@ -63,6 +64,7 @@ router.patch('/settings/publish', validate(togglePublishSchema), togglePublishSt
 router.get('/members', getBusinessMembers);
 router.post('/members', validate(addBusinessMemberSchema), addBusinessMember);
 router.delete('/memberships/:id', validate(cancelMembershipSchema), cancelMembership);
+router.post('/memberships/:id/renew', renewMembership);
 
 // Analytics route
 router.get('/analytics', getBusinessAnalytics);

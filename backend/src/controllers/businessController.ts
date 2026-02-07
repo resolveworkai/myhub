@@ -102,7 +102,15 @@ export const getBusinessMembers = asyncHandler(async (req: AuthRequest, res: Res
   const page = req.query.page ? parseInt(req.query.page as string) : 1;
   const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
 
-  const result = await businessService.getBusinessMembers(businessUserId, page, limit);
+  const search = (req.query.search as string) || '';
+  const status = (req.query.status as string) || '';
+  const type = (req.query.type as string) || '';
+
+  const result = await businessService.getBusinessMembers(businessUserId, page, limit, {
+    search,
+    status,
+    type,
+  });
 
   res.json({
     success: true,
@@ -161,6 +169,36 @@ export const cancelMembership = asyncHandler(async (req: AuthRequest, res: Respo
   res.json({
     success: true,
     message: 'Membership cancelled successfully',
+  });
+});
+
+/**
+ * Renew/Extend membership subscription
+ */
+export const renewMembership = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const businessUserId = req.user?.id;
+
+  if (!businessUserId || req.user?.accountType !== 'business_user') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Business account required', code: 'FORBIDDEN' },
+    });
+  }
+
+  const { id } = req.params;
+  const { renewalPrice, membershipType } = req.body;
+
+  const result = await businessService.renewMembership(
+    id,
+    businessUserId,
+    renewalPrice,
+    membershipType
+  );
+
+  res.json({
+    success: true,
+    message: 'Membership renewed successfully',
+    data: result,
   });
 });
 

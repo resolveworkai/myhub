@@ -39,11 +39,24 @@ export const updatePricingSchema = Joi.object({
 
 export const updateOperatingHoursSchema = Joi.object().pattern(
   Joi.string(),
-  Joi.object({
-    open: Joi.string().pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/).required(),
-    close: Joi.string().pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/).required(),
-    closed: Joi.boolean().optional(),
-  })
+  Joi.alternatives().try(
+    // New format: with timeSlots array
+    Joi.object({
+      timeSlots: Joi.array().items(
+        Joi.object({
+          open: Joi.string().pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/).required(),
+          close: Joi.string().pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/).required(),
+        })
+      ).min(1).required(),
+      closed: Joi.boolean().optional(),
+    }),
+    // Old format: backward compatibility
+    Joi.object({
+      open: Joi.string().pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/).required(),
+      close: Joi.string().pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/).required(),
+      closed: Joi.boolean().optional(),
+    })
+  )
 );
 
 export const updateNotificationPreferencesSchema = Joi.object({

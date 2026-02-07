@@ -40,6 +40,7 @@ import {
   Calendar,
   Crown,
   AlertTriangle,
+  RotateCw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -55,27 +56,17 @@ import {
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { useAuthStore, BusinessUser } from "@/store/authStore";
-import { cancelMembership as cancelMembershipAPI, getBusinessMembers } from "@/lib/apiService";
+import { 
+  cancelMembership as cancelMembershipAPI, 
+  getBusinessMembers,
+  type BusinessMember,
+  type MembershipStatus,
+  type MembershipType
+} from "@/lib/apiService";
 import { AssignMembershipModal } from "@/components/business/AssignMembershipModal";
+import { RenewMembershipModal } from "@/components/business/RenewMembershipModal";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-
-interface BusinessMember {
-  id: string;
-  userId: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  avatar: string | null;
-  assignedAt: string;
-  membershipStatus: string;
-  membershipEndDate: string;
-  membershipType: string;
-  price: number;
-  startDate: string;
-  status: string;
-  notes: string | null;
-}
 
 const typeColors = {
   daily: "bg-muted text-muted-foreground",
@@ -87,6 +78,7 @@ const statusColors = {
   active: "success",
   expired: "destructive",
   cancelled: "warning",
+  overdue: "warning",
 } as const;
 
 export default function BusinessMembers() {
@@ -102,6 +94,7 @@ export default function BusinessMembers() {
   const [filterType, setFilterType] = useState<string>("all");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isAssignOpen, setIsAssignOpen] = useState(false);
+  const [isRenewOpen, setIsRenewOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<BusinessMember | null>(null);
 
   // Fetch members from API
@@ -109,7 +102,11 @@ export default function BusinessMembers() {
     const fetchMembers = async () => {
       setLoading(true);
       try {
-        const result = await getBusinessMembers(1, 100);
+        const result = await getBusinessMembers(1, 100, {
+          search: searchQuery,
+          status: filterStatus !== 'all' ? filterStatus : undefined,
+          type: filterType !== 'all' ? filterType : undefined,
+        });
         setMembers(result.members || []);
       } catch (error) {
         console.error("Failed to fetch members:", error);
@@ -119,7 +116,8 @@ export default function BusinessMembers() {
       }
     };
     fetchMembers();
-  }, []);
+  }, [searchQuery, filterStatus, filterType]);
+
 
   // Refresh members after adding
   const refreshMembers = async () => {
@@ -138,11 +136,11 @@ export default function BusinessMembers() {
     userPhone: m.phone || "",
     venueId,
     venueName,
-    type: m.membershipType as 'daily' | 'weekly' | 'monthly',
+    type: m.membershipType as MembershipType,
     price: m.price,
     startDate: m.startDate,
     endDate: m.membershipEndDate,
-    status: m.status as 'active' | 'expired' | 'cancelled',
+    status: m.status as MembershipStatus,
   }));
 
   const activeCount = allSubscriptions.filter(s => s.status === 'active').length;
@@ -192,6 +190,11 @@ export default function BusinessMembers() {
   const openDelete = (member: BusinessMember) => {
     setSelectedMember(member);
     setIsDeleteOpen(true);
+  };
+
+  const openRenew = (member: BusinessMember) => {
+    setSelectedMember(member);
+    setIsRenewOpen(true);
   };
 
   const pricing = {
@@ -252,6 +255,7 @@ export default function BusinessMembers() {
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="overdue">Overdue</SelectItem>
               <SelectItem value="expired">Expired</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
@@ -359,6 +363,15 @@ export default function BusinessMembers() {
                         </a>
                       </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs h-8"
+                      onClick={() => member && openRenew(member)}
+                    >
+                      <RotateCw className="h-3 w-3 mr-1" />
+                      Renew
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -469,6 +482,12 @@ export default function BusinessMembers() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => member && openRenew(member)}
+                                className="text-primary"
+                              >
+                                <RotateCw className="h-4 w-4 mr-2" /> Renew Subscription
+                              </DropdownMenuItem>
                               {canDelete ? (
                                 <DropdownMenuItem
                                   onClick={() => member && openDelete(member)}
@@ -540,6 +559,15 @@ export default function BusinessMembers() {
         venueId={venueId}
         venueName={venueName}
         pricing={pricing}
+      />
+
+      {/* Renew Membership Modal */}
+      <RenewMembershipModal
+        open={isRenewOpen}
+        onOpenChange={setIsRenewOpen}
+        member={selectedMember}
+        pricing={pricing}
+        onSuccess={refreshMembers}
       />
     </div>
   );

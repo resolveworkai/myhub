@@ -1,8 +1,8 @@
 import { pool } from '../db/pool';
 import { logger } from '../utils/logger';
 import { NotFoundError, ValidationError } from '../utils/errors';
-import { bookingService } from './bookingService';
 import { authService } from './authService';
+import { calculateMembershipStatus } from '../utils/membershipStatus';
 
 interface UpdateBusinessData {
   businessName?: string;
@@ -190,67 +190,140 @@ class BusinessService {
 
   /**
    * Get business members (from standalone table)
+   * Calculates status dynamically based on end_date for active/overdue/expired
+   * Preserves cancelled status as-is
    */
-  async getBusinessMembers(businessUserId: string, page: number = 1, limit: number = 20) {
+  async getBusinessMembers(
+    businessUserId: string,
+    page: number = 1,
+    limit: number = 20,
+    filters?: { search?: string; status?: string; type?: string }
+  ) {
     const offset = (page - 1) * limit;
 
-    // Get total count from standalone table
-    const countResult = await pool.query(
-      `SELECT COUNT(*) as total FROM business_members_standalone WHERE business_user_id = $1 AND deleted_at IS NULL`,
-      [businessUserId]
-    );
-    const total = parseInt(countResult.rows[0].total);
+    // Build dynamic WHERE clauses
+    const whereClauses: string[] = ['business_user_id = $1', 'deleted_at IS NULL'];
+    const params: (string | number)[] = [businessUserId];
+    let paramIndex = 2;
 
-    // Get members from standalone table
+    if (filters?.search) {
+      whereClauses.push(`(name ILIKE $${paramIndex} OR email ILIKE $${paramIndex})`);
+      params.push(`%${filters.search}%`);
+      paramIndex++;
+    }
+
+    // Note: Status filter is applied after calculation in application layer
+    // This allows us to filter by calculated status (overdue) not just stored status
+
+    if (filters?.type) {
+      whereClauses.push(`membership_type = $${paramIndex}`);
+      params.push(filters.type);
+      paramIndex++;
+    }
+
+    const whereSQL = whereClauses.join(' AND ');
+
+    // Get total count with filters (excluding status filter for now)
+    const countResult = await pool.query(
+      `SELECT COUNT(*) as total FROM business_members_standalone WHERE ${whereSQL}`,
+      params
+    );
+    const total = parseInt(countResult.rows[0].total, 10);
+
+    // Get members with filters
     const result = await pool.query(
       `SELECT 
         id, business_user_id, venue_id, name, email, phone,
         membership_type, price, start_date, end_date, status, notes,
         assigned_at, created_at, updated_at
        FROM business_members_standalone
-       WHERE business_user_id = $1 AND deleted_at IS NULL
+       WHERE ${whereSQL}
        ORDER BY assigned_at DESC
-       LIMIT $2 OFFSET $3`,
-      [businessUserId, limit, offset]
+       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
+      [...params, limit, offset]
     );
 
-    return {
-      members: result.rows.map((row: {
-        id: string;
-        name: string;
-        email: string | null;
-        phone: string | null;
-        membership_type: string;
-        price: string | number;
-        start_date: string;
-        end_date: string;
-        status: string;
-        notes: string | null;
-        assigned_at: string;
-      }) => ({
+    // Calculate status for each member
+    const membersWithCalculatedStatus = result.rows.map((row: {
+      id: string;
+      name: string;
+      email: string | null;
+      phone: string | null;
+      membership_type: string;
+      price: string | number;
+      start_date: string;
+      end_date: string;
+      status: string;
+      notes: string | null;
+      assigned_at: string;
+    }) => {
+      // Calculate current status based on end_date
+      const calculatedStatus = calculateMembershipStatus({
+        endDate: row.end_date,
+        currentStatus: row.status,
+      });
+
+      return {
         id: row.id,
-        userId: row.id, // Use member ID as userId for compatibility
+        userId: row.id,
         name: row.name,
         email: row.email,
         phone: row.phone,
-        avatar: null, // No avatar in standalone table
+        avatar: null,
         assignedAt: row.assigned_at,
-        membershipStatus: row.status,
+        membershipStatus: calculatedStatus,
         membershipEndDate: row.end_date,
         membershipType: row.membership_type,
         price: parseFloat(String(row.price)),
         startDate: row.start_date,
-        status: row.status,
+        status: calculatedStatus, // Use calculated status
         notes: row.notes,
-      })),
+      };
+    });
+
+    // Apply status filter after calculation
+    let filteredMembers = membersWithCalculatedStatus;
+    if (filters?.status) {
+      filteredMembers = membersWithCalculatedStatus.filter(
+        (member) => member.status === filters.status
+      );
+    }
+
+    // For accurate total count with status filter, we need to fetch all matching records
+    // and calculate their status. This ensures pagination works correctly.
+    let finalTotal = total;
+    if (filters?.status) {
+      // Get all matching records (without pagination) to count correctly
+      const allResult = await pool.query(
+        `SELECT end_date, status
+         FROM business_members_standalone
+         WHERE ${whereSQL}`,
+        params
+      );
+      
+      // Count records matching the status filter
+      const matchingCount = allResult.rows.filter((row: { end_date: string; status: string }) => {
+        const calculatedStatus = calculateMembershipStatus({
+          endDate: row.end_date,
+          currentStatus: row.status,
+        });
+        return calculatedStatus === filters.status;
+      }).length;
+      
+      finalTotal = matchingCount;
+    }
+
+    return {
+      members: filteredMembers,
       pagination: {
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        total: finalTotal,
+        totalPages: Math.ceil(finalTotal / limit),
       },
     };
   }
+
 
   /**
    * Add business member with membership
@@ -331,7 +404,8 @@ class BusinessService {
 
       // Calculate membership dates
       const startDate = new Date();
-      const endDate = new Date();
+      let endDate: Date = new Date();
+
       if (data.membershipType === 'daily') {
         endDate.setDate(endDate.getDate() + 1);
       } else if (data.membershipType === 'weekly') {
@@ -362,9 +436,40 @@ class BusinessService {
         ]
       );
 
+      // 🎯 Create associated payment record for the membership
+      const dueDate = new Date(endDate);
+      dueDate.setDate(dueDate.getDate() + 1); // Due date is 1 day after membership ends
+
+      const paymentResult = await client.query(
+        `INSERT INTO payments (
+          venue_id, amount, currency, payment_method, payment_status,
+          member_name, member_email, member_phone, business_member_id,
+          due_date, payment_type
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         RETURNING *`,
+        [
+          venueId,
+          data.price,
+          'INR',
+          'pending_collection', // payment method for new add
+          'pending',
+          data.userName,
+          data.userEmail || null,
+          data.userPhone || null,
+          memberResult.rows[0].id,
+          dueDate.toISOString().split('T')[0],
+          'membership',
+        ]
+      );
+
       await client.query('COMMIT');
 
-      logger.info('Business member added (standalone)', { businessUserId, memberId: memberResult.rows[0].id });
+      logger.info('Business member added with payment record', { 
+        businessUserId, 
+        memberId: memberResult.rows[0].id,
+        paymentId: paymentResult.rows[0].id,
+        membershipType: data.membershipType
+      });
 
       return {
         id: memberResult.rows[0].id,
@@ -375,6 +480,7 @@ class BusinessService {
         startDate: startDate.toISOString().split('T')[0],
         endDate: endDate.toISOString().split('T')[0],
         price: data.price,
+        paymentId: paymentResult.rows[0].id,
       };
     } catch (error) {
       await client.query('ROLLBACK');
@@ -393,11 +499,10 @@ class BusinessService {
     try {
       await client.query('BEGIN');
 
-      // Verify member belongs to business (from standalone table)
       const memberResult = await client.query(
         `SELECT id, status, start_date, membership_type
-         FROM business_members_standalone
-         WHERE id = $1 AND business_user_id = $2 AND deleted_at IS NULL`,
+        FROM business_members_standalone
+        WHERE id = $1 AND business_user_id = $2 AND deleted_at IS NULL`,
         [memberId, businessUserId]
       );
 
@@ -407,13 +512,14 @@ class BusinessService {
 
       const member = memberResult.rows[0];
 
-      // Check if monthly membership can be cancelled (30-day lock)
       if (member.membership_type === 'monthly') {
         const startDate = new Date(member.start_date);
         const daysSinceStart = Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-        
+
         if (daysSinceStart < 30) {
-          throw new ValidationError(`Monthly memberships cannot be cancelled within 30 days. ${30 - daysSinceStart} days remaining.`);
+          throw new ValidationError(
+            `Monthly memberships cannot be cancelled within 30 days. ${30 - daysSinceStart} days remaining.`
+          );
         }
       }
 
@@ -421,11 +527,12 @@ class BusinessService {
         throw new ValidationError('Membership is already cancelled');
       }
 
-      // Cancel membership (soft delete)
+      // ✅ ONLY cancel, do NOT delete
       await client.query(
         `UPDATE business_members_standalone 
-         SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP, deleted_at = CURRENT_TIMESTAMP
-         WHERE id = $1`,
+        SET status = 'cancelled',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1`,
         [memberId]
       );
 
@@ -443,6 +550,115 @@ class BusinessService {
   }
 
   /**
+   * Renew/Extend membership subscription (for standalone members)
+   * Creates a new payment record when subscription is renewed
+   * Supports changing membership type and price
+   */
+  async renewMembership(
+    memberId: string,
+    businessUserId: string,
+    renewalPrice: number,
+    membershipType: 'daily' | 'weekly' | 'monthly'
+  ) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // Get member details
+      const memberResult = await client.query(
+        `SELECT id, name, email, phone, membership_type, price, end_date, venue_id
+        FROM business_members_standalone
+        WHERE id = $1 AND business_user_id = $2 AND deleted_at IS NULL`,
+        [memberId, businessUserId]
+      );
+
+      if (memberResult.rows.length === 0) {
+        throw new NotFoundError('Member not found');
+      }
+
+      const member = memberResult.rows[0];
+      let newEndDate: Date = new Date(member.end_date);
+
+      // Calculate new end date based on membership type
+      if (membershipType === 'daily') {
+        newEndDate.setDate(newEndDate.getDate() + 1);
+      } else if (membershipType === 'weekly') {
+        newEndDate.setDate(newEndDate.getDate() + 7);
+      } else if (membershipType === 'monthly') {
+        newEndDate.setMonth(newEndDate.getMonth() + 1);
+      }
+
+      // Update member with new end date, membership type, and price
+      const updateQuery = `UPDATE business_members_standalone 
+        SET end_date = $1,
+            membership_type = $2,
+            price = $3,
+            status = 'active',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = $4`;
+
+      const updateParams = [newEndDate.toISOString().split('T')[0], membershipType, renewalPrice, memberId];
+
+      await client.query(updateQuery, updateParams);
+
+      // 🎯 Create payment record for the renewal
+      const dueDate = new Date(newEndDate);
+      dueDate.setDate(dueDate.getDate() + 1); // Due date is 1 day after membership ends
+
+      const paymentAmount = renewalPrice;
+
+      const paymentResult = await client.query(
+        `INSERT INTO payments (
+          venue_id, amount, currency, payment_method, payment_status,
+          member_name, member_email, member_phone, business_member_id,
+          due_date, payment_type
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         RETURNING *`,
+        [
+          member.venue_id,
+          paymentAmount,
+          'INR',
+          'pending_collection',
+          'pending',
+          member.name,
+          member.email || null,
+          member.phone || null,
+          memberId,
+          dueDate.toISOString().split('T')[0],
+          'membership_renewal',
+        ]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info('Membership renewed with payment record', {
+        memberId,
+        businessUserId,
+        paymentId: paymentResult.rows[0].id,
+        newEndDate: newEndDate.toISOString().split('T')[0],
+        newPrice: renewalPrice,
+        membershipType,
+      });
+
+      return {
+        memberId,
+        newEndDate: newEndDate.toISOString().split('T')[0],
+        newStatus: 'active',  // Status is always 'active' after renewal
+        paymentId: paymentResult.rows[0].id,
+        paymentAmount: renewalPrice,
+        membershipType,
+        membershipPrice: renewalPrice,
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
    * Get dashboard stats
    */
   async getDashboardStats(businessUserId: string) {
@@ -450,40 +666,45 @@ class BusinessService {
 
     // Get total members
     const membersResult = await pool.query(
-      `SELECT COUNT(*) as total FROM business_members WHERE business_user_id = $1`,
+      `SELECT COUNT(*) as total FROM business_members_standalone WHERE business_user_id = $1`,
       [businessUserId]
     );
 
     // Get revenue this month
     const revenueResult = await pool.query(
-      `SELECT COALESCE(SUM(total_price), 0) as revenue
-       FROM bookings b
-       JOIN venues v ON b.venue_id = v.id
-       WHERE v.business_user_id = $1
-       AND b.status = 'confirmed'
-       AND DATE_TRUNC('month', b.created_at) = DATE_TRUNC('month', CURRENT_DATE)`,
+      // `SELECT COALESCE(SUM(total_price), 0) as revenue
+      //  FROM bookings b
+      //  JOIN venues v ON b.venue_id = v.id
+      //  WHERE v.business_user_id = $1
+      //  AND b.status = 'confirmed'
+      //  AND DATE_TRUNC('month', b.created_at) = DATE_TRUNC('month', CURRENT_DATE)`,
+      `SELECT COALESCE(SUM(price), 0) AS revenue
+      FROM business_members_standalone
+      WHERE business_user_id = $1
+      AND deleted_at IS NULL
+      AND DATE_TRUNC('month', start_date) = DATE_TRUNC('month', CURRENT_DATE);`,
       [businessUserId]
     );
 
     // Get appointments today
     const appointmentsResult = await pool.query(
-      `SELECT COUNT(*) as total
-       FROM bookings b
-       JOIN venues v ON b.venue_id = v.id
-       WHERE v.business_user_id = $1
-       AND b.booking_date = $2
-       AND b.status IN ('confirmed', 'pending')`,
+        `SELECT COUNT(*) as total
+        FROM business_appointments_standalone b
+        JOIN venues v ON b.venue_id = v.id
+        WHERE v.business_user_id = $1
+        AND b.appointment_date = $2
+        AND b.status IN ('confirmed', 'pending')
+        AND b.deleted_at IS NULL`,
       [businessUserId, today]
     );
 
     // Get pending payments
     const paymentsResult = await pool.query(
-      `SELECT COALESCE(SUM(amount), 0) as total
-       FROM payments p
-       JOIN bookings b ON p.booking_id = b.id
-       JOIN venues v ON b.venue_id = v.id
-       WHERE v.business_user_id = $1
-       AND p.payment_status = 'pending'`,
+       `SELECT COALESCE(SUM(p.amount), 0) AS total
+        FROM payments p
+        JOIN venues v ON p.venue_id = v.id
+        WHERE v.business_user_id = $1
+        AND p.payment_status = 'pending'`,
       [businessUserId]
     );
 
@@ -914,6 +1135,7 @@ class BusinessService {
 
   /**
    * Update operating hours
+   * Normalizes old format (single open/close) to new format (timeSlots array)
    */
   async updateOperatingHours(
     businessUserId: string,
@@ -924,11 +1146,35 @@ class BusinessService {
     try {
       await client.query('BEGIN');
 
+      // Normalize operating hours: convert old format to new format if needed
+      const normalizedHours: Record<string, any> = {};
+      Object.entries(operatingHours).forEach(([day, hours]: [string, any]) => {
+        // Check if it's already in new format (has timeSlots array)
+        if (hours.timeSlots && Array.isArray(hours.timeSlots)) {
+          normalizedHours[day] = {
+            timeSlots: hours.timeSlots,
+            closed: hours.closed ?? false,
+          };
+        } else if (hours.open && hours.close) {
+          // Old format: convert single time slot to array
+          normalizedHours[day] = {
+            timeSlots: [{ open: hours.open, close: hours.close }],
+            closed: hours.closed ?? false,
+          };
+        } else {
+          // Invalid format, skip or set as closed
+          normalizedHours[day] = {
+            timeSlots: [],
+            closed: true,
+          };
+        }
+      });
+
       await client.query(
         `UPDATE business_users 
          SET operating_hours = $1, updated_at = NOW()
          WHERE id = $2 AND deleted_at IS NULL`,
-        [JSON.stringify(operatingHours), businessUserId]
+        [JSON.stringify(normalizedHours), businessUserId]
       );
 
       await client.query('COMMIT');

@@ -67,9 +67,42 @@ export interface BusinessUser {
   numberOfLocations?: string;
   totalCapacity?: number;
   operatingHours?: {
-    [key: string]: { open: string; close: string; closed?: boolean };
+    [key: string]: {
+      timeSlots?: Array<{ open: string; close: string }>;
+      open?: string;
+      close?: string;
+      closed?: boolean;
+    };
   };
   description?: string;
+  
+  // Settings
+  notificationPreferences?: {
+    emailBookings?: boolean;
+    emailPayments?: boolean;
+    emailReminders?: boolean;
+    smsBookings?: boolean;
+    smsPayments?: boolean;
+    pushNotifications?: boolean;
+  };
+  securitySettings?: {
+    twoFactor?: boolean;
+    sessionTimeout?: string;
+  };
+  businessAttributes?: {
+    amenities?: string[];
+    equipment?: string[];
+    classTypes?: string[];
+    membershipOptions?: string[];
+    subjects?: string[];
+    levels?: string[];
+    teachingModes?: string[];
+    batchSizes?: string[];
+    facilities?: string[];
+    collections?: string[];
+    spaceTypes?: string[];
+    [key: string]: any; // Allow other attributes
+  };
   
   // Owner info
   ownerName?: string;

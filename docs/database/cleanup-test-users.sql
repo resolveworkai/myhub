@@ -208,3 +208,11 @@ SET
   account_status = 'active',
   updated_at = CURRENT_TIMESTAMP
 WHERE email = 'test@gmail.com'
+
+-- udpdate end_date for a specific business member
+UPDATE business_members_standalone
+SET end_date = '2026-04-30',
+    updated_at = CURRENT_TIMESTAMP
+WHERE business_user_id = '3d4afe03-95e7-4f54-8e3b-d1393d457610'
+  AND LOWER(email) = LOWER('ajay@gmail.com')
+  AND deleted_at IS NULL;

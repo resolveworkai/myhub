@@ -392,14 +392,16 @@ Cancel booking. **Requires Authentication**
 
 ---
 
-### GET /api/bookings/business/all
-Get business bookings. **Requires Business Account**
+### GET /api/bookings/business
+Get business appointments. **Requires Business Account**
+
+**Note:** This endpoint queries from the `business_appointments_standalone` table, which stores appointments created by business users.
 
 **Query Parameters:**
-- `status` - Filter by status (pending, confirmed, completed, cancelled)
-- `date` - Filter by booking date (YYYY-MM-DD)
-- `page` - Page number
-- `limit` - Items per page
+- `status` - Filter by status (pending, confirmed, completed, cancelled, no_show)
+- `date` - Filter by appointment date (YYYY-MM-DD)
+- `page` - Page number (default: 1)
+- `limit` - Items per page (default: 20)
 
 **Response:**
 ```json
@@ -409,17 +411,23 @@ Get business bookings. **Requires Business Account**
     "bookings": [
       {
         "id": "uuid",
-        "userId": "uuid",
-        "venueId": "uuid",
-        "venueName": "Gym Name",
         "userName": "John Doe",
         "userEmail": "john@example.com",
+        "userPhone": "+1234567890",
         "date": "2024-12-20",
+        "bookingDate": "2024-12-20",
         "time": "07:00",
+        "bookingTime": "07:00",
         "duration": 90,
+        "attendees": 1,
         "status": "pending",
-        "totalPrice": 75.0,
-        "attendees": 1
+        "specialRequests": "Need equipment",
+        "venueId": "uuid",
+        "venueName": "Gym Name",
+        "venueType": "gym",
+        "memberId": "uuid",
+        "createdAt": "2024-12-20T07:00:00Z",
+        "updatedAt": "2024-12-20T07:00:00Z"
       }
     ],
     "pagination": {
@@ -437,13 +445,15 @@ Get business bookings. **Requires Business Account**
 ### POST /api/bookings/business
 Create booking/appointment for business (walk-in). **Requires Business Account**
 
+**Note:** This endpoint creates appointments in the `business_appointments_standalone` table. If the member doesn't exist, it will automatically create a member entry in `business_members_standalone`. The appointment will also appear in the members list.
+
 **Request:**
 ```json
 {
   "userName": "John Doe",
   "userEmail": "john@example.com",
   "userPhone": "+1234567890",
-  "venueId": "uuid",
+  "venueId": "uuid" | "default",
   "date": "2024-12-20",
   "time": "07:00",
   "duration": 60,
@@ -452,6 +462,17 @@ Create booking/appointment for business (walk-in). **Requires Business Account**
 }
 ```
 
+**Request Fields:**
+- `userName` (required): Name of the member
+- `userEmail` (optional): Email of the member
+- `userPhone` (optional): Phone number of the member
+- `venueId` (required): Venue ID or "default" to use business's default venue
+- `date` (required): Appointment date in YYYY-MM-DD format
+- `time` (required): Appointment time in HH:MM format
+- `duration` (required): Duration in minutes
+- `attendees` (optional): Number of attendees (default: 1)
+- `specialRequests` (optional): Special requests or notes
+
 **Response (201):**
 ```json
 {
@@ -459,17 +480,32 @@ Create booking/appointment for business (walk-in). **Requires Business Account**
   "message": "Appointment created successfully",
   "data": {
     "id": "uuid",
-    "userId": "uuid",
-    "venueId": "uuid",
+    "userName": "John Doe",
+    "userEmail": "john@example.com",
+    "userPhone": "+1234567890",
     "date": "2024-12-20",
+    "bookingDate": "2024-12-20",
     "time": "07:00",
+    "bookingTime": "07:00",
     "duration": 60,
+    "attendees": 1,
     "status": "pending",
-    "totalPrice": 50.0,
-    "attendees": 1
+    "specialRequests": "Need equipment",
+    "venueId": "uuid",
+    "venueName": "Gym Name",
+    "venueType": "gym",
+    "memberId": "uuid",
+    "createdAt": "2024-12-20T07:00:00Z",
+    "updatedAt": "2024-12-20T07:00:00Z"
   }
 }
 ```
+
+**Notes:**
+- If `venueId` is "default" or not provided, the system will use the business's first available venue
+- If a member with the same email exists, the appointment will be linked to that member
+- If no member exists, a new member entry will be created in `business_members_standalone`
+- The appointment will appear in both the appointments list and the members list
 
 ---
 
@@ -627,6 +663,95 @@ Add business member with membership (standalone - no user table relationship req
 ```
 
 **Note:** Business members are stored in a standalone table (`business_members_standalone`) and do not require a user account. This allows business owners to add members without requiring them to register.
+
+---
+
+### POST /api/business/memberships/:id/renew
+Renew a business member's subscription with optional preset or custom date. **Requires Business Account**
+
+**URL Parameters:**
+- `id` - Member ID (UUID)
+
+**Request Body:**
+```json
+{
+  "renewalPrice": 4999.00,              // Optional - defaults to member's current price
+  "customEndDate": "2026-03-26"         // Optional ISO date format (yyyy-MM-dd)
+}
+```
+
+**For Preset Renewal (without customEndDate):**
+- If member has `membershipType: "daily"` → adds 1 day to current end_date
+- If member has `membershipType: "weekly"` → adds 7 days to current end_date
+- If member has `membershipType: "monthly"` → adds 1 month to current end_date
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Member subscription renewed successfully",
+  "data": {
+    "memberId": "uuid-member-id",
+    "newEndDate": "2026-03-26",
+    "paymentId": "uuid-payment-id",
+    "paymentAmount": 4999.00
+  }
+}
+```
+
+**Auto-Generated Payment Record:**
+When renewal succeeds, a payment record is automatically created with:
+- `amount`: Renewal price (custom or default)
+- `payment_type`: "membership_renewal"
+- `due_date`: New end_date + 1 day
+- `status`: "pending"
+
+**Example 1: Preset Renewal (Weekly)**
+```bash
+curl -X POST "http://localhost:3001/api/business/memberships/abc123/renew" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "renewalPrice": 1499
+  }'
+```
+Result: Member's end_date extended by 7 days, payment created for ₹1499
+
+**Example 2: Custom Date Renewal**
+```bash
+curl -X POST "http://localhost:3001/api/business/memberships/abc123/renew" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customEndDate": "2026-06-30",
+    "renewalPrice": 5000
+  }'
+```
+Result: Member's end_date set to June 30, 2026, payment created for ₹5000
+
+**Error Responses:**
+
+400 - Invalid Date:
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Custom end date must be in the future",
+    "code": "INVALID_DATE"
+  }
+}
+```
+
+404 - Member Not Found:
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Member not found",
+    "code": "MEMBER_NOT_FOUND"
+  }
+}
+```
 
 ---
 

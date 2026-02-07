@@ -547,7 +547,7 @@ export const getUserBookings = async (filters: {
 
 // Get business bookings
 export const getBusinessBookings = async (filters: {
-  status?: string;
+  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'all';
   date?: string;
   page?: number;
   limit?: number;
@@ -558,10 +558,10 @@ export const getBusinessBookings = async (filters: {
   if (filters.page) params.append('page', filters.page.toString());
   if (filters.limit) params.append('limit', filters.limit.toString());
 
-  const result = await api.get<{ success: boolean; data: { bookings: Booking[]; pagination: { page: number; limit: number; total: number; totalPages: number } } }>(
+  const result = await api.get<{ bookings: Booking[]; pagination: { page: number; limit: number; total: number; totalPages: number }}>(
     `/bookings/business/all?${params.toString()}`
   );
-  return result.data || { bookings: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+  return result || { bookings: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } };
 };
 
 // Update booking status (for business users)
@@ -751,13 +751,61 @@ export const updateBusinessProfile = async (updates: {
   return result;
 };
 
+// Business Member Types
+export type MembershipStatus = 'active' | 'expired' | 'cancelled' | 'overdue';
+export type MembershipType = 'daily' | 'weekly' | 'monthly';
+
+export interface BusinessMember {
+  id: string;
+  userId: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  avatar: string | null;
+  assignedAt: string;
+  membershipStatus: MembershipStatus;
+  membershipEndDate: string;
+  membershipType: MembershipType;
+  price: number;
+  startDate: string;
+  status: MembershipStatus;
+  notes: string | null;
+}
+
+export interface BusinessMembersPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface BusinessMembersResponse {
+  members: BusinessMember[];
+  pagination: BusinessMembersPagination;
+}
+
+export interface BusinessMembersFilters {
+  search?: string;
+  status?: MembershipStatus;
+  type?: MembershipType;
+}
+
 // Get business members
-export const getBusinessMembers = async (page: number = 1, limit: number = 20): Promise<{
-  members: any[];
-  pagination: any;
-}> => {
-  const result = await api.get<{ members: any[]; pagination: any }>(
-    `/business/members?page=${page}&limit=${limit}`
+export const getBusinessMembers = async (
+  page: number = 1,
+  limit: number = 20,
+  filters?: BusinessMembersFilters
+): Promise<BusinessMembersResponse> => {
+  const query = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    ...(filters?.search && { search: filters.search }),
+    ...(filters?.status && { status: filters.status }),
+    ...(filters?.type && { type: filters.type }),
+  });
+
+  const result = await api.get<BusinessMembersResponse>(
+    `/business/members?${query}`
   );
   return result;
 };
@@ -778,6 +826,39 @@ export const addBusinessMember = async (data: {
 // Cancel membership
 export const cancelMembership = async (membershipId: string, reason?: string): Promise<void> => {
   await api.delete(`/business/memberships/${membershipId}`, { data: { reason } });
+};
+
+// Renew membership
+export const renewMembership = async (
+  memberId: string,
+  renewalPrice: number,
+  membershipType: MembershipType
+): Promise<{
+  memberId: string;
+  newEndDate: string;
+  newStatus: string;
+  paymentId: string;
+  paymentAmount: number;
+  membershipType: MembershipType;
+  membershipPrice: number;
+}> => {
+  const result = await api.post<{
+    success: boolean;
+    message: string;
+    data: {
+      memberId: string;
+      newEndDate: string;
+      newStatus: string;
+      paymentId: string;
+      paymentAmount: number;
+      membershipType: MembershipType;
+      membershipPrice: number;
+    };
+  }>(`/business/memberships/${memberId}/renew`, {
+    renewalPrice,
+    membershipType,
+  });
+  return result.data;
 };
 
 // Get dashboard stats
@@ -821,8 +902,8 @@ export const updateBusinessInfo = async (data: {
   address?: string;
   description?: string;
 }): Promise<BusinessUser> => {
-  const result = await api.patch<{ data: BusinessUser }>('/business/settings/business-info', data);
-  return result.data;
+  const result = await api.patch<BusinessUser>('/business/settings/business-info', data);
+  return result;
 };
 
 export const updateLocationAndMedia = async (data: {
@@ -832,13 +913,13 @@ export const updateLocationAndMedia = async (data: {
   coverImage?: string;
   galleryImages?: string[];
 }): Promise<BusinessUser> => {
-  const result = await api.patch<{ data: BusinessUser }>('/business/settings/location-media', data);
-  return result.data;
+  const result = await api.patch< BusinessUser>('/business/settings/location-media', data);
+  return result;
 };
 
 export const updateBusinessAttributes = async (attributes: Record<string, any>): Promise<BusinessUser> => {
-  const result = await api.patch<{ data: BusinessUser }>('/business/settings/attributes', attributes);
-  return result.data;
+  const result = await api.patch<BusinessUser>('/business/settings/attributes', attributes);
+  return result;
 };
 
 export const updatePricing = async (data: {
@@ -846,13 +927,13 @@ export const updatePricing = async (data: {
   weeklyPackagePrice?: number;
   monthlyPackagePrice?: number;
 }): Promise<BusinessUser> => {
-  const result = await api.patch<{ data: BusinessUser }>('/business/settings/pricing', data);
-  return result.data;
+  const result = await api.patch<BusinessUser>('/business/settings/pricing', data);
+  return result;
 };
 
 export const updateOperatingHours = async (operatingHours: Record<string, any>): Promise<BusinessUser> => {
-  const result = await api.patch<{ data: BusinessUser }>('/business/settings/operating-hours', operatingHours);
-  return result.data;
+  const result = await api.patch<BusinessUser >('/business/settings/operating-hours', operatingHours);
+  return result;
 };
 
 export const updateNotificationPreferences = async (preferences: {
@@ -863,16 +944,16 @@ export const updateNotificationPreferences = async (preferences: {
   smsPayments?: boolean;
   pushNotifications?: boolean;
 }): Promise<BusinessUser> => {
-  const result = await api.patch<{ data: BusinessUser }>('/business/settings/notifications', preferences);
-  return result.data;
+  const result = await api.patch<BusinessUser>('/business/settings/notifications', preferences);
+  return result;
 };
 
 export const updateSecuritySettings = async (settings: {
   twoFactor?: boolean;
   sessionTimeout?: string;
 }): Promise<BusinessUser> => {
-  const result = await api.patch<{ data: BusinessUser }>('/business/settings/security', settings);
-  return result.data;
+  const result = await api.patch<BusinessUser>('/business/settings/security', settings);
+  return result;
 };
 
 export const togglePublishStatus = async (isPublished: boolean): Promise<BusinessUser> => {

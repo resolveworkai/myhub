@@ -296,24 +296,24 @@ class BookingService {
   }
 
   /**
-   * Get business bookings
+   * Get business bookings (from business_appointments_standalone table)
    */
   async getBusinessBookings(businessUserId: string, filters: { status?: string; date?: string; page?: number; limit?: number } = {}) {
     const { status, date, page = 1, limit = 20 } = filters;
     const offset = (page - 1) * limit;
 
-    const conditions = ['v.business_user_id = $1'];
+    const conditions = ['a.business_user_id = $1', 'a.deleted_at IS NULL'];
     const params: (string | number | undefined)[] = [businessUserId];
     let paramCount = 1;
 
     if (status) {
       paramCount++;
-      conditions.push(`b.status = $${paramCount}`);
+      conditions.push(`a.status = $${paramCount}`);
       params.push(status);
     }
     if (date) {
       paramCount++;
-      conditions.push(`b.booking_date = $${paramCount}`);
+      conditions.push(`a.appointment_date = $${paramCount}`);
       params.push(date);
     }
 
@@ -322,27 +322,28 @@ class BookingService {
     // Get total count
     const countResult = await pool.query(
       `SELECT COUNT(*) as total
-       FROM bookings b
-       JOIN venues v ON b.venue_id = v.id
+       FROM business_appointments_standalone a
        ${whereClause}`,
       params
     );
     const total = parseInt(countResult.rows[0].total);
 
-    // Get bookings
+    // Get appointments
     const result = await pool.query(
-      `SELECT b.*, v.name as venue_name, u.name as user_name, u.email as user_email
-       FROM bookings b
-       JOIN venues v ON b.venue_id = v.id
-       LEFT JOIN users u ON b.user_id = u.id
+      `SELECT 
+        a.*, 
+        v.name as venue_name,
+        v.category as venue_type
+       FROM business_appointments_standalone a
+       LEFT JOIN venues v ON a.venue_id = v.id
        ${whereClause}
-       ORDER BY b.booking_date DESC, b.booking_time DESC
+       ORDER BY a.appointment_date DESC, a.appointment_time DESC
        LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`,
       [...params, limit, offset]
     );
 
     return {
-      bookings: result.rows.map(this.formatBooking),
+      bookings: result.rows.map((row) => this.formatBusinessAppointment(row)),
       pagination: {
         page,
         limit,
@@ -354,6 +355,7 @@ class BookingService {
 
   /**
    * Update booking status (for business users)
+   * Works with business_appointments_standalone table
    */
   async updateBookingStatus(bookingId: string, businessUserId: string, status: string) {
     const client = await pool.connect();
@@ -361,37 +363,46 @@ class BookingService {
     try {
       await client.query('BEGIN');
 
-      // Verify booking belongs to business
-      const bookingResult = await client.query(
-        `SELECT b.* FROM bookings b
-         JOIN venues v ON b.venue_id = v.id
-         WHERE b.id = $1 AND v.business_user_id = $2`,
+      // Verify appointment belongs to business
+      const appointmentResult = await client.query(
+        `SELECT * FROM business_appointments_standalone
+         WHERE id = $1 AND business_user_id = $2 AND deleted_at IS NULL`,
         [bookingId, businessUserId]
       );
 
-      if (bookingResult.rows.length === 0) {
-        throw new NotFoundError('Booking not found or does not belong to this business');
+      if (appointmentResult.rows.length === 0) {
+        throw new NotFoundError('Appointment not found or does not belong to this business');
       }
 
-      const booking = bookingResult.rows[0];
+      const appointment = appointmentResult.rows[0];
 
-      if (booking.status === 'cancelled' && status !== 'cancelled') {
-        throw new ValidationError('Cannot change status of a cancelled booking');
+      if (appointment.status === 'cancelled' && status !== 'cancelled') {
+        throw new ValidationError('Cannot change status of a cancelled appointment');
       }
 
       // Update status
+      const updateData: { status: string; cancelled_at?: string; updated_at: string } = {
+        status,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (status === 'cancelled') {
+        updateData.cancelled_at = new Date().toISOString();
+      }
+
       const result = await client.query(
-        `UPDATE bookings SET status = $1, updated_at = NOW()
-         WHERE id = $2
+        `UPDATE business_appointments_standalone 
+         SET status = $1, cancelled_at = $2, updated_at = NOW()
+         WHERE id = $3
          RETURNING *`,
-        [status, bookingId]
+        [status, updateData.cancelled_at || null, bookingId]
       );
 
       await client.query('COMMIT');
 
-      logger.info('Booking status updated', { bookingId, status, businessUserId });
+      logger.info('Appointment status updated', { appointmentId: bookingId, status, businessUserId });
 
-      return this.formatBooking(result.rows[0]);
+      return this.formatBusinessAppointment(result.rows[0]);
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
@@ -402,6 +413,7 @@ class BookingService {
 
   /**
    * Create booking for business (walk-in/appointment)
+   * Uses business_appointments_standalone table instead of bookings table
    */
   async createBusinessBooking(
     businessUserId: string,
@@ -422,82 +434,6 @@ class BookingService {
     try {
       await client.query('BEGIN');
 
-      // For business bookings, we need a user_id for the bookings table
-      // But we'll use business_members_standalone to track the member
-      // First, check if member exists in business_members_standalone
-      let memberId: string | null = null;
-      if (data.userEmail) {
-        const memberResult = await client.query(
-          `SELECT id FROM business_members_standalone 
-           WHERE business_user_id = $1 AND email = $2 AND deleted_at IS NULL 
-           LIMIT 1`,
-          [businessUserId, data.userEmail.toLowerCase()]
-        );
-        if (memberResult.rows.length > 0) {
-          memberId = memberResult.rows[0].id;
-        }
-      }
-
-      // We still need a user_id for bookings table, but we'll create a minimal entry
-      // or use a placeholder. For now, let's create a guest user entry in business_members_standalone
-      // and use its ID as a reference
-      if (!memberId) {
-        // Create entry in business_members_standalone for tracking
-        const memberResult = await client.query(
-          `INSERT INTO business_members_standalone (
-            business_user_id, venue_id, name, email, phone, 
-            membership_type, price, start_date, end_date, status
-          )
-           VALUES ($1, $2, $3, $4, $5, 'daily', 0, CURRENT_DATE, CURRENT_DATE, 'active')
-           RETURNING id`,
-          [
-            businessUserId,
-            data.venueId,
-            data.userName,
-            data.userEmail || null,
-            data.userPhone || null,
-          ]
-        );
-        memberId = memberResult.rows[0].id;
-      }
-
-      // For bookings table, we need a user_id. 
-      // Check if user exists by email, otherwise we need to handle this differently
-      // Since bookings table requires user_id, we'll use business_members_standalone ID
-      // But we need a valid UUID for user_id. Let's check if we can use member ID or create a system user
-      
-      // Use memberId as a reference, but for bookings we need a user_id
-      // We'll create a minimal user entry if needed, but this should be optional
-      // For now, let's use the member ID from business_members_standalone
-      // But bookings.user_id requires a valid users.id, so we need to handle this
-      
-      // Create a guest user entry with a placeholder password_hash
-      // In production, you might want to use a system user or handle this differently
-      const placeholderEmail = data.userEmail || `booking_${Date.now()}_${Math.random().toString(36).substring(7)}@temp.local`;
-      let userId: string;
-      
-      // Check if user exists
-      const existingUser = await client.query(
-        `SELECT id FROM users WHERE email = $1 AND deleted_at IS NULL LIMIT 1`,
-        [placeholderEmail.toLowerCase()]
-      );
-      
-      if (existingUser.rows.length > 0) {
-        userId = existingUser.rows[0].id;
-      } else {
-        // Create a guest user with a temporary password hash
-        // Note: This user won't be able to login, but allows booking creation
-        const bcrypt = await import('bcrypt');
-        const tempPasswordHash = await bcrypt.hash(`temp_${Date.now()}`, 10);
-        const userResult = await client.query(
-          `INSERT INTO users (name, email, phone, account_status, email_verified, password_hash)
-           VALUES ($1, $2, $3, 'active', FALSE, $4)
-           RETURNING id`,
-          [data.userName, placeholderEmail.toLowerCase(), data.userPhone || null, tempPasswordHash]
-        );
-        userId = userResult.rows[0].id;
-      }
-
       // Verify venue belongs to business
       const venueResult = await client.query(
         `SELECT v.* FROM venues v
@@ -511,45 +447,123 @@ class BookingService {
 
       const venue = venueResult.rows[0];
 
-      // Calculate price
-      const pricePerHour = venue.price / 30; // Assuming monthly price
-      const hours = data.duration / 60;
-      const totalPrice = pricePerHour * hours * (data.attendees || 1);
+      // Check if member exists in business_members_standalone
+      let memberId: string | null = null;
+      if (data.userEmail) {
+        const memberResult = await client.query(
+          `SELECT id FROM business_members_standalone 
+           WHERE business_user_id = $1 AND email = $2 AND deleted_at IS NULL 
+           LIMIT 1`,
+          [businessUserId, data.userEmail.toLowerCase()]
+        );
+        if (memberResult.rows.length > 0) {
+          memberId = memberResult.rows[0].id;
+        }
+      }
 
-      // Create booking
-      const result = await client.query(
-        `INSERT INTO bookings (
-          user_id, venue_id, venue_type, booking_date, booking_time, duration,
-          status, total_price, attendees, special_requests
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      // If member doesn't exist, create one in business_members_standalone
+      if (!memberId) {
+        const memberResult = await client.query(
+          `INSERT INTO business_members_standalone (
+            business_user_id, venue_id, name, email, phone, 
+            membership_type, price, start_date, end_date, status, notes
+          )
+           VALUES ($1, $2, $3, $4, $5, 'daily', 0, CURRENT_DATE, CURRENT_DATE, 'active', $6)
+           RETURNING id`,
+          [
+            businessUserId,
+            data.venueId,
+            data.userName,
+            data.userEmail || null,
+            data.userPhone || null,
+            `Created from appointment on ${data.date}`,
+          ]
+        );
+        memberId = memberResult.rows[0].id;
+        logger.info('Created member from appointment', { memberId, businessUserId });
+      }
+
+      // Create appointment in business_appointments_standalone table
+      const appointmentResult = await client.query(
+        `INSERT INTO business_appointments_standalone (
+          business_user_id, venue_id, member_id, name, email, phone,
+          appointment_date, appointment_time, duration, attendees,
+          status, special_requests, notes
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING *`,
         [
-          userId,
+          businessUserId,
           data.venueId,
-          venue.category,
+          memberId,
+          data.userName,
+          data.userEmail || null,
+          data.userPhone || null,
           data.date,
           data.time,
           data.duration,
-          'pending',
-          totalPrice,
           data.attendees || 1,
+          'pending',
           data.specialRequests || null,
+          null, // notes field
         ]
       );
 
-      const booking = result.rows[0];
+      const appointment = appointmentResult.rows[0];
 
       await client.query('COMMIT');
 
-      logger.info('Business booking created', { bookingId: booking.id, businessUserId });
+      logger.info('Business appointment created', { appointmentId: appointment.id, businessUserId, memberId });
 
-      return this.formatBooking(booking);
+      return this.formatBusinessAppointment(appointment);
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
     } finally {
       client.release();
     }
+  }
+
+  /**
+   * Format business appointment for API response
+   */
+  private formatBusinessAppointment(row: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    appointment_date: string;
+    appointment_time: string;
+    duration: number;
+    attendees: number;
+    status: string;
+    special_requests: string | null;
+    venue_id: string;
+    member_id: string | null;
+    created_at: string;
+    updated_at: string;
+    venue_name?: string | null;
+    venue_type?: string | null;
+  }) {
+    return {
+      id: row.id,
+      userName: row.name,
+      userEmail: row.email,
+      userPhone: row.phone,
+      date: row.appointment_date,
+      bookingDate: row.appointment_date,
+      time: row.appointment_time,
+      bookingTime: row.appointment_time,
+      duration: row.duration,
+      attendees: row.attendees,
+      status: row.status,
+      specialRequests: row.special_requests,
+      venueId: row.venue_id,
+      venueName: row.venue_name || null,
+      venueType: row.venue_type || null,
+      memberId: row.member_id,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   }
 
   /**

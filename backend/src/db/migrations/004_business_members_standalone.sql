@@ -22,12 +22,15 @@ CREATE TABLE IF NOT EXISTS business_members_standalone (
   deleted_at TIMESTAMP
 );
 
--- Create indexes for performance
+-- Create indexes for performance (optimized for common queries)
 CREATE INDEX IF NOT EXISTS idx_business_members_standalone_business_user_id ON business_members_standalone(business_user_id) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_business_members_standalone_venue_id ON business_members_standalone(venue_id) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_business_members_standalone_email ON business_members_standalone(email) WHERE deleted_at IS NULL AND email IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_business_members_standalone_status ON business_members_standalone(status) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_business_members_standalone_membership_type ON business_members_standalone(membership_type) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_business_members_standalone_business_status ON business_members_standalone(business_user_id, status) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_business_members_standalone_business_type ON business_members_standalone(business_user_id, membership_type) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_business_members_standalone_end_date ON business_members_standalone(end_date) WHERE deleted_at IS NULL;
 
 -- Add comment
 COMMENT ON TABLE business_members_standalone IS 'Stores members added by business users without requiring user authentication';

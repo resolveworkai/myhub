@@ -173,7 +173,7 @@ backend/
 ### Business
 - `GET /api/business/me` - Get profile
 - `PATCH /api/business/me` - Update profile
-- `GET /api/business/members` - List members
+- `GET /api/business/members` - List members (supports status filter: active, overdue, expired, cancelled)
 - `POST /api/business/members` - Add member
 - `GET /api/business/analytics` - Get analytics
 - `POST /api/business/announcements` - Send announcement

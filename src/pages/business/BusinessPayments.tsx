@@ -94,7 +94,15 @@ export default function BusinessPayments() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const filters: any = {};
+        const filters: {
+          status?: string;
+          type?: string;
+          page?: number;
+          limit?: number;
+        } = {
+          page: 1,
+          limit: 50,
+        };
         if (filterStatus !== "all") filters.status = filterStatus;
         
         const [paymentsResult, statsResult] = await Promise.all([
@@ -102,25 +110,27 @@ export default function BusinessPayments() {
           getBusinessPaymentStats(),
         ]);
         
-        // Handle response structure - could be { payments: ... } or { data: { payments: ... } }
+        // Handle response structure - payments should be in paymentsResult.payments
         const paymentsList = paymentsResult?.payments || [];
         
         const formatted = paymentsList.map((p: any) => ({
           id: p.id,
-          memberName: p.userName || "Guest",
-          memberEmail: p.userEmail || "",
-          amount: p.amount,
-          type: p.type,
-          status: p.status,
-          date: p.date,
-          dueDate: p.dueDate,
-          method: p.method,
+          memberName: p.userName || p.memberName || "Guest",
+          memberEmail: p.userEmail || p.memberEmail || "",
+          amount: parseFloat(p.amount) || 0,
+          type: p.type || "other",
+          status: p.status || "pending",
+          date: p.date || p.createdAt || new Date().toISOString().split('T')[0],
+          dueDate: p.dueDate || undefined,
+          method: p.method || undefined,
         }));
         setPayments(formatted);
         setPaymentStats(statsResult);
       } catch (error: any) {
         toast.error("Failed to load payments");
         console.error("Payments error:", error);
+        // Set empty payments on error to avoid undefined errors
+        setPayments([]);
       } finally {
         setLoading(false);
       }

@@ -3,13 +3,16 @@ import { logger } from '../utils/logger';
 import { NotFoundError, ValidationError } from '../utils/errors';
 
 interface CreatePaymentData {
-  userId: string;
+  userId?: string;
   businessUserId: string;
   amount: number;
   type: 'membership' | 'session' | 'product' | 'other';
   paymentMethod?: string;
   dueDate?: string;
   notes?: string;
+  memberName?: string;
+  memberEmail?: string;
+  memberPhone?: string;
 }
 
 class PaymentService {
@@ -105,6 +108,11 @@ class PaymentService {
       let memberName: string | null = null;
       let memberEmail: string | null = null;
       let memberPhone: string | null = null;
+
+      // Accept explicit member data passed in (controller forwards memberName/memberEmail/memberPhone)
+      if (data.memberName) memberName = data.memberName;
+      if (data.memberEmail) memberEmail = data.memberEmail.toLowerCase();
+      if (data.memberPhone) memberPhone = data.memberPhone;
       
       if (data.userId && data.userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         // Valid UUID - use as userId
@@ -117,12 +125,12 @@ class PaymentService {
         );
         if (userResult.rows.length > 0) {
           userId = userResult.rows[0].id;
-          memberName = userResult.rows[0].name;
-          memberEmail = data.userId.toLowerCase();
+          memberName = memberName || userResult.rows[0].name;
+          memberEmail = memberEmail || data.userId.toLowerCase();
         } else {
           // User doesn't exist - create standalone payment
-          memberEmail = data.userId.toLowerCase();
-          memberName = data.userId.split('@')[0]; // Use email prefix as name
+          memberEmail = memberEmail || data.userId.toLowerCase();
+          memberName = memberName || data.userId.split('@')[0]; // Use email prefix as name
         }
       }
       
@@ -144,11 +152,23 @@ class PaymentService {
       const venueId = venueResult.rows[0].id;
 
       // Create payment record (user_id can be null for standalone payments)
+      // Try to resolve a standalone business member if memberEmail provided
+      let businessMemberId: string | null = null;
+      if (memberEmail) {
+        const bmsResult = await client.query(
+          `SELECT id FROM business_members_standalone WHERE email = $1 AND business_user_id = $2 AND deleted_at IS NULL LIMIT 1`,
+          [memberEmail, data.businessUserId]
+        );
+        if (bmsResult.rows.length > 0) {
+          businessMemberId = bmsResult.rows[0].id;
+        }
+      }
+
       const result = await client.query(
         `INSERT INTO payments (
           user_id, venue_id, amount, currency, payment_method, payment_status,
-          member_name, member_email, member_phone
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          member_name, member_email, member_phone, business_member_id
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *`,
         [
           userId,
@@ -160,6 +180,7 @@ class PaymentService {
           memberName,
           memberEmail,
           memberPhone,
+          businessMemberId,
         ]
       );
 
@@ -259,9 +280,19 @@ class PaymentService {
   async getBusinessPaymentStats(businessUserId: string) {
     const result = await pool.query(
       `SELECT 
+        COALESCE(SUM(CASE WHEN p.payment_status = 'completed' AND p.booking_id IS NOT NULL THEN p.amount END),0) AS booking_revenue,
+        COALESCE(SUM(CASE WHEN p.payment_status = 'completed' AND EXISTS (SELECT 1 FROM memberships m WHERE m.payment_id = p.id AND m.business_user_id = $1) THEN p.amount END),0) AS membership_revenue,
+        COALESCE(SUM(CASE WHEN p.payment_status = 'completed' AND p.business_member_id IS NOT NULL THEN p.amount END),0) AS standalone_member_revenue,
+
+        -- Total is explicitly the sum of the three components to ensure consistency
+        (
+          COALESCE(SUM(CASE WHEN p.payment_status = 'completed' AND p.booking_id IS NOT NULL THEN p.amount END),0)
+          + COALESCE(SUM(CASE WHEN p.payment_status = 'completed' AND EXISTS (SELECT 1 FROM memberships m WHERE m.payment_id = p.id AND m.business_user_id = $1) THEN p.amount END),0)
+          + COALESCE(SUM(CASE WHEN p.payment_status = 'completed' AND p.business_member_id IS NOT NULL THEN p.amount END),0)
+        ) AS total_revenue,
+
+        COALESCE(SUM(CASE WHEN p.payment_status = 'pending' THEN p.amount END),0) AS pending_amount,
         COUNT(*) FILTER (WHERE p.payment_status = 'completed') as paid_count,
-        SUM(p.amount) FILTER (WHERE p.payment_status = 'completed') as total_revenue,
-        SUM(p.amount) FILTER (WHERE p.payment_status = 'pending') as pending_amount,
         COUNT(*) FILTER (WHERE p.payment_status = 'pending' AND p.created_at < NOW() - INTERVAL '7 days') as overdue_count
        FROM payments p
        LEFT JOIN bookings b ON p.booking_id = b.id
