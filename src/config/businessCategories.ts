@@ -49,7 +49,7 @@ export const businessCategoryConfig: Record<BusinessCategoryId, BusinessCategory
   },
   coaching: {
     id: "coaching",
-    enabled: false, // Toggle coaching visibility
+    enabled: true, // Toggle coaching visibility
     name: "Coaching",
     namePlural: "Coaching",
     icon: GraduationCap,
