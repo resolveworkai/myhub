@@ -19,7 +19,8 @@ import {
 import { toast } from "sonner";
 import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
 import { SupportModal } from "@/components/support/SupportModal";
-import { ActivePassesCard } from "@/components/dashboard/ActivePassesCard";
+import { UserPassesCard } from "@/components/dashboard/UserPassesCard";
+import { UserBookingsCard } from "@/components/dashboard/UserBookingsCard";
 
 const enrollments = [
   {
@@ -150,59 +151,7 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
         {/* Main Column */}
         <div className="lg:col-span-2 space-y-8">
           {/* Today's Schedule */}
-          <div className="bg-card rounded-2xl border border-border p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-lg font-semibold">Today's Schedule</h2>
-              <Link to="/dashboard/appointments" className="text-sm text-primary hover:underline flex items-center gap-1">
-                View All <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-            {upcomingAppointments.length > 0 ? (
-              <div className="space-y-4">
-                {upcomingAppointments.map((apt) => (
-                  <div
-                    key={apt.id}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
-                      {apt.type === "gym" ? "🏋️" : "📚"}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{apt.business}</h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4" />
-                        {apt.date} at {apt.time}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleViewAppointment(apt.id)}
-                      >
-                        View
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="default"
-                        onClick={() => handleCheckIn(apt.id, apt.business)}
-                      >
-                        Check In
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No appointments scheduled for today</p>
-                <Button variant="outline" className="mt-4" onClick={() => navigate('/explore')}>
-                  Book an Appointment
-                </Button>
-              </div>
-            )}
-          </div>
+          <UserBookingsCard filter="upcoming" limit={3} />
 
           {/* My Enrollments */}
           <div className="bg-card rounded-2xl border border-border p-6">
@@ -247,7 +196,7 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
         {/* Right Sidebar */}
         <div className="space-y-8">
           {/* Active Passes */}
-          <ActivePassesCard />
+          <UserPassesCard limit={3} />
 
           {/* Pending Fees */}
           {pendingFees.length > 0 && (

@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookingModal } from "@/components/booking/BookingModal";
+import { BookingWizard } from "@/components/booking/BookingWizard";
 import { MembershipPaymentModal } from "@/components/payments/MembershipPaymentModal";
 import { SubscriptionBadge } from "@/components/common/SubscriptionBadge";
 import {
@@ -723,8 +723,8 @@ export default function BusinessDetail() {
 
       <Footer />
 
-      {/* Booking Modal */}
-      <BookingModal
+      {/* Booking Wizard */}
+      <BookingWizard
         isOpen={isBookingOpen}
         onClose={() => setIsBookingOpen(false)}
         venue={{
@@ -732,7 +732,6 @@ export default function BusinessDetail() {
           name: venue.name,
           type: venue.type,
           rating: venue.rating,
-          price: venue.priceLabel,
           image: venue.image,
         }}
       />

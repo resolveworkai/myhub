@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapView } from "@/components/map/MapView";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-import { BookingModal } from "@/components/booking/BookingModal";
+import { BookingWizard } from "@/components/booking/BookingWizard";
 import { usePagination } from "@/hooks/usePagination";
 import { FilterPanel } from "@/components/explore/FilterPanel";
 import { ActiveFilters } from "@/components/explore/ActiveFilters";
@@ -550,9 +550,9 @@ export default function Explore() {
 
       <Footer />
 
-      {/* Booking Modal */}
+      {/* Booking Wizard */}
       {bookingVenue && (
-        <BookingModal
+        <BookingWizard
           isOpen={!!bookingVenue}
           onClose={() => setBookingVenue(null)}
           venue={{
@@ -560,7 +560,6 @@ export default function Explore() {
             name: bookingVenue.name,
             type: (bookingVenue.type || bookingVenue.category) as "gym" | "library" | "coaching",
             rating: bookingVenue.rating,
-            price: bookingVenue.priceLabel,
           }}
         />
       )}
