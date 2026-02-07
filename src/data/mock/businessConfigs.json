@@ -1,0 +1,92 @@
+[
+  {
+    "id": "g1",
+    "name": "FitZone Premium Gym",
+    "category": "gym",
+    "morningShift": { "start": "08:00", "end": "14:00" },
+    "eveningShift": { "start": "14:00", "end": "20:00" },
+    "maxSlotsPerSlot": 15,
+    "freeBookingsPerDay": 1,
+    "allowUnlimitedFreeBookings": false,
+    "modificationWindowWeeks": 2,
+    "modificationWindowMonths": 2,
+    "passes": {
+      "daily": { "enabled": false, "price": 299, "adminApproved": false },
+      "weekly": { "enabled": true, "price": 1499, "adminApproved": true },
+      "monthly": { "enabled": true, "price": 4999, "adminApproved": true }
+    },
+    "currency": "INR"
+  },
+  {
+    "id": "g2",
+    "name": "Iron Paradise Gym",
+    "category": "gym",
+    "morningShift": { "start": "06:00", "end": "13:00" },
+    "eveningShift": { "start": "13:00", "end": "21:00" },
+    "maxSlotsPerSlot": 20,
+    "freeBookingsPerDay": 1,
+    "allowUnlimitedFreeBookings": false,
+    "modificationWindowWeeks": 2,
+    "modificationWindowMonths": 2,
+    "passes": {
+      "daily": { "enabled": true, "price": 349, "adminApproved": true },
+      "weekly": { "enabled": true, "price": 1699, "adminApproved": true },
+      "monthly": { "enabled": true, "price": 5499, "adminApproved": true }
+    },
+    "currency": "INR"
+  },
+  {
+    "id": "g3",
+    "name": "Zen Yoga Studio",
+    "category": "gym",
+    "morningShift": { "start": "07:00", "end": "12:00" },
+    "eveningShift": { "start": "16:00", "end": "20:00" },
+    "maxSlotsPerSlot": 12,
+    "freeBookingsPerDay": 1,
+    "allowUnlimitedFreeBookings": false,
+    "modificationWindowWeeks": 1,
+    "modificationWindowMonths": 1,
+    "passes": {
+      "daily": { "enabled": false, "price": 399, "adminApproved": false },
+      "weekly": { "enabled": true, "price": 1899, "adminApproved": true },
+      "monthly": { "enabled": true, "price": 5999, "adminApproved": true }
+    },
+    "currency": "INR"
+  },
+  {
+    "id": "l1",
+    "name": "Central Library Hub",
+    "category": "library",
+    "morningShift": { "start": "08:00", "end": "14:00" },
+    "eveningShift": { "start": "14:00", "end": "21:00" },
+    "maxSlotsPerSlot": 50,
+    "freeBookingsPerDay": 1,
+    "allowUnlimitedFreeBookings": false,
+    "modificationWindowWeeks": 2,
+    "modificationWindowMonths": 2,
+    "passes": {
+      "daily": { "enabled": false, "price": 99, "adminApproved": false },
+      "weekly": { "enabled": true, "price": 499, "adminApproved": true },
+      "monthly": { "enabled": true, "price": 1499, "adminApproved": true }
+    },
+    "currency": "INR"
+  },
+  {
+    "id": "c1",
+    "name": "Elite Coaching Center",
+    "category": "coaching",
+    "morningShift": { "start": "09:00", "end": "13:00" },
+    "eveningShift": { "start": "15:00", "end": "20:00" },
+    "maxSlotsPerSlot": 25,
+    "freeBookingsPerDay": 1,
+    "allowUnlimitedFreeBookings": false,
+    "modificationWindowWeeks": 2,
+    "modificationWindowMonths": 2,
+    "passes": {
+      "daily": { "enabled": true, "price": 499, "adminApproved": true },
+      "weekly": { "enabled": true, "price": 2499, "adminApproved": true },
+      "monthly": { "enabled": true, "price": 7999, "adminApproved": true }
+    },
+    "currency": "INR"
+  }
+]
