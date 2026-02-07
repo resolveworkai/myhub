@@ -41,8 +41,8 @@ export function MembershipSelectionModal({
   const { addSubscription } = useSubscriptionStore();
   
   // Get pass configuration for this venue
+  // Note: Daily pass is excluded - users get 1 free booking per day
   const { 
-    isDailyPassActive, 
     isWeeklyPassActive, 
     isMonthlyPassActive,
     dailyPrice,
@@ -55,24 +55,13 @@ export function MembershipSelectionModal({
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi' | null>(null);
   const [showPayment, setShowPayment] = useState(false);
 
-  // Build plans array based on what's enabled
+  // Build plans array - ONLY weekly and monthly passes
+  // Daily bookings are free (1 per day), so no daily pass option
   const plans = useMemo(() => {
     const availablePlans = [];
-    
-    if (isDailyPassActive) {
-      availablePlans.push({
-        id: 'daily' as const,
-        name: t('membership.daily'),
-        description: t('membership.dailyDesc'),
-        price: venue.dailyPrice || dailyPrice,
-        period: t('membership.perDay'),
-        duration: 1,
-        savings: null,
-      });
-    }
+    const baseDaily = venue.dailyPrice || dailyPrice || 299; // Base price for savings calculation
     
     if (isWeeklyPassActive) {
-      const baseDaily = venue.dailyPrice || dailyPrice;
       const weeklyPriceVal = venue.weeklyPrice || weeklyPrice;
       availablePlans.push({
         id: 'weekly' as const,
@@ -86,7 +75,6 @@ export function MembershipSelectionModal({
     }
     
     if (isMonthlyPassActive) {
-      const baseDaily = venue.dailyPrice || dailyPrice;
       const monthlyPriceVal = venue.monthlyPrice || monthlyPrice;
       availablePlans.push({
         id: 'monthly' as const,
@@ -101,7 +89,7 @@ export function MembershipSelectionModal({
     }
     
     return availablePlans;
-  }, [isDailyPassActive, isWeeklyPassActive, isMonthlyPassActive, venue, dailyPrice, weeklyPrice, monthlyPrice, t]);
+  }, [isWeeklyPassActive, isMonthlyPassActive, venue, dailyPrice, weeklyPrice, monthlyPrice, t]);
 
   const handleProceedToPayment = () => {
     if (!selectedPlan) return;
