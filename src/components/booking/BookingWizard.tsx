@@ -32,6 +32,7 @@ import { useBookingStore } from '@/store/bookingStore';
 import { GuestAuthPrompt } from '@/components/auth/GuestAuthPrompt';
 import { PaywallModal } from './PaywallModal';
 import { PassPurchaseWizard } from './PassPurchaseWizard';
+import { sendBookingConfirmationNotifications } from '@/lib/notificationService';
 import type { ShiftType, SessionDuration } from '@/types/booking';
 
 interface BookingWizardProps {
@@ -177,7 +178,7 @@ export function BookingWizard({ isOpen, onClose, venue }: BookingWizardProps) {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      createBooking({
+      const booking = createBooking({
         passId: activePass?.id,
         userId,
         userName,
@@ -189,6 +190,17 @@ export function BookingWizard({ isOpen, onClose, venue }: BookingWizardProps) {
         startTime: selectedTime,
         duration: selectedDuration,
         isFreeBooking,
+      });
+
+      // Send notifications (SMS, Email, WhatsApp)
+      await sendBookingConfirmationNotifications({
+        booking,
+        recipient: {
+          userId,
+          userName,
+          userEmail,
+          userPhone: user && 'phone' in user ? user.phone : undefined,
+        },
       });
 
       toast.success('Booking Confirmed! 🎉', {

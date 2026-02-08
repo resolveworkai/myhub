@@ -25,6 +25,7 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { useNotificationStore } from '@/store/notificationStore';
 import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
+import { UserNotificationPreferences } from '@/components/dashboard/UserNotificationPreferences';
 import { cn } from '@/lib/utils';
 
 const profileSchema = z.object({
@@ -354,19 +355,22 @@ export default function DashboardProfile() {
           </TabsContent>
 
           {/* Notifications Tab */}
-          <TabsContent value="notifications">
+          <TabsContent value="notifications" className="space-y-6">
+            {/* Booking Notification Channels */}
+            <UserNotificationPreferences />
+
+            {/* Additional Email Preferences */}
             <div className="bg-card rounded-xl border border-border p-6 space-y-8">
               <div>
-                <h2 className="text-lg font-semibold mb-2">Email Notifications</h2>
+                <h2 className="text-lg font-semibold mb-2">Email Preferences</h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Manage which emails you receive from us.
+                  Additional email notification settings.
                 </p>
                 <div className="space-y-4">
                   {[
-                    { key: 'bookingConfirmation', label: 'Booking Confirmations', desc: 'Receive confirmation when you make a booking' },
-                    { key: 'bookingReminder', label: 'Booking Reminders', desc: 'Get reminded before your upcoming bookings' },
                     { key: 'specialOffers', label: 'Special Offers', desc: 'Receive promotional offers and discounts' },
                     { key: 'reviewRequest', label: 'Review Requests', desc: 'Get asked to review after your visits' },
+                    { key: 'newsletter', label: 'Newsletter', desc: 'Weekly updates and featured venues' },
                   ].map((item) => (
                     <div key={item.key} className="flex items-center justify-between py-2">
                       <div>
@@ -376,33 +380,6 @@ export default function DashboardProfile() {
                       <Switch
                         checked={(preferences.email as any)?.[item.key] ?? true}
                         onCheckedChange={(checked) => handleNotificationToggle('email', item.key, checked)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h2 className="text-lg font-semibold mb-2">SMS Notifications</h2>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Text message alerts for important updates.
-                </p>
-                <div className="space-y-4">
-                  {[
-                    { key: 'bookingConfirmation', label: 'Booking Confirmations', desc: 'SMS confirmation for bookings' },
-                    { key: 'bookingReminder', label: 'Booking Reminders', desc: 'SMS reminders before appointments' },
-                    { key: 'urgentAlerts', label: 'Urgent Alerts', desc: 'Critical updates about your bookings' },
-                  ].map((item) => (
-                    <div key={item.key} className="flex items-center justify-between py-2">
-                      <div>
-                        <p className="font-medium">{item.label}</p>
-                        <p className="text-sm text-muted-foreground">{item.desc}</p>
-                      </div>
-                      <Switch
-                        checked={(preferences.sms as any)?.[item.key] ?? true}
-                        onCheckedChange={(checked) => handleNotificationToggle('sms', item.key, checked)}
                       />
                     </div>
                   ))}

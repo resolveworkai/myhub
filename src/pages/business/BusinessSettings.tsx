@@ -37,6 +37,7 @@ import { LocationPicker } from "@/components/business/LocationPicker";
 import { BusinessImageUpload } from "@/components/business/BusinessImageUpload";
 import { BusinessAttributesEditor } from "@/components/business/BusinessAttributesEditor";
 import { PassConfigCard } from "@/components/business/PassConfigCard";
+import { NotificationSettingsCard } from "@/components/business/NotificationSettingsCard";
 import { cn } from "@/lib/utils";
 
 export default function BusinessSettings() {
@@ -732,11 +733,15 @@ export default function BusinessSettings() {
         </TabsContent>
 
         {/* Notifications */}
-        <TabsContent value="notifications">
+        <TabsContent value="notifications" className="space-y-6">
+          {/* Customer Notification Settings */}
+          <NotificationSettingsCard businessId={businessUser.id} />
+
+          {/* Business Owner Notifications */}
           <Card>
             <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Choose how you want to be notified</CardDescription>
+              <CardTitle>Your Notification Preferences</CardTitle>
+              <CardDescription>Choose how you want to be notified about your business</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">

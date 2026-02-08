@@ -77,7 +77,11 @@ export function Header() {
         <nav className="container mx-auto px-4 lg:px-8">
           <div className="flex h-16 lg:h-20 items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
+            <Link 
+              to="/" 
+              className="flex items-center gap-2 group"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
               <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-glow transition-shadow ${
                 isHomePage && !isScrolled 
                   ? "bg-primary-foreground/20 backdrop-blur-sm" 
