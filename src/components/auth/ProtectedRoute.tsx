@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requiredAccountType?: 'normal' | 'business';
+  requiredAccountType?: 'normal' | 'business' | 'admin';
   requireVerification?: boolean;
 }
 
@@ -48,6 +48,9 @@ export function ProtectedRoute({
     if (accountType === 'business') {
       return <Navigate to="/business-dashboard" replace />;
     }
+    if (accountType === 'admin') {
+      return <Navigate to="/admin" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -71,7 +74,7 @@ export function useCurrentUser() {
 }
 
 // Hook to require authentication
-export function useRequireAuth(requiredType?: 'normal' | 'business') {
+export function useRequireAuth(requiredType?: 'normal' | 'business' | 'admin') {
   const { isAuthenticated, accountType, user, checkAndRestoreSession } = useAuthStore();
   const location = useLocation();
 
@@ -88,7 +91,7 @@ export function useRequireAuth(requiredType?: 'normal' | 'business') {
     user,
     accountType,
     redirectPath: isAuthenticated 
-      ? (accountType === 'business' ? '/business-dashboard' : '/dashboard')
+      ? (accountType === 'business' ? '/business-dashboard' : accountType === 'admin' ? '/admin' : '/dashboard')
       : `/signin?redirect=${encodeURIComponent(location.pathname)}`,
   };
 }

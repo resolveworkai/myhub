@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, matchPath, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +52,7 @@ import {
   Server,
   Database,
   Ticket,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -68,46 +69,27 @@ import {
   Cell,
   Legend,
 } from "recharts";
-
-// Import mock data
-import businessUsersData from "@/data/mock/businessUsers.json";
-import usersData from "@/data/mock/users.json";
-import gymsData from "@/data/mock/gyms.json";
-import librariesData from "@/data/mock/libraries.json";
-import coachingData from "@/data/mock/coaching.json";
-import bookingsData from "@/data/mock/bookings.json";
 import { PassApprovalSection } from "@/components/admin/PassApprovalSection";
 import { AdminNotificationConfig } from "@/components/admin/AdminNotificationConfig";
+import {
+  getDashboardStats,
+  getBusinesses,
+  verifyBusiness,
+  suspendBusiness,
+  deleteBusiness,
+  getUsers,
+  suspendUser,
+  getAnalytics,
+  getPlatformSettings,
+  updatePlatformSetting,
+  type DashboardStats as DashboardStatsType,
+  type BusinessListItem,
+  type UserListItem,
+  type AnalyticsData,
+  type PlatformSettings,
+} from "@/lib/adminApiService";
 
-// Types
-interface BusinessUser {
-  id: string;
-  email: string;
-  businessName: string;
-  ownerName: string;
-  phone: string;
-  businessType: string;
-  registrationNumber: string;
-  verified: boolean;
-  joinDate: string;
-  subscriptionTier: string;
-  locations: string[];
-  suspended?: boolean;
-}
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  phone: string;
-  avatar: string;
-  joinDate: string;
-  location: { lat: number; lng: number; address: string };
-  favorites: string[];
-  bookings: string[];
-  preferences: { categories: string[]; priceRange: string };
-  suspended?: boolean;
-}
+// Types are now imported from adminApiService
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -121,52 +103,7 @@ const navigation = [
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
-// Calculate real stats from mock data
-const businessUsers = businessUsersData as BusinessUser[];
-const users = usersData as User[];
-const gyms = gymsData as { id: string; name: string; verified: boolean }[];
-const libraries = librariesData as { id: string; name: string; verified: boolean }[];
-const coaching = coachingData as { id: string; name: string; verified: boolean }[];
-const bookings = bookingsData as { id: string; status: string; totalPrice: number; venueType: string }[];
-
-const totalVenues = gyms.length + libraries.length + coaching.length;
-const totalBookings = bookings.length;
-const totalRevenue = bookings.reduce((sum, b) => sum + b.totalPrice, 0);
-
-const stats = [
-  {
-    name: "Total Businesses",
-    value: businessUsers.length.toString(),
-    change: `+${businessUsers.filter(b => !b.verified).length} pending`,
-    trend: "up",
-    icon: Building2,
-    color: "text-primary",
-  },
-  {
-    name: "Total Users",
-    value: users.length.toString(),
-    change: "Active",
-    trend: "up",
-    icon: Users,
-    color: "text-info",
-  },
-  {
-    name: "Total Venues",
-    value: totalVenues.toString(),
-    change: `${gyms.length}G / ${libraries.length}L / ${coaching.length}C`,
-    trend: "up",
-    icon: DollarSign,
-    color: "text-success",
-  },
-  {
-    name: "Total Bookings",
-    value: totalBookings.toString(),
-    change: `₹${totalRevenue} revenue`,
-    trend: "up",
-    icon: Activity,
-    color: "text-accent",
-  },
-];
+// Stats will be calculated from API data
 
 // Pie chart colors
 const COLORS = ["hsl(var(--primary))", "hsl(var(--info))", "hsl(var(--success))"];
@@ -175,14 +112,37 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [businessFilter, setBusinessFilter] = useState("all");
-  const [businessList, setBusinessList] = useState<BusinessUser[]>(businessUsers);
-  const [userList, setUserList] = useState<User[]>(users);
-  const [platformSettings, setPlatformSettings] = useState({
-    maintenanceMode: false,
-    emailNotifications: true,
-    autoVerification: false,
-    rateLimit: true,
+  const [loading, setLoading] = useState(true);
+  const [loadingBusinesses, setLoadingBusinesses] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  
+  // Dashboard stats
+  const [dashboardStats, setDashboardStats] = useState<DashboardStatsType | null>(null);
+  
+  // Business list
+  const [businessList, setBusinessList] = useState<BusinessListItem[]>([]);
+  const [businessPagination, setBusinessPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
   });
+  
+  // User list
+  const [userList, setUserList] = useState<UserListItem[]>([]);
+  const [userPagination, setUserPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+  });
+  
+  // Analytics
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  
+  // Platform settings
+  const [platformSettings, setPlatformSettings] = useState<PlatformSettings>({});
+  
   const location = useLocation();
 
   // Get current path for content routing.
@@ -203,82 +163,296 @@ export default function AdminDashboard() {
   const matches = (pattern: string) =>
     !!matchPath({ path: pattern, end: false }, currentPath);
 
+  // Fetch dashboard stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const stats = await getDashboardStats();
+        setDashboardStats(stats);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to load dashboard statistics",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (matches("/admin") || currentPath === "/admin") {
+      fetchStats();
+    }
+  }, [currentPath]);
+
+  // Fetch businesses
+  useEffect(() => {
+    const fetchBusinesses = async () => {
+      if (!matches("/admin/businesses")) return;
+      
+      try {
+        setLoadingBusinesses(true);
+        const result = await getBusinesses({
+          search: searchQuery || undefined,
+          businessType: businessFilter !== "all" ? businessFilter : undefined,
+          page: businessPagination.page,
+          limit: businessPagination.limit,
+        });
+        setBusinessList(result.businesses);
+        setBusinessPagination(result.pagination);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to load businesses",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingBusinesses(false);
+      }
+    };
+
+    fetchBusinesses();
+  }, [searchQuery, businessFilter, businessPagination.page, currentPath]);
+
+  // Fetch users
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!matches("/admin/users")) return;
+      
+      try {
+        setLoadingUsers(true);
+        const result = await getUsers({
+          search: searchQuery || undefined,
+          page: userPagination.page,
+          limit: userPagination.limit,
+        });
+        setUserList(result.users);
+        setUserPagination(result.pagination);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to load users",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchUsers();
+  }, [searchQuery, userPagination.page, currentPath]);
+
+  // Fetch analytics
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      if (!matches("/admin/analytics")) return;
+      
+      try {
+        const analyticsData = await getAnalytics('month');
+        setAnalytics(analyticsData);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to load analytics",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchAnalytics();
+  }, [currentPath]);
+
+  // Fetch platform settings
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!matches("/admin/settings")) return;
+      
+      try {
+        const settings = await getPlatformSettings();
+        setPlatformSettings(settings);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to load settings",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchSettings();
+  }, [currentPath]);
+
   // Business actions
-  const handleVerifyBusiness = (id: string) => {
-    setBusinessList(prev => 
-      prev.map(b => b.id === id ? { ...b, verified: true } : b)
-    );
-    toast({
-      title: "Business Verified",
-      description: "Business has been verified successfully.",
-    });
+  const handleVerifyBusiness = async (id: string) => {
+    try {
+      await verifyBusiness(id);
+      // Refresh business list
+      const result = await getBusinesses({
+        search: searchQuery || undefined,
+        businessType: businessFilter !== "all" ? businessFilter : undefined,
+        page: businessPagination.page,
+        limit: businessPagination.limit,
+      });
+      setBusinessList(result.businesses);
+      toast({
+        title: "Business Verified",
+        description: "Business has been verified successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to verify business",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleSuspendBusiness = (id: string) => {
-    setBusinessList(prev => 
-      prev.map(b => b.id === id ? { ...b, suspended: !b.suspended } : b)
-    );
-    toast({
-      title: "Status Updated",
-      description: "Business status has been updated.",
-    });
+  const handleSuspendBusiness = async (id: string) => {
+    try {
+      const business = businessList.find(b => b.id === id);
+      const suspend = business?.accountStatus !== 'suspended';
+      await suspendBusiness(id, suspend);
+      // Refresh business list
+      const result = await getBusinesses({
+        search: searchQuery || undefined,
+        businessType: businessFilter !== "all" ? businessFilter : undefined,
+        page: businessPagination.page,
+        limit: businessPagination.limit,
+      });
+      setBusinessList(result.businesses);
+      toast({
+        title: "Status Updated",
+        description: suspend ? "Business suspended successfully." : "Business activated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update business status",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteBusiness = (id: string) => {
-    setBusinessList(prev => prev.filter(b => b.id !== id));
-    toast({
-      title: "Business Deleted",
-      description: "Business has been removed from the platform.",
-      variant: "destructive",
-    });
+  const handleDeleteBusiness = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this business? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      await deleteBusiness(id);
+      // Refresh business list
+      const result = await getBusinesses({
+        search: searchQuery || undefined,
+        businessType: businessFilter !== "all" ? businessFilter : undefined,
+        page: businessPagination.page,
+        limit: businessPagination.limit,
+      });
+      setBusinessList(result.businesses);
+      toast({
+        title: "Business Deleted",
+        description: "Business has been removed from the platform.",
+        variant: "destructive",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete business",
+        variant: "destructive",
+      });
+    }
   };
 
   // User actions
-  const handleSuspendUser = (id: string) => {
-    setUserList(prev => 
-      prev.map(u => u.id === id ? { ...u, suspended: !u.suspended } : u)
-    );
-    toast({
-      title: "Status Updated",
-      description: "User status has been updated.",
-    });
+  const handleSuspendUser = async (id: string) => {
+    try {
+      const user = userList.find(u => u.id === id);
+      const suspend = user?.accountStatus !== 'suspended';
+      await suspendUser(id, suspend);
+      // Refresh user list
+      const result = await getUsers({
+        search: searchQuery || undefined,
+        page: userPagination.page,
+        limit: userPagination.limit,
+      });
+      setUserList(result.users);
+      toast({
+        title: "Status Updated",
+        description: suspend ? "User suspended successfully." : "User activated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update user status",
+        variant: "destructive",
+      });
+    }
   };
 
   // Settings actions
-  const handleSettingChange = (setting: keyof typeof platformSettings) => {
-    setPlatformSettings(prev => ({ ...prev, [setting]: !prev[setting] }));
-    toast({
-      title: "Setting Updated",
-      description: `${setting} has been ${platformSettings[setting] ? 'disabled' : 'enabled'}.`,
-    });
+  const handleSettingChange = async (setting: string, value: boolean) => {
+    try {
+      await updatePlatformSetting(setting, value);
+      setPlatformSettings(prev => ({ ...prev, [setting]: value }));
+      toast({
+        title: "Setting Updated",
+        description: `${setting} has been ${value ? 'enabled' : 'disabled'}.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update setting",
+        variant: "destructive",
+      });
+    }
   };
 
-  // Filter businesses based on search and filter
-  const filteredBusinesses = businessList.filter(b => {
-    const matchesSearch = b.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         b.ownerName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = businessFilter === "all" || b.businessType === businessFilter;
-    return matchesSearch && matchesFilter;
-  });
+  // Calculate stats from dashboard data
+  const stats = dashboardStats ? [
+    {
+      name: "Total Businesses",
+      value: dashboardStats.totalBusinesses.toString(),
+      change: `+${dashboardStats.pendingBusinesses} pending`,
+      trend: "up",
+      icon: Building2,
+      color: "text-primary",
+    },
+    {
+      name: "Total Users",
+      value: dashboardStats.totalUsers.toString(),
+      change: `${dashboardStats.activeUsers} active`,
+      trend: "up",
+      icon: Users,
+      color: "text-info",
+    },
+    {
+      name: "Total Venues",
+      value: dashboardStats.totalVenues.toString(),
+      change: "All types",
+      trend: "up",
+      icon: DollarSign,
+      color: "text-success",
+    },
+    {
+      name: "Total Bookings",
+      value: dashboardStats.totalBookings.toString(),
+      change: "Total count",
+      trend: "up",
+      icon: Activity,
+      color: "text-accent",
+    },
+  ] : [];
 
-  // Filter users based on search
-  const filteredUsers = userList.filter(u => 
-    u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Analytics data from API
+  const venueDistribution = analytics?.venueDistribution.map(v => ({
+    name: v.type.charAt(0).toUpperCase() + v.type.slice(1),
+    value: v.count,
+  })) || [];
 
-  // Analytics data
-  const venueDistribution = [
-    { name: "Gyms", value: gyms.length },
-    { name: "Libraries", value: libraries.length },
-    { name: "Coaching", value: coaching.length },
-  ];
-
-  const bookingsByType = [
-    { name: "Gym", bookings: bookings.filter(b => b.venueType === "gym").length },
-    { name: "Library", bookings: bookings.filter(b => b.venueType === "library").length },
-    { name: "Coaching", bookings: bookings.filter(b => b.venueType === "coaching").length },
-  ];
+  const bookingsByType = analytics?.bookingsByType.map(b => ({
+    name: b.type.charAt(0).toUpperCase() + b.type.slice(1),
+    bookings: b.count,
+  })) || [];
 
   // Localization data
   const languages = [
@@ -345,72 +519,81 @@ export default function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredBusinesses.map((business) => (
-                  <TableRow key={business.id}>
-                    <TableCell className="font-medium">{business.businessName}</TableCell>
-                    <TableCell>{business.ownerName}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">
-                        {business.businessType}
-                      </Badge>
+                {loadingBusinesses ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                     </TableCell>
-                    <TableCell>
-                      {business.suspended ? (
-                        <Badge variant="destructive">Suspended</Badge>
-                      ) : business.verified ? (
-                        <Badge variant="success">Verified</Badge>
-                      ) : (
-                        <Badge variant="warning">Pending</Badge>
-                      )}
+                  </TableRow>
+                ) : businessList.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      No businesses found matching your criteria.
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {business.subscriptionTier}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {!business.verified && !business.suspended && (
+                  </TableRow>
+                ) : (
+                  businessList.map((business) => (
+                    <TableRow key={business.id}>
+                      <TableCell className="font-medium">{business.businessName}</TableCell>
+                      <TableCell>{business.ownerName}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="capitalize">
+                          {business.businessType}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {business.accountStatus === 'suspended' ? (
+                          <Badge variant="destructive">Suspended</Badge>
+                        ) : business.verificationStatus === 'verified' ? (
+                          <Badge variant="success">Verified</Badge>
+                        ) : (
+                          <Badge variant="warning">Pending</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="capitalize">
+                          {business.subscriptionTier}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          {business.verificationStatus !== 'verified' && business.accountStatus !== 'suspended' && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon-sm"
+                              onClick={() => handleVerifyBusiness(business.id)}
+                              title="Verify"
+                            >
+                              <Check className="h-4 w-4 text-success" />
+                            </Button>
+                          )}
                           <Button 
                             variant="ghost" 
                             size="icon-sm"
-                            onClick={() => handleVerifyBusiness(business.id)}
-                            title="Verify"
+                            onClick={() => handleSuspendBusiness(business.id)}
+                            title={business.accountStatus === 'suspended' ? "Activate" : "Suspend"}
                           >
-                            <Check className="h-4 w-4 text-success" />
+                            {business.accountStatus === 'suspended' ? (
+                              <CheckCircle2 className="h-4 w-4 text-success" />
+                            ) : (
+                              <Ban className="h-4 w-4 text-warning" />
+                            )}
                           </Button>
-                        )}
-                        <Button 
-                          variant="ghost" 
-                          size="icon-sm"
-                          onClick={() => handleSuspendBusiness(business.id)}
-                          title={business.suspended ? "Activate" : "Suspend"}
-                        >
-                          {business.suspended ? (
-                            <CheckCircle2 className="h-4 w-4 text-success" />
-                          ) : (
-                            <Ban className="h-4 w-4 text-warning" />
-                          )}
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon-sm"
-                          onClick={() => handleDeleteBusiness(business.id)}
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          <Button 
+                            variant="ghost" 
+                            size="icon-sm"
+                            onClick={() => handleDeleteBusiness(business.id)}
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
-            {filteredBusinesses.length === 0 && (
-              <div className="p-8 text-center text-muted-foreground">
-                No businesses found matching your criteria.
-              </div>
-            )}
           </div>
         </div>
       );
@@ -451,56 +634,65 @@ export default function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={user.avatar} 
-                          alt={user.name}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <span className="font-medium">{user.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{user.location.address}</TableCell>
-                    <TableCell>{new Date(user.joinDate).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      {user.suspended ? (
-                        <Badge variant="destructive">Suspended</Badge>
-                      ) : (
-                        <Badge variant="success">Active</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon-sm" title="View Profile">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon-sm"
-                          onClick={() => handleSuspendUser(user.id)}
-                          title={user.suspended ? "Activate" : "Suspend"}
-                        >
-                          {user.suspended ? (
-                            <CheckCircle2 className="h-4 w-4 text-success" />
-                          ) : (
-                            <Ban className="h-4 w-4 text-warning" />
-                          )}
-                        </Button>
-                      </div>
+                {loadingUsers ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : userList.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      No users found matching your criteria.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  userList.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-primary font-medium text-sm">
+                              {user.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <span className="font-medium">{user.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{user.phone}</TableCell>
+                      <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {user.accountStatus === 'suspended' ? (
+                          <Badge variant="destructive">Suspended</Badge>
+                        ) : (
+                          <Badge variant="success">Active</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon-sm" title="View Profile">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon-sm"
+                            onClick={() => handleSuspendUser(user.id)}
+                            title={user.accountStatus === 'suspended' ? "Activate" : "Suspend"}
+                          >
+                            {user.accountStatus === 'suspended' ? (
+                              <CheckCircle2 className="h-4 w-4 text-success" />
+                            ) : (
+                              <Ban className="h-4 w-4 text-warning" />
+                            )}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
-            {filteredUsers.length === 0 && (
-              <div className="p-8 text-center text-muted-foreground">
-                No users found matching your criteria.
-              </div>
-            )}
           </div>
         </div>
       );
@@ -518,6 +710,16 @@ export default function AdminDashboard() {
 
     // Analytics
     if (matches("/admin/analytics") || matches("/admin/analytics/*")) {
+      const analyticsBookingsByType = analytics?.bookingsByType.map(b => ({
+        name: b.type.charAt(0).toUpperCase() + b.type.slice(1),
+        bookings: b.count,
+      })) || [];
+
+      const analyticsVenueDistribution = analytics?.venueDistribution.map(v => ({
+        name: v.type.charAt(0).toUpperCase() + v.type.slice(1),
+        value: v.count,
+      })) || [];
+
       return (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -549,54 +751,72 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6">
-            <div className="bg-card rounded-2xl border border-border p-6">
-              <h2 className="font-display text-lg font-semibold mb-4">Bookings by Category</h2>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={bookingsByType}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "hsl(var(--card))", 
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px"
-                      }}
-                    />
-                    <Bar dataKey="bookings" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+          {analytics ? (
+            <div className="grid lg:grid-cols-2 gap-6">
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <h2 className="font-display text-lg font-semibold mb-4">Bookings by Category</h2>
+                {analyticsBookingsByType.length > 0 ? (
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={analyticsBookingsByType}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                        <YAxis stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: "hsl(var(--card))", 
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px"
+                          }}
+                        />
+                        <Bar dataKey="bookings" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-64 flex items-center justify-center text-muted-foreground">
+                    No booking data available
+                  </div>
+                )}
               </div>
-            </div>
 
-            <div className="bg-card rounded-2xl border border-border p-6">
-              <h2 className="font-display text-lg font-semibold mb-4">Venue Distribution</h2>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={venueDistribution}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label
-                    >
-                      {venueDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <h2 className="font-display text-lg font-semibold mb-4">Venue Distribution</h2>
+                {analyticsVenueDistribution.length > 0 ? (
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={analyticsVenueDistribution}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          paddingAngle={5}
+                          dataKey="value"
+                          label
+                        >
+                          {analyticsVenueDistribution.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-64 flex items-center justify-center text-muted-foreground">
+                    No venue data available
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          )}
         </div>
       );
     }
@@ -765,8 +985,8 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 <Switch 
-                  checked={platformSettings.maintenanceMode}
-                  onCheckedChange={() => handleSettingChange('maintenanceMode')}
+                  checked={platformSettings.maintenanceMode || false}
+                  onCheckedChange={(checked) => handleSettingChange('maintenanceMode', checked)}
                 />
               </div>
 
@@ -781,8 +1001,8 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 <Switch 
-                  checked={platformSettings.emailNotifications}
-                  onCheckedChange={() => handleSettingChange('emailNotifications')}
+                  checked={platformSettings.emailNotifications !== false}
+                  onCheckedChange={(checked) => handleSettingChange('emailNotifications', checked)}
                 />
               </div>
 
@@ -797,8 +1017,8 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 <Switch 
-                  checked={platformSettings.autoVerification}
-                  onCheckedChange={() => handleSettingChange('autoVerification')}
+                  checked={platformSettings.autoVerification || false}
+                  onCheckedChange={(checked) => handleSettingChange('autoVerification', checked)}
                 />
               </div>
 
@@ -813,8 +1033,8 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 <Switch 
-                  checked={platformSettings.rateLimit}
-                  onCheckedChange={() => handleSettingChange('rateLimit')}
+                  checked={platformSettings.rateLimit !== false}
+                  onCheckedChange={(checked) => handleSettingChange('rateLimit', checked)}
                 />
               </div>
             </div>
@@ -833,11 +1053,11 @@ export default function AdminDashboard() {
               </div>
               <div className="flex justify-between py-2 border-b border-border">
                 <span className="text-muted-foreground">Total Businesses</span>
-                <span className="font-medium">{businessUsers.length}</span>
+                <span className="font-medium">{dashboardStats?.totalBusinesses || 0}</span>
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-muted-foreground">Total Users</span>
-                <span className="font-medium">{users.length}</span>
+                <span className="font-medium">{dashboardStats?.totalUsers || 0}</span>
               </div>
             </div>
           </div>
@@ -856,21 +1076,31 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <div key={stat.name} className="p-6 rounded-2xl bg-card border border-border">
-              <div className="flex items-center justify-between mb-4">
-                <stat.icon className={cn("h-8 w-8", stat.color)} />
-                <div className="flex items-center gap-1 text-sm font-medium text-success">
-                  <TrendingUp className="h-4 w-4" />
-                  {stat.change}
-                </div>
+        {loading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="p-6 rounded-2xl bg-card border border-border">
+                <Loader2 className="h-6 w-6 animate-spin" />
               </div>
-              <div className="text-2xl font-bold mb-1">{stat.value}</div>
-              <div className="text-sm text-muted-foreground">{stat.name}</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {stats.map((stat) => (
+              <div key={stat.name} className="p-6 rounded-2xl bg-card border border-border">
+                <div className="flex items-center justify-between mb-4">
+                  <stat.icon className={cn("h-8 w-8", stat.color)} />
+                  <div className="flex items-center gap-1 text-sm font-medium text-success">
+                    <TrendingUp className="h-4 w-4" />
+                    {stat.change}
+                  </div>
+                </div>
+                <div className="text-2xl font-bold mb-1">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.name}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Recent Businesses */}
@@ -882,7 +1112,7 @@ export default function AdminDashboard() {
               </Link>
             </div>
             <div className="space-y-4">
-              {businessUsers.slice(0, 4).map((business) => (
+              {dashboardStats?.recentBusinesses.slice(0, 4).map((business) => (
                 <div
                   key={business.id}
                   className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
@@ -898,11 +1128,11 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
-                  <Badge variant={business.verified ? "success" : "warning"}>
-                    {business.verified ? "verified" : "pending"}
+                  <Badge variant={business.verificationStatus === 'verified' ? "success" : "warning"}>
+                    {business.verificationStatus === 'verified' ? "verified" : "pending"}
                   </Badge>
                 </div>
-              ))}
+              )) || <div className="text-sm text-muted-foreground">No recent businesses</div>}
             </div>
           </div>
 
@@ -915,25 +1145,27 @@ export default function AdminDashboard() {
               </Link>
             </div>
             <div className="space-y-4">
-              {users.slice(0, 4).map((user) => (
+              {dashboardStats?.recentUsers.slice(0, 4).map((user) => (
                 <div
                   key={user.id}
                   className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
                 >
                   <div className="flex items-center gap-4">
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-primary font-medium">
+                        {user.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
                     <div>
                       <div className="font-medium">{user.name}</div>
                       <div className="text-sm text-muted-foreground">{user.email}</div>
                     </div>
                   </div>
-                  <Badge variant="success">active</Badge>
+                  <Badge variant={user.accountStatus === 'active' ? "success" : "destructive"}>
+                    {user.accountStatus}
+                  </Badge>
                 </div>
-              ))}
+              )) || <div className="text-sm text-muted-foreground">No recent users</div>}
             </div>
           </div>
 
@@ -945,7 +1177,7 @@ export default function AdminDashboard() {
                 { name: "API Response Time", value: "124ms", status: "good" },
                 { name: "Database Load", value: "42%", status: "good" },
                 { name: "Storage Usage", value: "68%", status: "warning" },
-                { name: "Active Connections", value: totalBookings.toString(), status: "good" },
+                { name: "Active Connections", value: dashboardStats?.totalBookings.toString() || "0", status: "good" },
               ].map((metric) => (
                 <div key={metric.name} className="flex items-center justify-between">
                   <span className="text-muted-foreground">{metric.name}</span>

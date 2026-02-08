@@ -185,12 +185,36 @@ export interface BusinessUser {
   }[];
 }
 
-export type AuthUser = User | BusinessUser;
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  phone: string;
+  avatar: string;
+  joinDate: string;
+  location: UserLocation;
+  favorites: string[];
+  bookings: string[];
+  preferences: {
+    categories: string[];
+    priceRange: string;
+  };
+  accountType: 'admin';
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  marketingConsent: boolean;
+  lastLogin: string | null;
+  accountStatus: 'active' | 'suspended';
+  failedLoginAttempts: number;
+  lockedUntil: string | null;
+}
+
+export type AuthUser = User | BusinessUser | AdminUser;
 
 interface AuthState {
   isAuthenticated: boolean;
   user: AuthUser | null;
-  accountType: 'normal' | 'business' | null;
+  accountType: 'normal' | 'business' | 'admin' | null;
   token: string | null;
   loading: boolean;
   error: string | null;
@@ -321,7 +345,7 @@ export const useAuthStore = create<AuthState>()(
         const { lastActivityTime, accountType, isAuthenticated } = get();
         if (!isAuthenticated) return false;
         
-        const timeout = accountType === 'business' 
+        const timeout = accountType === 'business' || accountType === 'admin' 
           ? INACTIVITY_TIMEOUT_BUSINESS 
           : INACTIVITY_TIMEOUT_NORMAL;
         

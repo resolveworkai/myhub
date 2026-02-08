@@ -1,8 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -27,255 +37,215 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  Building2
+  Building2,
+  Loader2,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { usePassConfigStore, PassConfig } from "@/store/passConfigStore";
-import businessUsersData from "@/data/mock/businessUsers.json";
 import { cn } from "@/lib/utils";
-
-interface BusinessUser {
-  id: string;
-  businessName: string;
-  ownerName: string;
-  businessType: string;
-  locations: string[];
-}
+import {
+  getPassConfigurations,
+  createPassConfiguration,
+  updatePassConfiguration,
+  deletePassConfiguration,
+  getBusinesses,
+  type PassConfiguration,
+  type BusinessListItem,
+} from "@/lib/adminApiService";
 
 export function PassApprovalSection() {
-  const { 
-    configs, 
-    getConfig, 
-    approvePass, 
-    rejectPass, 
-    approveAllPending, 
-    rejectAllPending,
-    updatePassConfig 
-  } = usePassConfigStore();
-  
-  const [selectedBusiness, setSelectedBusiness] = useState<string | null>(null);
+  const [passConfigs, setPassConfigs] = useState<PassConfiguration[]>([]);
+  const [businesses, setBusinesses] = useState<BusinessListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedConfig, setSelectedConfig] = useState<PassConfiguration | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  
-  const businessUsers = businessUsersData as BusinessUser[];
-  
-  // Get all businesses with their pass configs
-  const businessConfigs = businessUsers.map(business => ({
-    ...business,
-    config: getConfig(business.locations[0] || business.id),
-  }));
-  
-  // Filter to show pending approvals first
-  const pendingFirst = [...businessConfigs].sort((a, b) => {
-    if (a.config.pendingApproval && !b.config.pendingApproval) return -1;
-    if (!a.config.pendingApproval && b.config.pendingApproval) return 1;
-    return 0;
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [newPassData, setNewPassData] = useState({
+    name: '',
+    description: '',
+    passType: 'daily' as 'daily' | 'weekly' | 'monthly' | 'custom',
+    durationDays: 1,
+    price: 0,
   });
 
-  const handleApprovePass = (businessId: string, passType: 'daily' | 'weekly' | 'monthly') => {
-    approvePass(businessId, passType);
-    toast.success(`${passType.charAt(0).toUpperCase() + passType.slice(1)} pass approved`);
-  };
+  // Fetch pass configurations and businesses
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [configs, businessesResult] = await Promise.all([
+          getPassConfigurations(),
+          getBusinesses({ limit: 1000 }),
+        ]);
+        setPassConfigs(configs);
+        setBusinesses(businessesResult.businesses);
+      } catch (error: any) {
+      toast.error(error.message || "Failed to load pass configurations");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleRejectPass = (businessId: string, passType: 'daily' | 'weekly' | 'monthly') => {
-    rejectPass(businessId, passType);
-    toast.info(`${passType.charAt(0).toUpperCase() + passType.slice(1)} pass rejected`);
-  };
+    fetchData();
+  }, []);
 
-  const handleApproveAll = (businessId: string) => {
-    approveAllPending(businessId);
-    toast.success("All pending passes approved");
-  };
+  const handleCreatePass = async () => {
+    try {
+      if (!newPassData.name || !newPassData.passType || !newPassData.durationDays || !newPassData.price) {
+      toast.error("Please fill in all required fields");
+        return;
+      }
 
-  const handleRejectAll = (businessId: string) => {
-    rejectAllPending(businessId);
-    toast.info("All pending passes rejected");
-  };
-
-  const handleTogglePassDirect = (businessId: string, passType: 'daily' | 'weekly' | 'monthly', enabled: boolean) => {
-    const config = getConfig(businessId);
-    const updates: Partial<PassConfig> = {};
-    
-    switch (passType) {
-      case 'daily':
-        updates.dailyPassEnabled = enabled;
-        updates.dailyAdminApproved = enabled;
-        break;
-      case 'weekly':
-        updates.weeklyPassEnabled = enabled;
-        updates.weeklyAdminApproved = enabled;
-        break;
-      case 'monthly':
-        updates.monthlyPassEnabled = enabled;
-        updates.monthlyAdminApproved = enabled;
-        break;
+      const newConfig = await createPassConfiguration(newPassData);
+      setPassConfigs(prev => [...prev, newConfig]);
+      setCreateDialogOpen(false);
+      setNewPassData({
+        name: '',
+        description: '',
+        passType: 'daily',
+        durationDays: 1,
+        price: 0,
+      });
+      toast.success("Pass configuration created successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create pass configuration");
     }
-    
-    updatePassConfig(businessId, updates);
-    toast.success(`${passType.charAt(0).toUpperCase() + passType.slice(1)} pass ${enabled ? 'enabled' : 'disabled'}`);
   };
 
-  const getPassStatus = (enabled: boolean, approved: boolean) => {
-    if (!enabled) return { label: "Off", variant: "secondary" as const };
-    if (approved) return { label: "Active", variant: "success" as const };
-    return { label: "Pending", variant: "warning" as const };
+  const handleUpdatePass = async (id: string, updates: Partial<PassConfiguration>) => {
+    try {
+      const updated = await updatePassConfiguration(id, updates);
+      setPassConfigs(prev => prev.map(c => c.id === id ? updated : c));
+      toast.success("Pass configuration updated successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update pass configuration");
+    }
   };
 
-  const selectedBusinessData = selectedBusiness 
-    ? businessConfigs.find(b => b.locations[0] === selectedBusiness || b.id === selectedBusiness)
-    : null;
+  const handleDeletePass = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this pass configuration?")) {
+      return;
+    }
+
+    try {
+      await deletePassConfiguration(id);
+      setPassConfigs(prev => prev.filter(c => c.id !== id));
+      toast.success("Pass configuration deleted successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete pass configuration");
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-3">
-          <Ticket className="h-7 w-7 text-primary" />
-          Pass Management
-        </h1>
-        <p className="text-muted-foreground">
-          Approve or reject pass configurations for businesses. Toggle passes directly or review pending requests.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-3">
+            <Ticket className="h-7 w-7 text-primary" />
+            Pass Management
+          </h1>
+          <p className="text-muted-foreground">
+            Manage pass configurations for the platform
+          </p>
+        </div>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Pass
+        </Button>
       </div>
 
-      {/* Pending Approvals Summary */}
-      {pendingFirst.some(b => b.config.pendingApproval) && (
-        <Card className="border-warning bg-warning/5">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-warning" />
-              <div>
-                <p className="font-medium">Pending Approvals</p>
-                <p className="text-sm text-muted-foreground">
-                  {pendingFirst.filter(b => b.config.pendingApproval).length} business(es) have pending pass configurations
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Business Pass Table */}
+      {/* Pass Configurations Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Business Pass Configurations</CardTitle>
+          <CardTitle>Pass Configurations</CardTitle>
           <CardDescription>
-            Manage which pass types are available for each business
+            Manage pass types and their pricing
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Business</TableHead>
-                  <TableHead className="text-center">Daily</TableHead>
-                  <TableHead className="text-center">Weekly</TableHead>
-                  <TableHead className="text-center">Monthly</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingFirst.map((business) => {
-                  const config = business.config;
-                  const venueId = business.locations[0] || business.id;
-                  const dailyStatus = getPassStatus(config.dailyPassEnabled, config.dailyAdminApproved);
-                  const weeklyStatus = getPassStatus(config.weeklyPassEnabled, config.weeklyAdminApproved);
-                  const monthlyStatus = getPassStatus(config.monthlyPassEnabled, config.monthlyAdminApproved);
-                  
-                  return (
-                    <TableRow key={business.id} className={cn(config.pendingApproval && "bg-warning/5")}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <Building2 className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{business.businessName}</p>
-                            <p className="text-xs text-muted-foreground capitalize">{business.businessType}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <Switch
-                            checked={config.dailyPassEnabled && config.dailyAdminApproved}
-                            onCheckedChange={(checked) => handleTogglePassDirect(venueId, 'daily', checked)}
-                          />
-                          <span className="text-xs text-muted-foreground">₹{config.dailyPrice}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <Switch
-                            checked={config.weeklyPassEnabled && config.weeklyAdminApproved}
-                            onCheckedChange={(checked) => handleTogglePassDirect(venueId, 'weekly', checked)}
-                          />
-                          <span className="text-xs text-muted-foreground">₹{config.weeklyPrice}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <Switch
-                            checked={config.monthlyPassEnabled && config.monthlyAdminApproved}
-                            onCheckedChange={(checked) => handleTogglePassDirect(venueId, 'monthly', checked)}
-                          />
-                          <span className="text-xs text-muted-foreground">₹{config.monthlyPrice}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {config.pendingApproval ? (
-                          <Badge variant="warning">
-                            <Clock className="h-3 w-3 mr-1" />
-                            Pending
-                          </Badge>
-                        ) : (
-                          <Badge variant="success">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Active
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => {
-                              setSelectedBusiness(venueId);
-                              setDetailsOpen(true);
-                            }}
-                            title="View Details"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {config.pendingApproval && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                onClick={() => handleApproveAll(venueId)}
-                                title="Approve All"
-                              >
-                                <Check className="h-4 w-4 text-success" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                onClick={() => handleRejectAll(venueId)}
-                                title="Reject All"
-                              >
-                                <X className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {passConfigs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        No pass configurations found. Create one to get started.
                       </TableCell>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                  ) : (
+                    passConfigs.map((config) => (
+                      <TableRow key={config.id}>
+                        <TableCell className="font-medium">{config.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="capitalize">
+                            {config.passType}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{config.durationDays} days</TableCell>
+                        <TableCell>₹{config.price}</TableCell>
+                        <TableCell>
+                          <Badge variant={config.isActive ? "success" : "secondary"}>
+                            {config.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => {
+                                setSelectedConfig(config);
+                                setDetailsOpen(true);
+                              }}
+                              title="View Details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => handleUpdatePass(config.id, { isActive: !config.isActive })}
+                              title={config.isActive ? "Deactivate" : "Activate"}
+                            >
+                              {config.isActive ? (
+                                <XCircle className="h-4 w-4 text-warning" />
+                              ) : (
+                                <CheckCircle2 className="h-4 w-4 text-success" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => handleDeletePass(config.id)}
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -284,63 +254,128 @@ export function PassApprovalSection() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <IndianRupee className="h-5 w-5 text-primary" />
+              <Ticket className="h-5 w-5 text-primary" />
               Pass Configuration Details
             </DialogTitle>
             <DialogDescription>
-              {selectedBusinessData?.businessName}
+              {selectedConfig?.name}
             </DialogDescription>
           </DialogHeader>
           
-          {selectedBusinessData && (
+          {selectedConfig && (
             <div className="space-y-4">
-              {[
-                { type: 'daily' as const, label: 'Daily Pass', enabled: selectedBusinessData.config.dailyPassEnabled, approved: selectedBusinessData.config.dailyAdminApproved, price: selectedBusinessData.config.dailyPrice },
-                { type: 'weekly' as const, label: 'Weekly Pass', enabled: selectedBusinessData.config.weeklyPassEnabled, approved: selectedBusinessData.config.weeklyAdminApproved, price: selectedBusinessData.config.weeklyPrice },
-                { type: 'monthly' as const, label: 'Monthly Pass', enabled: selectedBusinessData.config.monthlyPassEnabled, approved: selectedBusinessData.config.monthlyAdminApproved, price: selectedBusinessData.config.monthlyPrice },
-              ].map((pass) => {
-                const status = getPassStatus(pass.enabled, pass.approved);
-                const isPending = pass.enabled && !pass.approved;
-                
-                return (
-                  <div key={pass.type} className={cn(
-                    "p-4 rounded-xl border",
-                    isPending && "border-warning bg-warning/5"
-                  )}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{pass.label}</p>
-                        <p className="text-sm text-muted-foreground">₹{pass.price}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={status.variant}>{status.label}</Badge>
-                        {isPending && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 text-success border-success hover:bg-success/10"
-                              onClick={() => handleApprovePass(selectedBusiness!, pass.type)}
-                            >
-                              <CheckCircle2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 text-destructive border-destructive hover:bg-destructive/10"
-                              onClick={() => handleRejectPass(selectedBusiness!, pass.type)}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
+              <div className="p-4 rounded-xl border">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Type:</span>
+                    <Badge variant="secondary" className="capitalize">
+                      {selectedConfig.passType}
+                    </Badge>
                   </div>
-                );
-              })}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Duration:</span>
+                    <span className="font-medium">{selectedConfig.durationDays} days</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Price:</span>
+                    <span className="font-medium">₹{selectedConfig.price}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Status:</span>
+                    <Badge variant={selectedConfig.isActive ? "success" : "secondary"}>
+                      {selectedConfig.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                  {selectedConfig.description && (
+                    <div className="pt-2 border-t">
+                      <span className="text-muted-foreground">Description:</span>
+                      <p className="mt-1 text-sm">{selectedConfig.description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Pass Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Pass Configuration</DialogTitle>
+            <DialogDescription>
+              Create a new pass type for the platform
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label>Name *</Label>
+              <Input
+                value={newPassData.name}
+                onChange={(e) => setNewPassData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="e.g., Monthly Premium"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                value={newPassData.description}
+                onChange={(e) => setNewPassData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Optional description"
+                rows={3}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Pass Type *</Label>
+              <Select
+                value={newPassData.passType}
+                onValueChange={(value) => setNewPassData(prev => ({ ...prev, passType: value as 'daily' | 'weekly' | 'monthly' | 'custom' }))}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select pass type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Duration (Days) *</Label>
+              <Input
+                type="number"
+                value={newPassData.durationDays}
+                onChange={(e) => setNewPassData(prev => ({ ...prev, durationDays: parseInt(e.target.value) || 1 }))}
+                min="1"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Price (₹) *</Label>
+              <Input
+                type="number"
+                value={newPassData.price}
+                onChange={(e) => setNewPassData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                min="0"
+                step="0.01"
+                className="mt-1"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreatePass}>
+                Create Pass
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

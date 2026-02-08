@@ -62,7 +62,7 @@ interface UserRecord {
   email: string;
   name?: string;
   business_name?: string;
-  account_type: 'user' | 'business_user';
+  account_type: 'user' | 'business_user' | 'admin';
   email_verified: boolean;
   account_status: string;
   password_hash: string;
@@ -331,10 +331,15 @@ class AuthService {
           SELECT id, email, NULL as name, business_name, 'business_user' as account_type,
                  email_verified, account_status, password_hash, failed_login_attempts, locked_until
           FROM business_users WHERE email = $1 AND deleted_at IS NULL
+          UNION ALL
+          SELECT id, email, name, NULL as business_name, 'admin' as account_type,
+                 TRUE as email_verified, account_status, password_hash, failed_login_attempts, locked_until
+          FROM admin_users WHERE email = $1 AND deleted_at IS NULL
           LIMIT 1
         `;
         queryParams = [identifier.toLowerCase()];
       } else {
+        // Admin users don't have phone, so only check users and business_users
         const normalizedPhone = identifier.replace(/\D/g, '');
         userQuery = `
           SELECT id, email, name, NULL as business_name, 'user' as account_type,
@@ -369,12 +374,15 @@ class AuthService {
           );
         } else {
           // Unlock account
-          await client.query(
-            `UPDATE ${userRecord.account_type === 'user' ? 'users' : 'business_users'}
-             SET locked_until = NULL, failed_login_attempts = 0
-             WHERE id = $1`,
-            [userRecord.id]
-          );
+          let updateQuery: string;
+          if (userRecord.account_type === 'user') {
+            updateQuery = 'UPDATE users SET locked_until = NULL, failed_login_attempts = 0 WHERE id = $1';
+          } else if (userRecord.account_type === 'business_user') {
+            updateQuery = 'UPDATE business_users SET locked_until = NULL, failed_login_attempts = 0 WHERE id = $1';
+          } else {
+            updateQuery = 'UPDATE admin_users SET locked_until = NULL, failed_login_attempts = 0 WHERE id = $1';
+          }
+          await client.query(updateQuery, [userRecord.id]);
         }
       }
 
@@ -402,24 +410,32 @@ class AuthService {
           const lockUntil = new Date();
           lockUntil.setMinutes(lockUntil.getMinutes() + config.security.accountLockoutDurationMinutes);
 
-          await client.query(
-            `UPDATE ${userRecord.account_type === 'user' ? 'users' : 'business_users'}
-             SET failed_login_attempts = $1, locked_until = $2
-             WHERE id = $3`,
-            [newAttempts, lockUntil, userRecord.id]
-          );
+          let updateQuery: string;
+          if (userRecord.account_type === 'user') {
+            updateQuery = 'UPDATE users SET failed_login_attempts = $1, locked_until = $2 WHERE id = $3';
+          } else if (userRecord.account_type === 'business_user') {
+            updateQuery = 'UPDATE business_users SET failed_login_attempts = $1, locked_until = $2 WHERE id = $3';
+          } else {
+            updateQuery = 'UPDATE admin_users SET failed_login_attempts = $1, locked_until = $2 WHERE id = $3';
+          }
+
+          await client.query(updateQuery, [newAttempts, lockUntil, userRecord.id]);
 
           throw new AuthenticationError(
             `Too many failed attempts. Account locked for ${config.security.accountLockoutDurationMinutes} minutes.`
           );
         }
 
-        await client.query(
-          `UPDATE ${userRecord.account_type === 'user' ? 'users' : 'business_users'}
-           SET failed_login_attempts = $1
-           WHERE id = $2`,
-          [newAttempts, userRecord.id]
-        );
+        let updateQuery: string;
+        if (userRecord.account_type === 'user') {
+          updateQuery = 'UPDATE users SET failed_login_attempts = $1 WHERE id = $2';
+        } else if (userRecord.account_type === 'business_user') {
+          updateQuery = 'UPDATE business_users SET failed_login_attempts = $1 WHERE id = $2';
+        } else {
+          updateQuery = 'UPDATE admin_users SET failed_login_attempts = $1 WHERE id = $2';
+        }
+
+        await client.query(updateQuery, [newAttempts, userRecord.id]);
 
         const remaining = config.security.accountLockoutAttempts - newAttempts;
         if (remaining <= 2) {
@@ -431,7 +447,7 @@ class AuthService {
         throw new AuthenticationError('Incorrect password. Please try again.');
       }
 
-      // Check email verification for normal users
+      // Check email verification for normal users (admin users skip this)
       if (userRecord.account_type === 'user' && !userRecord.email_verified) {
         // Generate new OTP
         await otpService.createAndSendOTP(userRecord.email, 'email_verification');
@@ -442,18 +458,25 @@ class AuthService {
       }
 
       // Success - reset failed attempts and update last login
-      await client.query(
-        `UPDATE ${userRecord.account_type === 'user' ? 'users' : 'business_users'}
-         SET failed_login_attempts = 0, locked_until = NULL, last_login = NOW()
-         WHERE id = $1`,
-        [userRecord.id]
-      );
+      let updateQuery: string;
+      if (userRecord.account_type === 'user') {
+        updateQuery = 'UPDATE users SET failed_login_attempts = 0, locked_until = NULL, last_login = NOW() WHERE id = $1';
+      } else if (userRecord.account_type === 'business_user') {
+        updateQuery = 'UPDATE business_users SET failed_login_attempts = 0, locked_until = NULL, last_login = NOW() WHERE id = $1';
+      } else {
+        updateQuery = 'UPDATE admin_users SET failed_login_attempts = 0, locked_until = NULL, last_login = NOW() WHERE id = $1';
+      }
+      await client.query(updateQuery, [userRecord.id]);
 
       // Get full user data
-      const fullUserQuery =
-        userRecord.account_type === 'user'
-          ? `SELECT *, 'user' as account_type FROM users WHERE id = $1`
-          : `SELECT *, 'business_user' as account_type FROM business_users WHERE id = $1`;
+      let fullUserQuery: string;
+      if (userRecord.account_type === 'user') {
+        fullUserQuery = `SELECT *, 'user' as account_type FROM users WHERE id = $1`;
+      } else if (userRecord.account_type === 'business_user') {
+        fullUserQuery = `SELECT *, 'business_user' as account_type FROM business_users WHERE id = $1`;
+      } else {
+        fullUserQuery = `SELECT id, email, name, role, account_status, created_at, last_login, 'admin' as account_type FROM admin_users WHERE id = $1`;
+      }
 
       const fullUserResult = await client.query(fullUserQuery, [userRecord.id]);
       const fullUser = fullUserResult.rows[0];

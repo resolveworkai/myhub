@@ -184,6 +184,26 @@ backend/
 - `PATCH /api/notifications/read-all` - Mark all as read
 - `DELETE /api/notifications/:id` - Delete notification
 
+### Admin (Admin Dashboard)
+- `POST /api/admin/auth/login` - Admin login
+- `GET /api/admin/dashboard/stats` - Dashboard statistics
+- `GET /api/admin/businesses` - List businesses
+- `POST /api/admin/businesses/:id/verify` - Verify business
+- `POST /api/admin/businesses/:id/suspend` - Suspend/activate business
+- `DELETE /api/admin/businesses/:id` - Delete business
+- `GET /api/admin/users` - List users
+- `GET /api/admin/users/:id` - Get user details
+- `POST /api/admin/users/:id/suspend` - Suspend/activate user
+- `GET /api/admin/passes` - List pass configurations
+- `POST /api/admin/passes` - Create pass configuration
+- `PATCH /api/admin/passes/:id` - Update pass configuration
+- `DELETE /api/admin/passes/:id` - Delete pass configuration
+- `GET /api/admin/analytics` - Get analytics data
+- `GET /api/admin/settings` - Get platform settings
+- `PATCH /api/admin/settings/:key` - Update platform setting
+
+**Note:** All admin endpoints require admin authentication. See [Admin Dashboard Integration](../ADMIN_DASHBOARD_INTEGRATION.md) for details.
+
 ## 🗄️ Database
 
 ### Migrations
@@ -209,11 +229,15 @@ npm run seed
 npm run seed:users
 npm run seed:business
 npm run seed:venues
+
+# Create admin user
+npm run seed:admin
 ```
 
 **Test Credentials:**
 - Member: `test@member.com` / `Password123!`
 - Business: `test@business.com` / `Password123!`
+- Admin: `admin@myhub.com` / `Admin@123` (created via seed:admin)
 
 ## 🔒 Security Features
 
@@ -241,9 +265,40 @@ npm run seed:venues
 ## 📚 Documentation
 
 - [Complete API Reference](../docs/api/complete-api-reference.md)
+- [Admin Dashboard Integration](../ADMIN_DASHBOARD_INTEGRATION.md) - Complete admin dashboard setup and usage
 - [Frontend Analysis](../docs/analysis/frontend-analysis-report.md)
 - [Database Schema](../docs/database/schema.md)
 - [Implementation Status](./IMPLEMENTATION_STATUS.md)
+
+## 🔧 Recent Fixes (2026-01-26)
+
+### Admin Dashboard Fixes
+
+1. **Dashboard Stats (`/admin/dashboard/stats`)**
+   - Fixed: Removed `deleted_at` filter from `bookings` table queries (bookings table doesn't have this column)
+   - Fixed: Updated queries to use correct column names (`category` instead of `business_type` for venues)
+
+2. **Analytics (`/admin/analytics`)**
+   - Fixed: Corrected column references in analytics queries:
+     - `venues.category` instead of `venues.business_type`
+     - `bookings.venue_type` used directly (not from venues join)
+   - Fixed: Date filter now correctly applies to bookings `created_at` column
+   - Fixed: Revenue queries use `payments.payment_status` (not `status`)
+
+3. **Pass Management (`/admin/passes`)**
+   - Updated: `PassApprovalSection` component now uses real API calls instead of static data
+   - Added: Full CRUD operations for pass configurations via API
+   - Fixed: Toast notifications now use `sonner` library consistently
+
+4. **User Management (`/admin/users`)**
+   - Verified: Already using real API calls (no changes needed)
+
+### Database Schema Notes
+
+- `bookings` table: Does NOT have `deleted_at` column (soft deletes not implemented)
+- `venues` table: Uses `category` column (values: 'gym', 'coaching', 'library')
+- `bookings` table: Has `venue_type` column directly (values: 'gym', 'coaching', 'library')
+- `payments` table: Does NOT have `deleted_at` column
 
 ## 🧪 Testing
 

@@ -44,10 +44,16 @@ export const authenticate = async (
     const decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
 
     // Get user from database to ensure still active
-    const userQuery =
-      decoded.accountType === 'user'
-        ? `SELECT id, email, account_status FROM users WHERE id = $1 AND deleted_at IS NULL`
-        : `SELECT id, email, account_status FROM business_users WHERE id = $1 AND deleted_at IS NULL`;
+    let userQuery: string;
+    if (decoded.accountType === 'user') {
+      userQuery = `SELECT id, email, account_status FROM users WHERE id = $1 AND deleted_at IS NULL`;
+    } else if (decoded.accountType === 'business_user') {
+      userQuery = `SELECT id, email, account_status FROM business_users WHERE id = $1 AND deleted_at IS NULL`;
+    } else if (decoded.accountType === 'admin') {
+      userQuery = `SELECT id, email, account_status FROM admin_users WHERE id = $1 AND deleted_at IS NULL`;
+    } else {
+      throw new AuthenticationError('Invalid account type');
+    }
 
     const userResult = await pool.query(userQuery, [decoded.userId]);
 
@@ -111,10 +117,17 @@ export const optionalAuth = async (
       const token = authHeader.substring(7);
       const decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
 
-      const userQuery =
-        decoded.accountType === 'user'
-          ? `SELECT id, email, account_status FROM users WHERE id = $1 AND deleted_at IS NULL`
-          : `SELECT id, email, account_status FROM business_users WHERE id = $1 AND deleted_at IS NULL`;
+      let userQuery: string;
+      if (decoded.accountType === 'user') {
+        userQuery = `SELECT id, email, account_status FROM users WHERE id = $1 AND deleted_at IS NULL`;
+      } else if (decoded.accountType === 'business_user') {
+        userQuery = `SELECT id, email, account_status FROM business_users WHERE id = $1 AND deleted_at IS NULL`;
+      } else if (decoded.accountType === 'admin') {
+        userQuery = `SELECT id, email, account_status FROM admin_users WHERE id = $1 AND deleted_at IS NULL`;
+      } else {
+        next();
+        return;
+      }
 
       const userResult = await pool.query(userQuery, [decoded.userId]);
 
@@ -192,6 +205,78 @@ export const requireUser = (
       error: {
         message: 'User account required',
         code: 'FORBIDDEN',
+      },
+    });
+    return;
+  }
+
+  next();
+};
+
+/**
+ * Require admin account
+ */
+export const requireAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  if (!req.user) {
+    res.status(401).json({
+      success: false,
+      error: {
+        message: 'Authentication required',
+        code: 'UNAUTHORIZED',
+      },
+    });
+    return;
+  }
+
+  if (req.user.accountType !== 'admin') {
+    res.status(403).json({
+      success: false,
+      error: {
+        message: 'Admin account required',
+        code: 'FORBIDDEN',
+      },
+    });
+    return;
+  }
+
+  // Verify admin still exists and is active
+  try {
+    const adminResult = await pool.query(
+      `SELECT id, account_status FROM admin_users WHERE id = $1 AND deleted_at IS NULL`,
+      [req.user.id]
+    );
+
+    if (adminResult.rows.length === 0) {
+      res.status(401).json({
+        success: false,
+        error: {
+          message: 'Admin account not found',
+          code: 'UNAUTHORIZED',
+        },
+      });
+      return;
+    }
+
+    if (adminResult.rows[0].account_status === 'suspended') {
+      res.status(403).json({
+        success: false,
+        error: {
+          message: 'Admin account is suspended',
+          code: 'FORBIDDEN',
+        },
+      });
+      return;
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Internal server error',
+        code: 'INTERNAL_ERROR',
       },
     });
     return;
