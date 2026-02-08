@@ -77,6 +77,7 @@ import librariesData from "@/data/mock/libraries.json";
 import coachingData from "@/data/mock/coaching.json";
 import bookingsData from "@/data/mock/bookings.json";
 import { PassApprovalSection } from "@/components/admin/PassApprovalSection";
+import { AdminNotificationConfig } from "@/components/admin/AdminNotificationConfig";
 
 // Types
 interface BusinessUser {
@@ -113,6 +114,7 @@ const navigation = [
   { name: "Businesses", href: "/admin/businesses", icon: Building2 },
   { name: "Users", href: "/admin/users", icon: Users },
   { name: "Pass Management", href: "/admin/passes", icon: Ticket },
+  { name: "Notifications", href: "/admin/notifications", icon: Bell },
   { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { name: "Localization", href: "/admin/localization", icon: Globe },
   { name: "Security", href: "/admin/security", icon: Shield },
@@ -507,6 +509,11 @@ export default function AdminDashboard() {
     // Pass Management
     if (matches("/admin/passes") || matches("/admin/passes/*")) {
       return <PassApprovalSection />;
+    }
+
+    // Notification Configuration
+    if (matches("/admin/notifications") || matches("/admin/notifications/*")) {
+      return <AdminNotificationConfig />;
     }
 
     // Analytics
@@ -1046,7 +1053,7 @@ export default function AdminDashboard() {
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                  currentPath === item.href
+                  (currentPath === item.href || currentPath.startsWith(item.href + '/') || (item.href === '/admin' && currentPath === '/admin'))
                     ? "bg-primary text-primary-foreground"
                     : "text-background/70 hover:text-background hover:bg-background/10"
                 )}

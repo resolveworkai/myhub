@@ -59,6 +59,7 @@ export function PaytmPaymentModal({
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi'>('upi');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
+  const [paymentStep, setPaymentStep] = useState<'select' | 'details'>('select');
   
   // Form states
   const [cardNumber, setCardNumber] = useState('');
@@ -66,7 +67,7 @@ export function PaytmPaymentModal({
   const [cardCvv, setCardCvv] = useState('');
   const [cardName, setCardName] = useState('');
   const [upiId, setUpiId] = useState('');
-  const [selectedUpiApp, setSelectedUpiApp] = useState<string>('paytm');
+  const [selectedUpiApp, setSelectedUpiApp] = useState<string>('');
 
   const upiApps = [
     { id: 'paytm', name: 'Paytm', color: 'bg-[#00BAF2]' },
@@ -81,6 +82,37 @@ export function PaytmPaymentModal({
     return `ORD_${timestamp}_${random}`;
   };
 
+  const canProceedToDetails = () => {
+    if (paymentMethod === 'upi') {
+      return selectedUpiApp !== '';
+    }
+    return true;
+  };
+
+  const canSubmitPayment = () => {
+    if (paymentMethod === 'card') {
+      return cardNumber.replace(/\s/g, '').length >= 16 && 
+             cardExpiry.length === 5 && 
+             cardCvv.length >= 3 && 
+             cardName.trim().length > 0;
+    } else {
+      if (selectedUpiApp === 'other') {
+        return upiId.includes('@') && upiId.length >= 5;
+      }
+      return selectedUpiApp !== '';
+    }
+  };
+
+  const handleContinueToDetails = () => {
+    if (!canProceedToDetails()) {
+      if (paymentMethod === 'upi') {
+        toast.error('Please select a UPI app');
+      }
+      return;
+    }
+    setPaymentStep('details');
+  };
+
   const handlePayment = async () => {
     if (!user) {
       toast.error('Please login to continue');
@@ -93,9 +125,33 @@ export function PaytmPaymentModal({
         toast.error('Please fill all card details');
         return;
       }
+      // Validate card number (basic luhn check)
+      const cleanCardNumber = cardNumber.replace(/\s/g, '');
+      if (cleanCardNumber.length < 16) {
+        toast.error('Please enter a valid 16-digit card number');
+        return;
+      }
+      // Validate expiry
+      if (cardExpiry.length !== 5) {
+        toast.error('Please enter a valid expiry date (MM/YY)');
+        return;
+      }
+      const [month, year] = cardExpiry.split('/').map(Number);
+      const now = new Date();
+      const currentYear = now.getFullYear() % 100;
+      const currentMonth = now.getMonth() + 1;
+      if (month < 1 || month > 12 || year < currentYear || (year === currentYear && month < currentMonth)) {
+        toast.error('Card has expired or invalid expiry date');
+        return;
+      }
+      // Validate CVV
+      if (cardCvv.length < 3) {
+        toast.error('Please enter a valid CVV');
+        return;
+      }
     } else {
-      if (!upiId && selectedUpiApp === 'other') {
-        toast.error('Please enter UPI ID');
+      if (selectedUpiApp === 'other' && (!upiId || !upiId.includes('@'))) {
+        toast.error('Please enter a valid UPI ID (e.g., yourname@upi)');
         return;
       }
     }
@@ -178,11 +234,13 @@ export function PaytmPaymentModal({
 
   const resetAndClose = () => {
     setPaymentStatus('idle');
+    setPaymentStep('select');
     setCardNumber('');
     setCardExpiry('');
     setCardCvv('');
     setCardName('');
     setUpiId('');
+    setSelectedUpiApp('');
     onClose();
   };
 
@@ -256,131 +314,187 @@ export function PaytmPaymentModal({
               <Badge>{passType.charAt(0).toUpperCase() + passType.slice(1)} Pass</Badge>
             </div>
 
-            {/* Payment Methods */}
-            <Tabs value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as 'card' | 'upi')}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="upi">
-                  <Smartphone className="h-4 w-4 mr-2" />
-                  UPI
-                </TabsTrigger>
-                <TabsTrigger value="card">
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Card
-                </TabsTrigger>
-              </TabsList>
+            {/* Step 1: Select Payment Method */}
+            {paymentStep === 'select' && (
+              <>
+                <Tabs value={paymentMethod} onValueChange={(v) => {
+                  setPaymentMethod(v as 'card' | 'upi');
+                  setSelectedUpiApp('');
+                  setUpiId('');
+                }}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="upi">
+                      <Smartphone className="h-4 w-4 mr-2" />
+                      UPI
+                    </TabsTrigger>
+                    <TabsTrigger value="card">
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Card
+                    </TabsTrigger>
+                  </TabsList>
 
-              <TabsContent value="upi" className="space-y-4 mt-4">
-                {/* UPI App Selection */}
-                <div className="grid grid-cols-4 gap-2">
-                  {upiApps.map((app) => (
-                    <button
-                      key={app.id}
-                      onClick={() => setSelectedUpiApp(app.id)}
-                      className={cn(
-                        'p-3 rounded-lg border-2 text-center transition-all text-xs font-medium',
-                        selectedUpiApp === app.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
+                  <TabsContent value="upi" className="space-y-4 mt-4">
+                    <p className="text-sm font-medium text-muted-foreground">Select UPI App</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {upiApps.map((app) => (
+                        <button
+                          key={app.id}
+                          onClick={() => setSelectedUpiApp(app.id)}
+                          className={cn(
+                            'p-3 rounded-lg border-2 text-center transition-all text-xs font-medium',
+                            selectedUpiApp === app.id
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border hover:border-primary/50'
+                          )}
+                        >
+                          {app.name}
+                        </button>
+                      ))}
+                    </div>
+
+                    {selectedUpiApp && selectedUpiApp !== 'other' && (
+                      <div className="p-3 rounded-lg bg-info/10 text-info text-sm">
+                        You will be redirected to {upiApps.find(a => a.id === selectedUpiApp)?.name} to complete payment
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="card" className="space-y-4 mt-4">
+                    <div className="p-3 rounded-lg bg-info/10 text-info text-sm">
+                      Click Continue to enter your card details securely
+                    </div>
+                  </TabsContent>
+                </Tabs>
+
+                <Button
+                  variant="gradient"
+                  className="w-full h-12"
+                  onClick={handleContinueToDetails}
+                  disabled={paymentMethod === 'upi' && !selectedUpiApp}
+                >
+                  Continue
+                </Button>
+              </>
+            )}
+
+            {/* Step 2: Enter Payment Details */}
+            {paymentStep === 'details' && (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium">
+                    {paymentMethod === 'upi' 
+                      ? (selectedUpiApp === 'other' ? 'Enter UPI ID' : `Pay via ${upiApps.find(a => a.id === selectedUpiApp)?.name}`)
+                      : 'Enter Card Details'
+                    }
+                  </h4>
+                  <Button variant="ghost" size="sm" onClick={() => setPaymentStep('select')}>
+                    Change
+                  </Button>
+                </div>
+
+                {paymentMethod === 'upi' && selectedUpiApp === 'other' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>UPI ID <span className="text-destructive">*</span></Label>
+                      <Input
+                        placeholder="yourname@upi"
+                        value={upiId}
+                        onChange={(e) => setUpiId(e.target.value)}
+                        className={upiId && !upiId.includes('@') ? 'border-destructive' : ''}
+                      />
+                      {upiId && !upiId.includes('@') && (
+                        <p className="text-xs text-destructive">Enter a valid UPI ID (e.g., yourname@upi)</p>
                       )}
-                    >
-                      {app.name}
-                    </button>
-                  ))}
-                </div>
-
-                {/* UPI ID Input (for "Other") */}
-                {selectedUpiApp === 'other' && (
-                  <div className="space-y-2">
-                    <Label>UPI ID</Label>
-                    <Input
-                      placeholder="yourname@upi"
-                      value={upiId}
-                      onChange={(e) => setUpiId(e.target.value)}
-                    />
+                    </div>
                   </div>
                 )}
 
-                {selectedUpiApp !== 'other' && (
-                  <div className="p-3 rounded-lg bg-info/10 text-info text-sm">
-                    You will be redirected to {upiApps.find(a => a.id === selectedUpiApp)?.name} to complete payment
+                {paymentMethod === 'upi' && selectedUpiApp !== 'other' && (
+                  <div className="p-4 rounded-lg bg-muted/50 text-center space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Click "Pay" to open {upiApps.find(a => a.id === selectedUpiApp)?.name} and complete payment
+                    </p>
                   </div>
                 )}
-              </TabsContent>
 
-              <TabsContent value="card" className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label>Card Number</Label>
-                  <Input
-                    placeholder="1234 5678 9012 3456"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                    maxLength={19}
-                  />
-                </div>
+                {paymentMethod === 'card' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Card Number <span className="text-destructive">*</span></Label>
+                      <Input
+                        placeholder="1234 5678 9012 3456"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                        maxLength={19}
+                        className={cardNumber && cardNumber.replace(/\s/g, '').length < 16 ? 'border-warning' : ''}
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label>Cardholder Name</Label>
-                  <Input
-                    placeholder="Name on card"
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <Label>Cardholder Name <span className="text-destructive">*</span></Label>
+                      <Input
+                        placeholder="Name on card"
+                        value={cardName}
+                        onChange={(e) => setCardName(e.target.value)}
+                      />
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Expiry</Label>
-                    <Input
-                      placeholder="MM/YY"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                      maxLength={5}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Expiry <span className="text-destructive">*</span></Label>
+                        <Input
+                          placeholder="MM/YY"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                          maxLength={5}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>CVV <span className="text-destructive">*</span></Label>
+                        <Input
+                          type="password"
+                          placeholder="•••"
+                          value={cardCvv}
+                          onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                          maxLength={4}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>CVV</Label>
-                    <Input
-                      type="password"
-                      placeholder="•••"
-                      value={cardCvv}
-                      onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                      maxLength={4}
-                    />
-                  </div>
+                )}
+
+                {/* Security Notice */}
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
+                  <Shield className="h-5 w-5 text-success" />
+                  <span className="text-sm text-success font-medium">
+                    Secured by Paytm Payment Gateway
+                  </span>
                 </div>
-              </TabsContent>
-            </Tabs>
 
-            {/* Security Notice */}
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
-              <Shield className="h-5 w-5 text-success" />
-              <span className="text-sm text-success font-medium">
-                Secured by Paytm Payment Gateway
-              </span>
-            </div>
+                {/* Demo Notice */}
+                <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-xs text-warning">
+                  <p className="font-medium">⚠️ Demo Mode</p>
+                  <p>This is a simulated payment. No real charges will be made.</p>
+                </div>
 
-            {/* Demo Notice */}
-            <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-xs text-warning">
-              <p className="font-medium">⚠️ Demo Mode</p>
-              <p>This is a simulated payment. No real charges will be made.</p>
-            </div>
-
-            {/* Pay Button */}
-            <Button
-              variant="gradient"
-              className="w-full h-12"
-              onClick={handlePayment}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                `Pay ₹${amount}`
-              )}
-            </Button>
+                {/* Pay Button */}
+                <Button
+                  variant="gradient"
+                  className="w-full h-12"
+                  onClick={handlePayment}
+                  disabled={isProcessing || !canSubmitPayment()}
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    `Pay ₹${amount}`
+                  )}
+                </Button>
+              </>
+            )}
           </div>
         )}
       </DialogContent>

@@ -39,14 +39,6 @@ interface PassPurchaseWizardProps {
 
 const passOptions = [
   { 
-    id: 'daily' as PassType, 
-    label: 'Daily Pass', 
-    price: 299, 
-    duration: '1 Day',
-    description: 'Unlimited today',
-    emoji: '📆'
-  },
-  { 
     id: 'weekly' as PassType, 
     label: 'Weekly Pass', 
     price: 1499, 
