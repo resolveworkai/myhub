@@ -19,6 +19,8 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const BusinessPending = lazy(() => import("./pages/BusinessPending"));
 const Explore = lazy(() => import("./pages/Explore"));
 const BusinessDetail = lazy(() => import("./pages/BusinessDetail"));
+const CartPage = lazy(() => import("./pages/Cart"));
+const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 const BusinessDashboard = lazy(() => import("./pages/BusinessDashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -142,6 +144,8 @@ const App = () => (
               {/* Venue Detail */}
               <Route path="/venue/:id" element={<BusinessDetail />} />
               <Route path="/business/:id" element={<BusinessDetail />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/checkout/success" element={<CheckoutSuccess />} />
               
               {/* Favorites */}
               <Route path="/favorites" element={
