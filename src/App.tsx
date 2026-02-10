@@ -22,6 +22,7 @@ const BusinessDetail = lazy(() => import("./pages/BusinessDetail"));
 const CartPage = lazy(() => import("./pages/Cart"));
 const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
+const MyPasses = lazy(() => import("./pages/dashboard/MyPasses"));
 const BusinessDashboard = lazy(() => import("./pages/BusinessDashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks"));

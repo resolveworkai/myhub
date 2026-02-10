@@ -1,217 +1,119 @@
-import React, { useState, useMemo, useEffect, memo, useCallback } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import React, { useState, useMemo, useCallback } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapView } from "@/components/map/MapView";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-import { BookingWizard } from "@/components/booking/BookingWizard";
 import { usePagination } from "@/hooks/usePagination";
-import { FilterPanel } from "@/components/explore/FilterPanel";
-import { ActiveFilters } from "@/components/explore/ActiveFilters";
-import { SavedSearches } from "@/components/explore/SavedSearches";
-import { SubscriptionBadge } from "@/components/common/SubscriptionBadge";
-import { useFilterStore, VenueCategory } from "@/store/filterStore";
+import { usePlatformStore } from "@/store/platformStore";
 import { useFavoriteStore } from "@/store/favoriteStore";
-import { useVenueStore } from "@/store/venueStore";
-import { useGeolocation } from "@/hooks/useGeolocation";
-import { useFilterDebounce } from "@/hooks/useDebounce";
-import { filterVenues, sortVenues, Venue } from "@/lib/filterEngine";
-import { sortOptions, categories } from "@/lib/filterDefinitions";
 import {
-  Search,
-  MapPin,
-  Star,
-  Filter,
-  Map,
-  List,
-  Heart,
-  X,
-  Shield,
-  Loader2,
-  Navigation,
+  Search, MapPin, Star, Filter, Map, List, Heart, X, Shield, Loader2, ShoppingCart,
 } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import type { PlatformBusiness, BusinessVertical } from "@/types/platform";
+
+const VERTICAL_INFO: Record<BusinessVertical, { emoji: string; label: string }> = {
+  coaching: { emoji: "📚", label: "Coaching" },
+  gym: { emoji: "💪", label: "Gym / Yoga" },
+  library: { emoji: "📖", label: "Library" },
+};
 
 export default function Explore() {
-  const { t } = useTranslation();
   const location = useLocation();
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<"all" | BusinessVertical>("all");
+  const [sortBy, setSortBy] = useState("relevance");
+  const [minRating, setMinRating] = useState(0);
 
-  // Use persisted favorites store instead of local state
-  const { favorites, toggleFavorite, isFavorite } = useFavoriteStore();
+  const { getApprovedBusinesses, cart } = usePlatformStore();
+  const { toggleFavorite, isFavorite } = useFavoriteStore();
 
-  // Use venue store to get all venues (mock + registered)
-  const { getAllVenues } = useVenueStore();
-  const allBusinesses = useMemo(() => getAllVenues(), [getAllVenues]);
-
-  // Filter store
-  const {
-    searchQuery,
-    setSearchQuery,
-    activeCategory,
-    setActiveCategory,
-    sortBy,
-    setSortBy,
-    userLocation,
-    getActiveFilterCount,
-    priceRange,
-    minRating,
-    radiusKm,
-    availability,
-    selectedAmenities,
-    gymEquipment,
-    gymClassTypes,
-    coachingSubjects,
-    libraryFacilities,
-  } = useFilterStore();
-
-  // Geolocation hook
-  const { location: geoLocation, loading: geoLoading, requestLocation, setManualLocation, availableCities } = useGeolocation();
-
-  // Auto-select category based on route
+  // Sync route to category
   const routePath = location.pathname.replace("/", "");
-  const routeCategory: VenueCategory | null =
-    routePath === "gyms"
-      ? "gym"
-      : routePath === "coaching"
-      ? "coaching"
-      : routePath === "libraries"
-      ? "library"
-      : null;
+  const effectiveCategory = useMemo(() => {
+    if (routePath === "gyms") return "gym" as const;
+    if (routePath === "coaching") return "coaching" as const;
+    if (routePath === "libraries") return "library" as const;
+    return activeCategory;
+  }, [routePath, activeCategory]);
 
-  // Sync route category with store
-  useEffect(() => {
-    if (routeCategory && routeCategory !== activeCategory) {
-      setActiveCategory(routeCategory);
-    } else if (!routeCategory && activeCategory !== "all") {
-      // On /explore, show all
-      setActiveCategory("all");
+  const businesses = useMemo(() => {
+    let result = getApprovedBusinesses().filter(b => !b.closedToday);
+
+    // Category
+    if (effectiveCategory !== "all") {
+      result = result.filter(b => b.vertical === effectiveCategory);
     }
-  }, [routePath, routeCategory, activeCategory, setActiveCategory]);
 
-  // Create filter state object for debouncing
-  const currentFilters = useMemo(
-    () => ({
-      activeCategory: routeCategory || activeCategory,
-      searchQuery,
-      priceRange,
-      minRating,
-      radiusKm,
-      availability,
-      selectedAmenities,
-      userLocation,
-      gymEquipment,
-      gymClassTypes,
-      coachingSubjects,
-      libraryFacilities,
-    }),
-    [
-      routeCategory,
-      activeCategory,
-      searchQuery,
-      priceRange,
-      minRating,
-      radiusKm,
-      availability,
-      selectedAmenities,
-      userLocation,
-      gymEquipment,
-      gymClassTypes,
-      coachingSubjects,
-      libraryFacilities,
-    ]
-  );
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(b =>
+        b.name.toLowerCase().includes(q) ||
+        b.description.toLowerCase().includes(q) ||
+        b.address.area.toLowerCase().includes(q) ||
+        b.address.city.toLowerCase().includes(q) ||
+        b.subjects?.some(s => s.name.toLowerCase().includes(q)) ||
+        b.amenities.some(a => a.toLowerCase().includes(q))
+      );
+    }
 
-  // Debounce filter changes (300ms delay)
-  const { debouncedFilters, isPending } = useFilterDebounce(currentFilters, 300);
+    // Rating
+    if (minRating > 0) {
+      result = result.filter(b => b.rating >= minRating);
+    }
 
-  // Filter businesses with debounced filters
-  const filteredBusinesses = useMemo(() => {
-    return filterVenues(allBusinesses, debouncedFilters);
-  }, [debouncedFilters]);
+    // Sort
+    switch (sortBy) {
+      case "rating":
+        result.sort((a, b) => b.rating - a.rating);
+        break;
+      case "price-low":
+        result.sort((a, b) => getMinPrice(a) - getMinPrice(b));
+        break;
+      case "price-high":
+        result.sort((a, b) => getMinPrice(b) - getMinPrice(a));
+        break;
+      case "popularity":
+        result.sort((a, b) => b.reviews - a.reviews);
+        break;
+      default:
+        result.sort((a, b) => (b.rating * 10 + Math.log10(b.reviews + 1) * 3) - (a.rating * 10 + Math.log10(a.reviews + 1) * 3));
+    }
 
-  // Sort businesses
-  const sortedBusinesses = useMemo(() => {
-    return sortVenues(filteredBusinesses, sortBy, userLocation);
-  }, [filteredBusinesses, sortBy, userLocation]);
+    return result;
+  }, [getApprovedBusinesses, effectiveCategory, searchQuery, minRating, sortBy]);
 
-  // Pagination
-  const {
-    paginatedData,
-    currentPage,
-    totalPages,
-    goToPage,
-    startIndex,
-    endIndex,
-    totalItems,
-  } = usePagination({
-    data: sortedBusinesses,
-    itemsPerPage: 15,
+  const { paginatedData, currentPage, totalPages, goToPage, startIndex, endIndex, totalItems } = usePagination({
+    data: businesses,
+    itemsPerPage: 12,
   });
 
-  // Memoized toggle handler
-  const handleToggleFavorite = useCallback((id: string) => {
-    toggleFavorite(id);
-  }, [toggleFavorite]);
-
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "available":
-        return <Badge variant="available">{t("explore.available")}</Badge>;
-      case "filling":
-        return <Badge variant="filling">{t("explore.fillingUp")}</Badge>;
-      case "full":
-        return <Badge variant="full">{t("explore.full")}</Badge>;
-      default:
-        return null;
-    }
-  };
-
-  const activeFiltersCount = getActiveFilterCount();
-  const effectiveCategory = routeCategory || activeCategory;
+  const handleToggleFavorite = useCallback((id: string) => toggleFavorite(id), [toggleFavorite]);
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-
       <main className="pt-20">
         {/* Search Header */}
         <div className="bg-card border-b border-border sticky top-16 lg:top-20 z-40">
           <div className="container mx-auto px-4 lg:px-8 py-4">
             <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search Input */}
+              {/* Search */}
               <div className="flex-1 flex items-center gap-3 bg-muted rounded-xl px-4 py-2">
                 <Search className="h-5 w-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder={t("explore.searchPlaceholder")}
+                  placeholder="Search classes, gyms, libraries..."
                   className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                 />
                 {searchQuery && (
                   <button onClick={() => setSearchQuery("")}>
@@ -220,349 +122,175 @@ export default function Explore() {
                 )}
               </div>
 
-              {/* Location Selector */}
-              <div className="flex items-center gap-2 bg-muted rounded-xl px-4 py-2 lg:w-64">
-                {geoLoading ? (
-                  <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
-                ) : (
-                  <MapPin className="h-5 w-5 text-muted-foreground" />
-                )}
-                <Select
-                  value={userLocation?.city || "Mumbai"}
-                  onValueChange={setManualLocation}
-                >
-                  <SelectTrigger className="border-0 bg-transparent shadow-none focus:ring-0 p-0 h-auto">
-                    <SelectValue placeholder="Select location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableCities.map((city) => (
-                      <SelectItem key={city.name} value={city.name}>
-                        {city.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <button
-                  onClick={requestLocation}
-                  className="p-1 hover:bg-background rounded"
-                  title="Use current location"
-                >
-                  <Navigation className="h-4 w-4 text-muted-foreground" />
-                </button>
+              {/* Category Pills */}
+              <div className="flex gap-2 overflow-x-auto">
+                {(["all", "coaching", "gym", "library"] as const).map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat === "all" ? "all" : cat)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                      effectiveCategory === cat
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {cat === "all" ? "🌐 All" : `${VERTICAL_INFO[cat].emoji} ${VERTICAL_INFO[cat].label}`}
+                  </button>
+                ))}
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-2">
-                {/* Mobile Filter Button */}
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" className="lg:hidden relative">
-                      <Filter className="h-5 w-5 mr-2" />
-                      {t("common.filter")}
-                      {activeFiltersCount > 0 && (
-                        <span className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">
-                          {activeFiltersCount}
-                        </span>
-                      )}
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-80 overflow-y-auto">
-                    <SheetHeader>
-                      <SheetTitle>{t("filters.title")}</SheetTitle>
-                    </SheetHeader>
-                    <div className="mt-6">
-                      <FilterPanel activeCategory={effectiveCategory} />
-                    </div>
-                  </SheetContent>
-                </Sheet>
+              {/* Sort + Cart */}
+              <div className="flex gap-2 items-center">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-40 bg-muted border-0">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="relevance">Relevance</SelectItem>
+                    <SelectItem value="rating">Rating</SelectItem>
+                    <SelectItem value="price-low">Price: Low</SelectItem>
+                    <SelectItem value="price-high">Price: High</SelectItem>
+                    <SelectItem value="popularity">Popularity</SelectItem>
+                  </SelectContent>
+                </Select>
 
-                {/* View Mode Toggle */}
-                <div className="flex rounded-lg border border-border overflow-hidden">
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`p-2.5 transition-colors ${
-                      viewMode === "list"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-card text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    <List className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("map")}
-                    className={`p-2.5 transition-colors ${
-                      viewMode === "map"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-card text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    <Map className="h-5 w-5" />
-                  </button>
-                </div>
+                <Button variant="outline" className="relative" onClick={() => navigate("/cart")}>
+                  <ShoppingCart className="h-5 w-5" />
+                  {cart.length > 0 && (
+                    <span className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">
+                      {cart.length}
+                    </span>
+                  )}
+                </Button>
               </div>
             </div>
           </div>
         </div>
 
         <div className="container mx-auto px-4 lg:px-8 py-6">
-          {/* Filters Section - Below Search */}
-          <div className="hidden lg:block mb-6">
-            <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-              <div className="flex items-center justify-between mb-3">
-                <CollapsibleTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Filter className="h-4 w-4" />
-                    {filtersOpen ? t("explore.hideFilters") : t("explore.showFilters")}
-                    {activeFiltersCount > 0 && (
-                      <Badge variant="secondary" className="ml-1">
-                        {activeFiltersCount}
-                      </Badge>
-                    )}
-                  </Button>
-                </CollapsibleTrigger>
-              </div>
-              <CollapsibleContent>
-                <div className="bg-card border border-border rounded-xl p-4 mb-4">
-                  <FilterPanel activeCategory={effectiveCategory} horizontal />
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+          {/* Results Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="font-display text-xl sm:text-2xl font-bold">{totalItems} businesses found</h1>
+              <p className="text-sm text-muted-foreground">
+                {effectiveCategory !== "all" ? VERTICAL_INFO[effectiveCategory].label : "All categories"} in Dubai
+              </p>
+            </div>
           </div>
 
-          {/* Active Filters Chips */}
-          <ActiveFilters />
-
-          {/* Main Content */}
-          <div className="w-full">
-
-              {/* Results Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-                <div>
-                  <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-                    {isPending && (
-                      <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-muted-foreground" />
-                    )}
-                    {t("explore.businessesFound", { count: totalItems })}
-                  </h1>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    {userLocation
-                      ? t("explore.nearLocation", { location: userLocation.city })
-                      : t("explore.acrossAllLocations")}
-                    {userLocation?.source === "gps" && (
-                      <span className="text-xs ml-2 text-success">
-                        {t("explore.gpsActive")}
-                      </span>
-                    )}
-                  </p>
-                </div>
-
-                {/* Saved Searches + Sort */}
-                <div className="flex items-center gap-2">
-                  <SavedSearches currentFilters={currentFilters} />
-                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
-                    <SelectTrigger className="w-full sm:w-48 bg-muted border-0">
-                      <SelectValue placeholder={t("common.sortBy")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sortOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+          {/* Results Grid */}
+          {paginatedData.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+              {paginatedData.map((biz: PlatformBusiness) => (
+                <BusinessCard
+                  key={biz.id}
+                  business={biz}
+                  isFav={isFavorite(biz.id)}
+                  onToggleFav={() => handleToggleFavorite(biz.id)}
+                  onNavigate={() => navigate(`/venue/${biz.id}`)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                <Search className="h-8 w-8 text-muted-foreground" />
               </div>
+              <h3 className="text-lg font-semibold mb-2">No results found</h3>
+              <p className="text-muted-foreground mb-4">Try adjusting your search or filters</p>
+              <Button variant="outline" onClick={() => { setSearchQuery(""); setActiveCategory("all"); }}>
+                Clear Filters
+              </Button>
+            </div>
+          )}
 
-              {/* Results */}
-              {viewMode === "list" ? (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                    {paginatedData.map((business: Venue) => (
-                      <div
-                        key={business.id}
-                        className="group bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all"
-                      >
-                        <div className="relative aspect-[4/3] overflow-hidden">
-                          <img
-                            src={business.image}
-                            alt={business.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            loading="lazy"
-                          />
-                          <button
-                            onClick={() => handleToggleFavorite(business.id)}
-                            className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-                              isFavorite(business.id)
-                                ? "bg-accent text-accent-foreground"
-                                : "bg-card/80 backdrop-blur-sm text-foreground hover:bg-card"
-                            }`}
-                          >
-                            <Heart
-                              className={`h-5 w-5 ${
-                                isFavorite(business.id)
-                                  ? "fill-current"
-                                  : ""
-                              }`}
-                            />
-                          </button>
-                          <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                            {getStatusBadge(business.status)}
-                            <SubscriptionBadge venueId={business.id} variant="card" />
-                          </div>
-                          {business.verified && (
-                            <div className="absolute top-3 left-3">
-                              <Badge variant="verified" className="gap-1">
-                                <Shield className="h-3 w-3" />
-                                {t("explore.verified")}
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="p-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm">
-                              {categories.find((c) => c.id === (business.type || business.category))?.icon}
-                            </span>
-                            <span className="text-xs text-muted-foreground capitalize">
-                              {business.type || business.category}
-                            </span>
-                            {business.distance !== undefined && (
-                              <span className="text-xs text-muted-foreground ml-auto">
-                                {business.distance < 1
-                                  ? `${Math.round(business.distance * 1000)}m`
-                                  : `${business.distance.toFixed(1)} km`}
-                              </span>
-                            )}
-                          </div>
-                          <h3 className="font-display font-semibold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
-                            {business.name}
-                          </h3>
-                          <div className="flex items-center gap-4 text-sm mb-3">
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-warning text-warning" />
-                              <span className="font-medium text-foreground">
-                                {business.rating}
-                              </span>
-                              <span className="text-muted-foreground">
-                                ({business.reviews})
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1 text-muted-foreground">
-                              <MapPin className="h-4 w-4" />
-                              {business.location?.city}
-                            </div>
-                          </div>
-                          <div className="mb-3">
-                            <div className="flex items-center justify-between text-xs mb-1">
-                              <span className="text-muted-foreground">
-                                Occupancy
-                              </span>
-                              <span className="font-medium text-foreground">
-                                {business.occupancy}/{business.capacity}
-                              </span>
-                            </div>
-                            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full transition-all ${
-                                  business.occupancy / business.capacity < 0.6
-                                    ? "bg-success"
-                                    : business.occupancy / business.capacity <
-                                      0.85
-                                    ? "bg-warning"
-                                    : "bg-destructive"
-                                }`}
-                                style={{
-                                  width: `${(business.occupancy / business.capacity) * 100}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between pt-3 border-t border-border">
-                            <span className="font-semibold text-primary">
-                              {business.priceLabel}
-                            </span>
-                            <Button
-                              size="sm"
-                              variant="gradient"
-                              onClick={() => setBookingVenue(business)}
-                            >
-                              {t("common.bookNow")}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {totalPages > 1 && (
-                    <PaginationControls
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={goToPage}
-                      startIndex={startIndex}
-                      endIndex={endIndex}
-                      totalItems={totalItems}
-                      className="mt-8"
-                    />
-                  )}
-                </>
-              ) : (
-                <div className="h-[600px] rounded-2xl overflow-hidden border border-border">
-                  <MapView
-                    venues={sortedBusinesses.map((b: Venue) => ({
-                      id: b.id,
-                      name: b.name,
-                      type: b.type || b.category,
-                      lat: b.location?.lat,
-                      lng: b.location?.lng,
-                      rating: b.rating,
-                      price: b.priceLabel,
-                    }))}
-                  />
-                </div>
-              )}
-
-              {/* No Results */}
-              {sortedBusinesses.length === 0 && !isPending && (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                    <Search className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    {t("common.noResults")}
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    {t("errors.generic")}
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={() => useFilterStore.getState().clearAllFilters()}
-                  >
-                    {t("common.clearAll")}
-                  </Button>
-              </div>
-              )}
-          </div>
+          {totalPages > 1 && (
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={goToPage}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              totalItems={totalItems}
+              className="mt-8"
+            />
+          )}
         </div>
       </main>
-
       <Footer />
+    </div>
+  );
+}
 
-      {/* Booking Wizard */}
-      {bookingVenue && (
-        <BookingWizard
-          isOpen={!!bookingVenue}
-          onClose={() => setBookingVenue(null)}
-          venue={{
-            id: bookingVenue.id,
-            name: bookingVenue.name,
-            type: (bookingVenue.type || bookingVenue.category) as "gym" | "library" | "coaching",
-            rating: bookingVenue.rating,
-          }}
-        />
-      )}
+// Helper
+function getMinPrice(biz: PlatformBusiness): number {
+  if (biz.subjects?.length) {
+    return Math.min(...biz.subjects.flatMap(s => s.pricingTiers.map(p => p.price)));
+  }
+  if (biz.passTemplates?.length) {
+    return Math.min(...biz.passTemplates.filter(p => p.isActive).map(p => p.price));
+  }
+  return 0;
+}
+
+function BusinessCard({ business, isFav, onToggleFav, onNavigate }: {
+  business: PlatformBusiness;
+  isFav: boolean;
+  onToggleFav: () => void;
+  onNavigate: () => void;
+}) {
+  const info = VERTICAL_INFO[business.vertical];
+  const minPrice = getMinPrice(business);
+
+  return (
+    <div className="group bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all cursor-pointer" onClick={onNavigate}>
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <img src={business.image} alt={business.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+        <button
+          onClick={e => { e.stopPropagation(); onToggleFav(); }}
+          className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors ${isFav ? "bg-accent text-accent-foreground" : "bg-card/80 backdrop-blur-sm text-foreground hover:bg-card"}`}
+        >
+          <Heart className={`h-5 w-5 ${isFav ? "fill-current" : ""}`} />
+        </button>
+        <div className="absolute bottom-3 left-3 flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">{info.emoji} {info.label}</Badge>
+        </div>
+        {business.verified && (
+          <Badge className="absolute top-3 left-3 gap-1 bg-success text-success-foreground text-xs">
+            <Shield className="h-3 w-3" /> Verified
+          </Badge>
+        )}
+      </div>
+      <div className="p-4">
+        <h3 className="font-display font-semibold text-lg text-foreground mb-1 group-hover:text-primary transition-colors">
+          {business.name}
+        </h3>
+        <div className="flex items-center gap-3 text-sm mb-2">
+          <div className="flex items-center gap-1">
+            <Star className="h-4 w-4 fill-warning text-warning" />
+            <span className="font-medium">{business.rating}</span>
+            <span className="text-muted-foreground">({business.reviews})</span>
+          </div>
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <MapPin className="h-3.5 w-3.5" />
+            {business.address.area}
+          </div>
+        </div>
+        {/* Subjects or segments */}
+        <p className="text-xs text-muted-foreground mb-3 truncate">
+          {business.subjects?.map(s => s.name).join(', ') ||
+           business.passTemplates?.filter(p => p.isActive).map(p => p.timeSegmentName).filter((v, i, a) => a.indexOf(v) === i).join(', ') ||
+           business.description.substring(0, 60)}
+        </p>
+        <div className="flex items-center justify-between pt-3 border-t border-border">
+          <span className="font-semibold text-primary">
+            {minPrice > 0 ? `From ₹${minPrice}` : "Contact for pricing"}
+          </span>
+          <Button size="sm" variant="gradient" onClick={e => { e.stopPropagation(); onNavigate(); }}>
+            View Details
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
