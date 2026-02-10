@@ -18,12 +18,14 @@ import { NotificationDropdown } from "@/components/notifications/NotificationDro
 
 // Dashboard Pages
 import DashboardHome from "./dashboard/DashboardHome";
+import MyPasses from "./dashboard/MyPasses";
 import MyAppointments from "./dashboard/MyAppointments";
 import FeesPayments from "./dashboard/FeesPayments";
 import DashboardProfile from "./dashboard/DashboardProfile";
 
 const navigation = [
   { name: "Home", href: "/dashboard", icon: Home },
+  { name: "My Passes", href: "/dashboard/passes", icon: CreditCard },
   { name: "My Appointments", href: "/dashboard/appointments", icon: Calendar },
   { name: "Fees & Payments", href: "/dashboard/fees", icon: CreditCard },
   { name: "Profile", href: "/dashboard/profile", icon: User },
@@ -170,6 +172,7 @@ export default function UserDashboard() {
         <div className="p-4 sm:p-6 lg:p-8">
           <Routes>
             <Route index element={<DashboardHome userName={userName} />} />
+            <Route path="passes" element={<MyPasses />} />
             <Route path="appointments" element={<MyAppointments />} />
             <Route path="fees" element={<FeesPayments />} />
             <Route path="profile" element={<DashboardProfile />} />
