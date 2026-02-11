@@ -3,14 +3,13 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { usePlatformStore } from "@/store/platformStore";
 import { toast } from "sonner";
 import {
   LayoutDashboard, Users, Building2, Settings, BarChart3, Shield, Bell,
   Menu, X, Search, TrendingUp, DollarSign, Activity, CheckCircle2,
-  AlertCircle, Eye, Ban, Check, XCircle, Ticket, LogOut,
+  AlertCircle, Eye, Ban, Check, XCircle, Ticket, LogOut, PlusCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -23,9 +22,11 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend,
 } from "recharts";
 import type { PlatformBusiness, CommissionTier } from "@/types/platform";
+import AdminBusinessDetail from "@/components/admin/AdminBusinessDetail";
+import AdminManualPassCreation from "@/components/admin/AdminManualPassCreation";
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -33,6 +34,7 @@ const navigation = [
   { name: "Approval Queue", href: "/admin/approvals", icon: Ticket },
   { name: "Users", href: "/admin/users", icon: Users },
   { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+  { name: "Manual Pass", href: "/admin/manual-pass", icon: PlusCircle },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
@@ -41,6 +43,7 @@ const COLORS = ["hsl(var(--primary))", "hsl(var(--info))", "hsl(var(--success))"
 export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBusiness, setSelectedBusiness] = useState<PlatformBusiness | null>(null);
   const location = useLocation();
 
   const {
@@ -82,10 +85,20 @@ export default function AdminDashboard() {
   };
 
   const renderContent = () => {
+    // Business detail view
+    if (isRoute('/admin/businesses') && selectedBusiness) {
+      return (
+        <AdminBusinessDetail
+          business={selectedBusiness}
+          onBack={() => setSelectedBusiness(null)}
+        />
+      );
+    }
     if (isRoute('/admin/businesses')) return renderBusinesses();
     if (isRoute('/admin/approvals')) return renderApprovals();
     if (isRoute('/admin/users')) return renderUsers();
     if (isRoute('/admin/analytics')) return renderAnalytics();
+    if (isRoute('/admin/manual-pass')) return <AdminManualPassCreation />;
     if (isRoute('/admin/settings')) return renderSettings();
     return renderDashboardHome();
   };
@@ -100,7 +113,6 @@ export default function AdminDashboard() {
         <StatCard label="Commission" value={`₹${totalCommission.toLocaleString()}`} sub="Platform revenue" icon={<TrendingUp className="h-5 w-5 text-warning" />} />
       </div>
 
-      {/* Pending Approvals Quick View */}
       {pendingBusinesses.length > 0 && (
         <div className="bg-card rounded-2xl border border-warning/50 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -108,9 +120,9 @@ export default function AdminDashboard() {
               <AlertCircle className="h-5 w-5 text-warning" />
               Pending Approvals ({pendingBusinesses.length})
             </h2>
-            <Button variant="outline" size="sm" onClick={() => window.location.hash = ''}>
-              <Link to="/admin/approvals">View All</Link>
-            </Button>
+            <Link to="/admin/approvals">
+              <Button variant="outline" size="sm">View All</Button>
+            </Link>
           </div>
           {pendingBusinesses.slice(0, 3).map(biz => (
             <div key={biz.id} className="flex items-center justify-between py-3 border-b border-border last:border-0">
@@ -131,7 +143,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Venue Distribution Chart */}
       <div className="bg-card rounded-2xl border border-border p-6">
         <h2 className="font-display text-lg font-semibold mb-4">Business Distribution</h2>
         <div className="h-64">
@@ -209,7 +220,7 @@ export default function AdminDashboard() {
           </TableHeader>
           <TableBody>
             {filteredBusinesses.map(biz => (
-              <TableRow key={biz.id}>
+              <TableRow key={biz.id} className="cursor-pointer" onClick={() => setSelectedBusiness(biz)}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <img src={biz.image} alt={biz.name} className="w-10 h-10 rounded-lg object-cover" />
@@ -228,7 +239,10 @@ export default function AdminDashboard() {
                 <TableCell><Badge variant="outline" className="capitalize text-xs">{biz.commissionTier}</Badge></TableCell>
                 <TableCell>{biz.commissionRate}%</TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
+                  <div className="flex justify-end gap-1" onClick={e => e.stopPropagation()}>
+                    <Button size="icon-sm" variant="ghost" onClick={() => setSelectedBusiness(biz)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     {biz.status === 'pending' && (
                       <Button size="icon-sm" variant="ghost" onClick={() => { setApprovingBiz(biz); setApprovalTier('basic'); }}>
                         <Check className="h-4 w-4 text-success" />
@@ -317,32 +331,43 @@ export default function AdminDashboard() {
   const renderSettings = () => (
     <div className="space-y-6">
       <h1 className="font-display text-2xl font-bold">Platform Settings</h1>
+
+      {/* Booking Configuration */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
-        <h2 className="font-display text-lg font-semibold">Booking Settings</h2>
+        <h2 className="font-display text-lg font-semibold">Booking Configuration</h2>
         <div className="flex items-center justify-between">
-          <div><p className="font-medium">Advance Booking Window</p><p className="text-sm text-muted-foreground">Maximum days in advance</p></div>
-          <Input type="number" className="w-24" value={adminSettings.advanceBookingDays}
-            onChange={e => updateAdminSettings({ advanceBookingDays: +e.target.value })} />
+          <div><p className="font-medium">Advance Booking Window</p><p className="text-sm text-muted-foreground">Students can book up to X days ahead</p></div>
+          <div className="flex items-center gap-2">
+            <Input type="number" className="w-24" value={adminSettings.advanceBookingDays}
+              onChange={e => updateAdminSettings({ advanceBookingDays: +e.target.value })} />
+            <span className="text-sm text-muted-foreground">days</span>
+          </div>
         </div>
         <div className="flex items-center justify-between">
-          <div><p className="font-medium">Reservation Window (minutes)</p><p className="text-sm text-muted-foreground">Cart reservation timeout</p></div>
-          <Input type="number" className="w-24" value={adminSettings.reservationWindowMinutes}
-            onChange={e => updateAdminSettings({ reservationWindowMinutes: +e.target.value })} />
+          <div><p className="font-medium">Payment Reservation Timeout</p><p className="text-sm text-muted-foreground">How long to hold slots during payment</p></div>
+          <div className="flex items-center gap-2">
+            <Input type="number" className="w-24" value={adminSettings.reservationWindowMinutes}
+              onChange={e => updateAdminSettings({ reservationWindowMinutes: +e.target.value })} />
+            <span className="text-sm text-muted-foreground">mins</span>
+          </div>
         </div>
         <div className="flex items-center justify-between">
-          <div><p className="font-medium">Grace Period (days)</p><p className="text-sm text-muted-foreground">Auto-renewal grace period</p></div>
-          <Input type="number" className="w-24" value={adminSettings.gracePeriodDays}
-            onChange={e => updateAdminSettings({ gracePeriodDays: +e.target.value })} />
+          <div><p className="font-medium">Grace Period for Renewals</p><p className="text-sm text-muted-foreground">After pass expires, before releasing slot</p></div>
+          <div className="flex items-center gap-2">
+            <Input type="number" className="w-24" value={adminSettings.gracePeriodDays}
+              onChange={e => updateAdminSettings({ gracePeriodDays: +e.target.value })} />
+            <span className="text-sm text-muted-foreground">days</span>
+          </div>
         </div>
       </div>
 
+      {/* Commission Rates */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
-        <h2 className="font-display text-lg font-semibold">Commission Rates</h2>
+        <h2 className="font-display text-lg font-semibold">Commission Rates (Defaults)</h2>
         {(['basic', 'premium', 'enterprise'] as const).map(tier => (
           <div key={tier} className="flex items-center justify-between">
             <div>
               <p className="font-medium capitalize">{tier} Tier</p>
-              <p className="text-sm text-muted-foreground">Subscription: ₹{adminSettings.subscriptionFees[tier]}/mo</p>
             </div>
             <div className="flex items-center gap-2">
               <Input type="number" className="w-20" value={adminSettings.commissionRates[tier]}
@@ -354,6 +379,51 @@ export default function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      {/* Subscription Fees */}
+      <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+        <h2 className="font-display text-lg font-semibold">Subscription Fees</h2>
+        {(['basic', 'premium', 'enterprise'] as const).map(tier => (
+          <div key={tier} className="flex items-center justify-between">
+            <p className="font-medium capitalize">{tier} Tier</p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm">₹</span>
+              <Input type="number" className="w-24" value={adminSettings.subscriptionFees[tier]}
+                onChange={e => updateAdminSettings({
+                  subscriptionFees: { ...adminSettings.subscriptionFees, [tier]: +e.target.value }
+                })} />
+              <span className="text-sm text-muted-foreground">/month</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Payment Gateway (simulated) */}
+      <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+        <h2 className="font-display text-lg font-semibold">Payment Gateway</h2>
+        <div className="flex items-center justify-between">
+          <p className="font-medium">Provider</p>
+          <Select defaultValue="paytm">
+            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="paytm">Paytm</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="font-medium">Merchant ID</p>
+          <Input className="w-56" defaultValue="PAYTM-MERCHANT-123" disabled />
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="font-medium">API Key</p>
+          <Input className="w-56" type="password" defaultValue="sk_test_xxxxx" disabled />
+        </div>
+        <p className="text-xs text-muted-foreground">Payment gateway configuration is managed externally. Contact engineering to update credentials.</p>
+      </div>
+
+      <Button onClick={() => toast.success("Settings saved")} className="w-full sm:w-auto">
+        Save All Settings
+      </Button>
     </div>
   );
 
@@ -380,9 +450,9 @@ export default function AdminDashboard() {
           </div>
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navigation.map(item => (
-              <Link key={item.name} to={item.href} onClick={() => setSidebarOpen(false)}
+              <Link key={item.name} to={item.href} onClick={() => { setSidebarOpen(false); setSelectedBusiness(null); }}
                 className={cn("flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                  isRoute(item.href) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted")}>
+                  isRoute(item.href) && !selectedBusiness ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted")}>
                 <item.icon className="h-5 w-5" />
                 {item.name}
                 {item.name === 'Approval Queue' && pendingBusinesses.length > 0 && (
