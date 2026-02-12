@@ -1,89 +1,759 @@
 [
   {
-    "id": "sp-001",
-    "userId": "user-demo",
-    "userName": "Aarav Kumar",
-    "userEmail": "aarav@email.com",
-    "userPhone": "+971 50 111 2222",
-    "businessId": "biz-abc-coaching",
-    "businessName": "ABC Coaching Center",
-    "businessVertical": "coaching",
-    "subjectId": "subj-math",
-    "subjectName": "Mathematics",
-    "batchId": "batch-math-a",
-    "batchName": "Batch A",
-    "schedulePattern": "mwf",
-    "scheduleDays": ["mon", "wed", "fri"],
-    "slotStartTime": "16:00",
-    "slotEndTime": "17:00",
-    "instructorName": "Ramesh Kumar",
-    "durationHours": 1,
-    "price": 300,
-    "status": "active",
-    "startDate": "2026-02-03",
-    "endDate": "2026-03-05",
-    "totalOperatingDays": 30,
-    "completedDays": 5,
-    "autoRenew": true,
-    "switchUsed": false,
-    "transactionId": "txn-001",
-    "createdAt": "2026-02-01T10:00:00Z",
-    "activatedAt": "2026-02-03T16:00:00Z"
+    "id": "sp-001", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-abc-coaching", "businessName": "ABC Coaching Center", "businessVertical": "coaching",
+    "subjectId": "subj-math", "subjectName": "Mathematics", "batchId": "batch-math-a", "batchName": "Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "16:00", "slotEndTime": "17:00",
+    "instructorName": "Ramesh Kumar", "durationHours": 1, "price": 300, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p001", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T16:00:00Z"
   },
   {
-    "id": "sp-002",
-    "userId": "user-demo",
-    "userName": "Aarav Kumar",
-    "userEmail": "aarav@email.com",
-    "userPhone": "+971 50 111 2222",
-    "businessId": "biz-abc-coaching",
-    "businessName": "ABC Coaching Center",
-    "businessVertical": "coaching",
-    "subjectId": "subj-science",
-    "subjectName": "Science",
-    "batchId": "batch-sci-a",
-    "batchName": "Batch A",
-    "schedulePattern": "tts",
-    "scheduleDays": ["tue", "thu", "sat"],
-    "slotStartTime": "17:00",
-    "slotEndTime": "18:00",
-    "instructorName": "Dr. Meera Singh",
-    "durationHours": 1,
-    "price": 400,
-    "status": "active",
-    "startDate": "2026-02-04",
-    "endDate": "2026-03-06",
-    "totalOperatingDays": 30,
-    "completedDays": 4,
-    "autoRenew": true,
-    "switchUsed": false,
-    "transactionId": "txn-001",
-    "createdAt": "2026-02-01T10:00:00Z",
-    "activatedAt": "2026-02-04T17:00:00Z"
+    "id": "sp-002", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-abc-coaching", "businessName": "ABC Coaching Center", "businessVertical": "coaching",
+    "subjectId": "subj-science", "subjectName": "Science", "batchId": "batch-sci-a", "batchName": "Batch A",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "17:00", "slotEndTime": "18:00",
+    "instructorName": "Dr. Meera Singh", "durationHours": 1, "price": 400, "status": "active",
+    "startDate": "2026-02-04", "endDate": "2026-03-06", "totalOperatingDays": 30, "completedDays": 4,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p001", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-04T17:00:00Z"
   },
   {
-    "id": "sp-003",
-    "userId": "user-demo",
-    "userName": "Aarav Kumar",
-    "userEmail": "aarav@email.com",
-    "userPhone": "+971 50 111 2222",
-    "businessId": "biz-fitzone",
-    "businessName": "FitZone Gym",
-    "businessVertical": "gym",
-    "passTemplateId": "pt-fz-monthly-morning",
-    "timeSegmentName": "Morning",
-    "timeSegmentStart": "06:00",
-    "timeSegmentEnd": "10:00",
-    "price": 1000,
-    "status": "active",
-    "startDate": "2026-02-01",
-    "endDate": "2026-03-02",
-    "totalOperatingDays": 30,
-    "completedDays": 7,
-    "autoRenew": false,
-    "switchUsed": false,
-    "transactionId": "txn-002",
-    "createdAt": "2026-01-30T10:00:00Z",
-    "activatedAt": "2026-02-01T06:00:00Z"
+    "id": "sp-003", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-monthly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "06:00", "timeSegmentEnd": "10:00",
+    "price": 1000, "status": "active",
+    "startDate": "2026-02-01", "endDate": "2026-03-02", "totalOperatingDays": 30, "completedDays": 7,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p002", "createdAt": "2026-01-30T10:00:00Z", "activatedAt": "2026-02-01T06:00:00Z"
+  },
+  {
+    "id": "sp-004", "userId": "user-priya", "userName": "Priya Sharma", "userEmail": "priya@email.com", "userPhone": "+971 50 222 3333",
+    "businessId": "biz-abc-coaching", "businessName": "ABC Coaching Center", "businessVertical": "coaching",
+    "subjectId": "subj-math", "subjectName": "Mathematics", "batchId": "batch-math-b", "batchName": "Batch B",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "17:00", "slotEndTime": "18:00",
+    "instructorName": "Priya Sharma", "durationHours": 2, "price": 500, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": false, "switchUsed": true, "transactionId": "txn-p003", "createdAt": "2026-02-01T11:00:00Z", "activatedAt": "2026-02-03T17:00:00Z"
+  },
+  {
+    "id": "sp-005", "userId": "user-mike", "userName": "Mike Johnson", "userEmail": "mike@email.com", "userPhone": "+971 50 333 4444",
+    "businessId": "biz-abc-coaching", "businessName": "ABC Coaching Center", "businessVertical": "coaching",
+    "subjectId": "subj-guitar", "subjectName": "Guitar", "batchId": "batch-guitar-a", "batchName": "Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "18:00", "slotEndTime": "19:00",
+    "instructorName": "Vikram Mehta", "durationHours": 1, "price": 800, "status": "expired",
+    "startDate": "2026-01-01", "endDate": "2026-01-31", "totalOperatingDays": 30, "completedDays": 30,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p004", "createdAt": "2025-12-28T10:00:00Z", "activatedAt": "2026-01-01T18:00:00Z"
+  },
+  {
+    "id": "sp-006", "userId": "user-sara", "userName": "Sara Al-Maktoum", "userEmail": "sara@email.com", "userPhone": "+971 50 444 5555",
+    "businessId": "biz-abc-coaching", "businessName": "ABC Coaching Center", "businessVertical": "coaching",
+    "subjectId": "subj-math", "subjectName": "Mathematics", "batchId": "batch-math-c", "batchName": "Batch C",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "18:00", "slotEndTime": "19:00",
+    "instructorName": "Arjun Patel", "durationHours": 1, "price": 350, "status": "active",
+    "startDate": "2026-02-04", "endDate": "2026-03-06", "totalOperatingDays": 30, "completedDays": 4,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p005", "createdAt": "2026-02-02T09:00:00Z", "activatedAt": "2026-02-04T18:00:00Z"
+  },
+  {
+    "id": "sp-007", "userId": "user-raj", "userName": "Raj Malhotra", "userEmail": "raj@email.com", "userPhone": "+971 50 555 6666",
+    "businessId": "biz-abc-coaching", "businessName": "ABC Coaching Center", "businessVertical": "coaching",
+    "subjectId": "subj-science", "subjectName": "Science", "batchId": "batch-sci-a", "batchName": "Batch A",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "17:00", "slotEndTime": "18:00",
+    "instructorName": "Dr. Meera Singh", "durationHours": 2, "price": 600, "status": "cancelled",
+    "startDate": "2026-01-15", "endDate": "2026-02-14", "totalOperatingDays": 30, "completedDays": 10,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p006", "createdAt": "2026-01-13T10:00:00Z", "activatedAt": "2026-01-15T17:00:00Z"
+  },
+  {
+    "id": "sp-008", "userId": "user-noor", "userName": "Noor Al-Fahim", "userEmail": "noor@email.com", "userPhone": "+971 50 666 7777",
+    "businessId": "biz-abc-coaching", "businessName": "ABC Coaching Center", "businessVertical": "coaching",
+    "subjectId": "subj-math", "subjectName": "Mathematics", "batchId": "batch-math-a", "batchName": "Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "16:00", "slotEndTime": "17:00",
+    "instructorName": "Ramesh Kumar", "durationHours": 1, "price": 300, "status": "paused",
+    "startDate": "2026-02-05", "endDate": "2026-03-07", "totalOperatingDays": 30, "completedDays": 3,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p007", "createdAt": "2026-02-03T10:00:00Z", "activatedAt": "2026-02-05T16:00:00Z"
+  },
+  {
+    "id": "sp-009", "userId": "user-aisha", "userName": "Aisha Khan", "userEmail": "aisha@email.com", "userPhone": "+971 50 777 8888",
+    "businessId": "biz-abc-coaching", "businessName": "ABC Coaching Center", "businessVertical": "coaching",
+    "subjectId": "subj-guitar", "subjectName": "Guitar", "batchId": "batch-guitar-a", "batchName": "Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "18:00", "slotEndTime": "19:00",
+    "instructorName": "Vikram Mehta", "durationHours": 2, "price": 1200, "status": "active",
+    "startDate": "2026-02-05", "endDate": "2026-03-07", "totalOperatingDays": 30, "completedDays": 3,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p008", "createdAt": "2026-02-03T11:00:00Z", "activatedAt": "2026-02-05T18:00:00Z"
+  },
+  {
+    "id": "sp-010", "userId": "user-khalid", "userName": "Khalid Mansoor", "userEmail": "khalid@email.com", "userPhone": "+971 50 888 9999",
+    "businessId": "biz-abc-coaching", "businessName": "ABC Coaching Center", "businessVertical": "coaching",
+    "subjectId": "subj-math", "subjectName": "Mathematics", "batchId": "batch-math-a", "batchName": "Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "16:00", "slotEndTime": "17:00",
+    "instructorName": "Ramesh Kumar", "durationHours": 3, "price": 700, "status": "reserved",
+    "startDate": "2026-03-01", "endDate": "2026-03-31", "totalOperatingDays": 30, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p009", "createdAt": "2026-02-10T10:00:00Z"
+  },
+
+  {
+    "id": "sp-011", "userId": "user-vivek", "userName": "Vivek Kapoor", "userEmail": "vivek@email.com", "userPhone": "+971 50 100 2001",
+    "businessId": "biz-xyz-academy", "businessName": "XYZ Academy", "businessVertical": "coaching",
+    "subjectId": "subj-xyz-math", "subjectName": "Mathematics", "batchId": "batch-xyz-math-a", "batchName": "Batch Alpha",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "16:00", "slotEndTime": "17:00",
+    "instructorName": "Alok Nath", "durationHours": 1, "price": 400, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p010", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T16:00:00Z"
+  },
+  {
+    "id": "sp-012", "userId": "user-vivek", "userName": "Vivek Kapoor", "userEmail": "vivek@email.com", "userPhone": "+971 50 100 2001",
+    "businessId": "biz-xyz-academy", "businessName": "XYZ Academy", "businessVertical": "coaching",
+    "subjectId": "subj-xyz-physics", "subjectName": "Physics", "batchId": "batch-xyz-phys-a", "batchName": "Batch A",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "17:00", "slotEndTime": "18:00",
+    "instructorName": "Dr. Rajan", "durationHours": 2, "price": 700, "status": "active",
+    "startDate": "2026-02-04", "endDate": "2026-03-06", "totalOperatingDays": 30, "completedDays": 4,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p010", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-04T17:00:00Z"
+  },
+  {
+    "id": "sp-013", "userId": "user-priya", "userName": "Priya Sharma", "userEmail": "priya@email.com", "userPhone": "+971 50 222 3333",
+    "businessId": "biz-xyz-academy", "businessName": "XYZ Academy", "businessVertical": "coaching",
+    "subjectId": "subj-xyz-math", "subjectName": "Mathematics", "batchId": "batch-xyz-math-b", "batchName": "Batch Beta",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "16:00", "slotEndTime": "17:00",
+    "instructorName": "Neha Gupta", "durationHours": 1, "price": 400, "status": "active",
+    "startDate": "2026-02-06", "endDate": "2026-03-08", "totalOperatingDays": 30, "completedDays": 3,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p011", "createdAt": "2026-02-04T09:00:00Z", "activatedAt": "2026-02-06T16:00:00Z"
+  },
+  {
+    "id": "sp-014", "userId": "user-mike", "userName": "Mike Johnson", "userEmail": "mike@email.com", "userPhone": "+971 50 333 4444",
+    "businessId": "biz-xyz-academy", "businessName": "XYZ Academy", "businessVertical": "coaching",
+    "subjectId": "subj-xyz-physics", "subjectName": "Physics", "batchId": "batch-xyz-phys-a", "batchName": "Batch A",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "17:00", "slotEndTime": "18:00",
+    "instructorName": "Dr. Rajan", "durationHours": 1, "price": 450, "status": "expired",
+    "startDate": "2026-01-05", "endDate": "2026-02-04", "totalOperatingDays": 30, "completedDays": 30,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p012", "createdAt": "2025-12-30T10:00:00Z", "activatedAt": "2026-01-05T17:00:00Z"
+  },
+  {
+    "id": "sp-015", "userId": "user-sara", "userName": "Sara Al-Maktoum", "userEmail": "sara@email.com", "userPhone": "+971 50 444 5555",
+    "businessId": "biz-xyz-academy", "businessName": "XYZ Academy", "businessVertical": "coaching",
+    "subjectId": "subj-xyz-chemistry", "subjectName": "Chemistry", "batchId": "batch-xyz-chem-a", "batchName": "Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "18:00", "slotEndTime": "19:00",
+    "instructorName": "Dr. Kavita Rao", "durationHours": 1, "price": 400, "status": "active",
+    "startDate": "2026-02-05", "endDate": "2026-03-07", "totalOperatingDays": 30, "completedDays": 3,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p013", "createdAt": "2026-02-03T10:00:00Z", "activatedAt": "2026-02-05T18:00:00Z"
+  },
+  {
+    "id": "sp-016", "userId": "user-raj", "userName": "Raj Malhotra", "userEmail": "raj@email.com", "userPhone": "+971 50 555 6666",
+    "businessId": "biz-xyz-academy", "businessName": "XYZ Academy", "businessVertical": "coaching",
+    "subjectId": "subj-xyz-math", "subjectName": "Mathematics", "batchId": "batch-xyz-math-a", "batchName": "Batch Alpha",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "16:00", "slotEndTime": "17:00",
+    "instructorName": "Alok Nath", "durationHours": 2, "price": 650, "status": "cancelled",
+    "startDate": "2026-01-20", "endDate": "2026-02-19", "totalOperatingDays": 30, "completedDays": 8,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p014", "createdAt": "2026-01-18T10:00:00Z", "activatedAt": "2026-01-20T16:00:00Z"
+  },
+  {
+    "id": "sp-017", "userId": "user-noor", "userName": "Noor Al-Fahim", "userEmail": "noor@email.com", "userPhone": "+971 50 666 7777",
+    "businessId": "biz-xyz-academy", "businessName": "XYZ Academy", "businessVertical": "coaching",
+    "subjectId": "subj-xyz-math", "subjectName": "Mathematics", "batchId": "batch-xyz-math-a", "batchName": "Batch Alpha",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "16:00", "slotEndTime": "17:00",
+    "instructorName": "Alok Nath", "durationHours": 1, "price": 400, "status": "active",
+    "startDate": "2026-02-05", "endDate": "2026-03-07", "totalOperatingDays": 30, "completedDays": 3,
+    "autoRenew": false, "switchUsed": true, "transactionId": "txn-p015", "createdAt": "2026-02-03T11:00:00Z", "activatedAt": "2026-02-05T16:00:00Z"
+  },
+  {
+    "id": "sp-018", "userId": "user-aisha", "userName": "Aisha Khan", "userEmail": "aisha@email.com", "userPhone": "+971 50 777 8888",
+    "businessId": "biz-xyz-academy", "businessName": "XYZ Academy", "businessVertical": "coaching",
+    "subjectId": "subj-xyz-physics", "subjectName": "Physics", "batchId": "batch-xyz-phys-a", "batchName": "Batch A",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "17:00", "slotEndTime": "18:00",
+    "instructorName": "Dr. Rajan", "durationHours": 1, "price": 450, "status": "paused",
+    "startDate": "2026-02-06", "endDate": "2026-03-08", "totalOperatingDays": 30, "completedDays": 2,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p016", "createdAt": "2026-02-04T10:00:00Z", "activatedAt": "2026-02-06T17:00:00Z"
+  },
+  {
+    "id": "sp-019", "userId": "user-khalid", "userName": "Khalid Mansoor", "userEmail": "khalid@email.com", "userPhone": "+971 50 888 9999",
+    "businessId": "biz-xyz-academy", "businessName": "XYZ Academy", "businessVertical": "coaching",
+    "subjectId": "subj-xyz-chemistry", "subjectName": "Chemistry", "batchId": "batch-xyz-chem-a", "batchName": "Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "18:00", "slotEndTime": "19:00",
+    "instructorName": "Dr. Kavita Rao", "durationHours": 2, "price": 650, "status": "reserved",
+    "startDate": "2026-03-02", "endDate": "2026-04-01", "totalOperatingDays": 30, "completedDays": 0,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p017", "createdAt": "2026-02-10T14:00:00Z"
+  },
+  {
+    "id": "sp-020", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-xyz-academy", "businessName": "XYZ Academy", "businessVertical": "coaching",
+    "subjectId": "subj-xyz-math", "subjectName": "Mathematics", "batchId": "batch-xyz-math-b", "batchName": "Batch Beta",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "16:00", "slotEndTime": "17:00",
+    "instructorName": "Neha Gupta", "durationHours": 1, "price": 400, "status": "expired",
+    "startDate": "2025-12-15", "endDate": "2026-01-14", "totalOperatingDays": 30, "completedDays": 30,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p018", "createdAt": "2025-12-13T10:00:00Z", "activatedAt": "2025-12-15T16:00:00Z"
+  },
+
+  {
+    "id": "sp-021", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-weekly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "06:00", "timeSegmentEnd": "10:00",
+    "price": 400, "status": "expired",
+    "startDate": "2026-01-20", "endDate": "2026-01-25", "totalOperatingDays": 6, "completedDays": 6,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p019", "createdAt": "2026-01-18T10:00:00Z", "activatedAt": "2026-01-20T06:00:00Z"
+  },
+  {
+    "id": "sp-022", "userId": "user-priya", "userName": "Priya Sharma", "userEmail": "priya@email.com", "userPhone": "+971 50 222 3333",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "06:00", "timeSegmentEnd": "22:00",
+    "price": 2000, "status": "active",
+    "startDate": "2026-02-01", "endDate": "2026-03-02", "totalOperatingDays": 30, "completedDays": 7,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p020", "createdAt": "2026-01-30T10:00:00Z", "activatedAt": "2026-02-01T06:00:00Z"
+  },
+  {
+    "id": "sp-023", "userId": "user-mike", "userName": "Mike Johnson", "userEmail": "mike@email.com", "userPhone": "+971 50 333 4444",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-quarterly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "06:00", "timeSegmentEnd": "22:00",
+    "price": 5000, "status": "active",
+    "startDate": "2026-01-15", "endDate": "2026-04-15", "totalOperatingDays": 90, "completedDays": 20,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p021", "createdAt": "2026-01-13T10:00:00Z", "activatedAt": "2026-01-15T06:00:00Z"
+  },
+  {
+    "id": "sp-024", "userId": "user-sara", "userName": "Sara Al-Maktoum", "userEmail": "sara@email.com", "userPhone": "+971 50 444 5555",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-daily-morning", "timeSegmentName": "Morning", "timeSegmentStart": "06:00", "timeSegmentEnd": "10:00",
+    "price": 100, "status": "expired",
+    "startDate": "2026-02-10", "endDate": "2026-02-10", "totalOperatingDays": 1, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p022", "createdAt": "2026-02-10T05:00:00Z", "activatedAt": "2026-02-10T06:00:00Z"
+  },
+  {
+    "id": "sp-025", "userId": "user-raj", "userName": "Raj Malhotra", "userEmail": "raj@email.com", "userPhone": "+971 50 555 6666",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-monthly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "06:00", "timeSegmentEnd": "10:00",
+    "price": 1000, "status": "cancelled",
+    "startDate": "2026-01-10", "endDate": "2026-02-09", "totalOperatingDays": 30, "completedDays": 12,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p023", "createdAt": "2026-01-08T10:00:00Z", "activatedAt": "2026-01-10T06:00:00Z"
+  },
+  {
+    "id": "sp-026", "userId": "user-noor", "userName": "Noor Al-Fahim", "userEmail": "noor@email.com", "userPhone": "+971 50 666 7777",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-weekly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "06:00", "timeSegmentEnd": "22:00",
+    "price": 800, "status": "active",
+    "startDate": "2026-02-10", "endDate": "2026-02-15", "totalOperatingDays": 6, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p024", "createdAt": "2026-02-09T10:00:00Z", "activatedAt": "2026-02-10T06:00:00Z"
+  },
+  {
+    "id": "sp-027", "userId": "user-aisha", "userName": "Aisha Khan", "userEmail": "aisha@email.com", "userPhone": "+971 50 777 8888",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "06:00", "timeSegmentEnd": "22:00",
+    "price": 2000, "status": "paused",
+    "startDate": "2026-02-01", "endDate": "2026-03-02", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p025", "createdAt": "2026-01-30T10:00:00Z", "activatedAt": "2026-02-01T06:00:00Z"
+  },
+  {
+    "id": "sp-028", "userId": "user-khalid", "userName": "Khalid Mansoor", "userEmail": "khalid@email.com", "userPhone": "+971 50 888 9999",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-daily-evening", "timeSegmentName": "Evening", "timeSegmentStart": "18:00", "timeSegmentEnd": "22:00",
+    "price": 100, "status": "active",
+    "startDate": "2026-02-12", "endDate": "2026-02-12", "totalOperatingDays": 1, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p026", "createdAt": "2026-02-12T10:00:00Z", "activatedAt": "2026-02-12T18:00:00Z"
+  },
+  {
+    "id": "sp-029", "userId": "user-vivek", "userName": "Vivek Kapoor", "userEmail": "vivek@email.com", "userPhone": "+971 50 100 2001",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-weekly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "06:00", "timeSegmentEnd": "10:00",
+    "price": 400, "status": "reserved",
+    "startDate": "2026-02-17", "endDate": "2026-02-22", "totalOperatingDays": 6, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p027", "createdAt": "2026-02-11T10:00:00Z"
+  },
+  {
+    "id": "sp-030", "userId": "user-neha", "userName": "Neha Tandon", "userEmail": "neha@email.com", "userPhone": "+971 50 200 3001",
+    "businessId": "biz-fitzone", "businessName": "FitZone Gym", "businessVertical": "gym",
+    "passTemplateId": "pt-fz-monthly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "06:00", "timeSegmentEnd": "10:00",
+    "price": 1000, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p028", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T06:00:00Z"
+  },
+
+  {
+    "id": "sp-031", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-zenfit", "businessName": "Zen Yoga & Wellness", "businessVertical": "gym",
+    "passTemplateId": "pt-zen-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "06:00", "timeSegmentEnd": "20:00",
+    "price": 2500, "status": "active",
+    "startDate": "2026-02-01", "endDate": "2026-03-02", "totalOperatingDays": 30, "completedDays": 7,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p029", "createdAt": "2026-01-30T10:00:00Z", "activatedAt": "2026-02-01T06:00:00Z"
+  },
+  {
+    "id": "sp-032", "userId": "user-priya", "userName": "Priya Sharma", "userEmail": "priya@email.com", "userPhone": "+971 50 222 3333",
+    "businessId": "biz-zenfit", "businessName": "Zen Yoga & Wellness", "businessVertical": "gym",
+    "passTemplateId": "pt-zen-weekly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "06:00", "timeSegmentEnd": "10:00",
+    "price": 500, "status": "active",
+    "startDate": "2026-02-10", "endDate": "2026-02-15", "totalOperatingDays": 6, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p030", "createdAt": "2026-02-09T10:00:00Z", "activatedAt": "2026-02-10T06:00:00Z"
+  },
+  {
+    "id": "sp-033", "userId": "user-mike", "userName": "Mike Johnson", "userEmail": "mike@email.com", "userPhone": "+971 50 333 4444",
+    "businessId": "biz-zenfit", "businessName": "Zen Yoga & Wellness", "businessVertical": "gym",
+    "passTemplateId": "pt-zen-quarterly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "06:00", "timeSegmentEnd": "20:00",
+    "price": 6000, "status": "active",
+    "startDate": "2026-01-01", "endDate": "2026-03-31", "totalOperatingDays": 90, "completedDays": 30,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p031", "createdAt": "2025-12-28T10:00:00Z", "activatedAt": "2026-01-01T06:00:00Z"
+  },
+  {
+    "id": "sp-034", "userId": "user-sara", "userName": "Sara Al-Maktoum", "userEmail": "sara@email.com", "userPhone": "+971 50 444 5555",
+    "businessId": "biz-zenfit", "businessName": "Zen Yoga & Wellness", "businessVertical": "gym",
+    "passTemplateId": "pt-zen-daily-morning", "timeSegmentName": "Morning", "timeSegmentStart": "06:00", "timeSegmentEnd": "10:00",
+    "price": 120, "status": "expired",
+    "startDate": "2026-02-09", "endDate": "2026-02-09", "totalOperatingDays": 1, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p032", "createdAt": "2026-02-09T05:00:00Z", "activatedAt": "2026-02-09T06:00:00Z"
+  },
+  {
+    "id": "sp-035", "userId": "user-raj", "userName": "Raj Malhotra", "userEmail": "raj@email.com", "userPhone": "+971 50 555 6666",
+    "businessId": "biz-zenfit", "businessName": "Zen Yoga & Wellness", "businessVertical": "gym",
+    "passTemplateId": "pt-zen-weekly-evening", "timeSegmentName": "Evening", "timeSegmentStart": "16:00", "timeSegmentEnd": "20:00",
+    "price": 550, "status": "active",
+    "startDate": "2026-02-10", "endDate": "2026-02-15", "totalOperatingDays": 6, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p033", "createdAt": "2026-02-09T10:00:00Z", "activatedAt": "2026-02-10T16:00:00Z"
+  },
+  {
+    "id": "sp-036", "userId": "user-noor", "userName": "Noor Al-Fahim", "userEmail": "noor@email.com", "userPhone": "+971 50 666 7777",
+    "businessId": "biz-zenfit", "businessName": "Zen Yoga & Wellness", "businessVertical": "gym",
+    "passTemplateId": "pt-zen-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "06:00", "timeSegmentEnd": "20:00",
+    "price": 2500, "status": "cancelled",
+    "startDate": "2026-01-15", "endDate": "2026-02-14", "totalOperatingDays": 30, "completedDays": 15,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p034", "createdAt": "2026-01-13T10:00:00Z", "activatedAt": "2026-01-15T06:00:00Z"
+  },
+  {
+    "id": "sp-037", "userId": "user-aisha", "userName": "Aisha Khan", "userEmail": "aisha@email.com", "userPhone": "+971 50 777 8888",
+    "businessId": "biz-zenfit", "businessName": "Zen Yoga & Wellness", "businessVertical": "gym",
+    "passTemplateId": "pt-zen-weekly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "06:00", "timeSegmentEnd": "10:00",
+    "price": 500, "status": "expired",
+    "startDate": "2026-01-27", "endDate": "2026-02-01", "totalOperatingDays": 6, "completedDays": 6,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p035", "createdAt": "2026-01-25T10:00:00Z", "activatedAt": "2026-01-27T06:00:00Z"
+  },
+  {
+    "id": "sp-038", "userId": "user-khalid", "userName": "Khalid Mansoor", "userEmail": "khalid@email.com", "userPhone": "+971 50 888 9999",
+    "businessId": "biz-zenfit", "businessName": "Zen Yoga & Wellness", "businessVertical": "gym",
+    "passTemplateId": "pt-zen-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "06:00", "timeSegmentEnd": "20:00",
+    "price": 2500, "status": "paused",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 4,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p036", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T06:00:00Z"
+  },
+  {
+    "id": "sp-039", "userId": "user-vivek", "userName": "Vivek Kapoor", "userEmail": "vivek@email.com", "userPhone": "+971 50 100 2001",
+    "businessId": "biz-zenfit", "businessName": "Zen Yoga & Wellness", "businessVertical": "gym",
+    "passTemplateId": "pt-zen-daily-morning", "timeSegmentName": "Morning", "timeSegmentStart": "06:00", "timeSegmentEnd": "10:00",
+    "price": 120, "status": "active",
+    "startDate": "2026-02-12", "endDate": "2026-02-12", "totalOperatingDays": 1, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p037", "createdAt": "2026-02-12T05:00:00Z", "activatedAt": "2026-02-12T06:00:00Z"
+  },
+  {
+    "id": "sp-040", "userId": "user-neha", "userName": "Neha Tandon", "userEmail": "neha@email.com", "userPhone": "+971 50 200 3001",
+    "businessId": "biz-zenfit", "businessName": "Zen Yoga & Wellness", "businessVertical": "gym",
+    "passTemplateId": "pt-zen-quarterly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "06:00", "timeSegmentEnd": "20:00",
+    "price": 6000, "status": "reserved",
+    "startDate": "2026-03-01", "endDate": "2026-05-30", "totalOperatingDays": 90, "completedDays": 0,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p038", "createdAt": "2026-02-10T10:00:00Z"
+  },
+
+  {
+    "id": "sp-041", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-citylib", "businessName": "City Library Hub", "businessVertical": "library",
+    "passTemplateId": "pt-lib-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "08:00", "timeSegmentEnd": "18:00",
+    "price": 2000, "status": "active",
+    "startDate": "2026-02-01", "endDate": "2026-03-02", "totalOperatingDays": 30, "completedDays": 7,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p039", "createdAt": "2026-01-30T10:00:00Z", "activatedAt": "2026-02-01T08:00:00Z"
+  },
+  {
+    "id": "sp-042", "userId": "user-priya", "userName": "Priya Sharma", "userEmail": "priya@email.com", "userPhone": "+971 50 222 3333",
+    "businessId": "biz-citylib", "businessName": "City Library Hub", "businessVertical": "library",
+    "passTemplateId": "pt-lib-weekly-first", "timeSegmentName": "First Half", "timeSegmentStart": "08:00", "timeSegmentEnd": "13:00",
+    "price": 300, "status": "active",
+    "startDate": "2026-02-10", "endDate": "2026-02-15", "totalOperatingDays": 6, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p040", "createdAt": "2026-02-09T09:00:00Z", "activatedAt": "2026-02-10T08:00:00Z"
+  },
+  {
+    "id": "sp-043", "userId": "user-mike", "userName": "Mike Johnson", "userEmail": "mike@email.com", "userPhone": "+971 50 333 4444",
+    "businessId": "biz-citylib", "businessName": "City Library Hub", "businessVertical": "library",
+    "passTemplateId": "pt-lib-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "08:00", "timeSegmentEnd": "18:00",
+    "price": 2000, "status": "expired",
+    "startDate": "2026-01-01", "endDate": "2026-01-31", "totalOperatingDays": 30, "completedDays": 30,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p041", "createdAt": "2025-12-29T10:00:00Z", "activatedAt": "2026-01-01T08:00:00Z"
+  },
+  {
+    "id": "sp-044", "userId": "user-sara", "userName": "Sara Al-Maktoum", "userEmail": "sara@email.com", "userPhone": "+971 50 444 5555",
+    "businessId": "biz-citylib", "businessName": "City Library Hub", "businessVertical": "library",
+    "passTemplateId": "pt-lib-daily-full", "timeSegmentName": "Full Day", "timeSegmentStart": "08:00", "timeSegmentEnd": "18:00",
+    "price": 100, "status": "active",
+    "startDate": "2026-02-12", "endDate": "2026-02-12", "totalOperatingDays": 1, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p042", "createdAt": "2026-02-12T07:00:00Z", "activatedAt": "2026-02-12T08:00:00Z"
+  },
+  {
+    "id": "sp-045", "userId": "user-raj", "userName": "Raj Malhotra", "userEmail": "raj@email.com", "userPhone": "+971 50 555 6666",
+    "businessId": "biz-citylib", "businessName": "City Library Hub", "businessVertical": "library",
+    "passTemplateId": "pt-lib-weekly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "08:00", "timeSegmentEnd": "18:00",
+    "price": 600, "status": "cancelled",
+    "startDate": "2026-01-20", "endDate": "2026-01-25", "totalOperatingDays": 6, "completedDays": 3,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p043", "createdAt": "2026-01-18T10:00:00Z", "activatedAt": "2026-01-20T08:00:00Z"
+  },
+  {
+    "id": "sp-046", "userId": "user-noor", "userName": "Noor Al-Fahim", "userEmail": "noor@email.com", "userPhone": "+971 50 666 7777",
+    "businessId": "biz-citylib", "businessName": "City Library Hub", "businessVertical": "library",
+    "passTemplateId": "pt-lib-monthly-first", "timeSegmentName": "First Half", "timeSegmentStart": "08:00", "timeSegmentEnd": "13:00",
+    "price": 1000, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p044", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T08:00:00Z"
+  },
+  {
+    "id": "sp-047", "userId": "user-aisha", "userName": "Aisha Khan", "userEmail": "aisha@email.com", "userPhone": "+971 50 777 8888",
+    "businessId": "biz-citylib", "businessName": "City Library Hub", "businessVertical": "library",
+    "passTemplateId": "pt-lib-daily-second", "timeSegmentName": "Second Half", "timeSegmentStart": "13:00", "timeSegmentEnd": "18:00",
+    "price": 50, "status": "expired",
+    "startDate": "2026-02-08", "endDate": "2026-02-08", "totalOperatingDays": 1, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p045", "createdAt": "2026-02-08T12:00:00Z", "activatedAt": "2026-02-08T13:00:00Z"
+  },
+  {
+    "id": "sp-048", "userId": "user-khalid", "userName": "Khalid Mansoor", "userEmail": "khalid@email.com", "userPhone": "+971 50 888 9999",
+    "businessId": "biz-citylib", "businessName": "City Library Hub", "businessVertical": "library",
+    "passTemplateId": "pt-lib-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "08:00", "timeSegmentEnd": "18:00",
+    "price": 2000, "status": "paused",
+    "startDate": "2026-02-01", "endDate": "2026-03-02", "totalOperatingDays": 30, "completedDays": 6,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p046", "createdAt": "2026-01-30T10:00:00Z", "activatedAt": "2026-02-01T08:00:00Z"
+  },
+  {
+    "id": "sp-049", "userId": "user-vivek", "userName": "Vivek Kapoor", "userEmail": "vivek@email.com", "userPhone": "+971 50 100 2001",
+    "businessId": "biz-citylib", "businessName": "City Library Hub", "businessVertical": "library",
+    "passTemplateId": "pt-lib-weekly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "08:00", "timeSegmentEnd": "18:00",
+    "price": 600, "status": "reserved",
+    "startDate": "2026-02-17", "endDate": "2026-02-22", "totalOperatingDays": 6, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p047", "createdAt": "2026-02-11T10:00:00Z"
+  },
+  {
+    "id": "sp-050", "userId": "user-neha", "userName": "Neha Tandon", "userEmail": "neha@email.com", "userPhone": "+971 50 200 3001",
+    "businessId": "biz-citylib", "businessName": "City Library Hub", "businessVertical": "library",
+    "passTemplateId": "pt-lib-daily-first", "timeSegmentName": "First Half", "timeSegmentStart": "08:00", "timeSegmentEnd": "13:00",
+    "price": 50, "status": "active",
+    "startDate": "2026-02-12", "endDate": "2026-02-12", "totalOperatingDays": 1, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p048", "createdAt": "2026-02-12T07:00:00Z", "activatedAt": "2026-02-12T08:00:00Z"
+  },
+
+  {
+    "id": "sp-051", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-ironfit", "businessName": "Iron Fitness Studio", "businessVertical": "gym",
+    "passTemplateId": "pt-iron-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "05:00", "timeSegmentEnd": "23:00",
+    "price": 2500, "status": "active",
+    "startDate": "2026-02-01", "endDate": "2026-03-02", "totalOperatingDays": 30, "completedDays": 7,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p049", "createdAt": "2026-01-30T10:00:00Z", "activatedAt": "2026-02-01T05:00:00Z"
+  },
+  {
+    "id": "sp-052", "userId": "user-priya", "userName": "Priya Sharma", "userEmail": "priya@email.com", "userPhone": "+971 50 222 3333",
+    "businessId": "biz-ironfit", "businessName": "Iron Fitness Studio", "businessVertical": "gym",
+    "passTemplateId": "pt-iron-daily-early", "timeSegmentName": "Early Bird", "timeSegmentStart": "05:00", "timeSegmentEnd": "08:00",
+    "price": 80, "status": "expired",
+    "startDate": "2026-02-10", "endDate": "2026-02-10", "totalOperatingDays": 1, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p050", "createdAt": "2026-02-10T04:00:00Z", "activatedAt": "2026-02-10T05:00:00Z"
+  },
+  {
+    "id": "sp-053", "userId": "user-mike", "userName": "Mike Johnson", "userEmail": "mike@email.com", "userPhone": "+971 50 333 4444",
+    "businessId": "biz-ironfit", "businessName": "Iron Fitness Studio", "businessVertical": "gym",
+    "passTemplateId": "pt-iron-quarterly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "05:00", "timeSegmentEnd": "23:00",
+    "price": 6500, "status": "active",
+    "startDate": "2026-01-10", "endDate": "2026-04-10", "totalOperatingDays": 90, "completedDays": 25,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p051", "createdAt": "2026-01-08T10:00:00Z", "activatedAt": "2026-01-10T05:00:00Z"
+  },
+  {
+    "id": "sp-054", "userId": "user-sara", "userName": "Sara Al-Maktoum", "userEmail": "sara@email.com", "userPhone": "+971 50 444 5555",
+    "businessId": "biz-ironfit", "businessName": "Iron Fitness Studio", "businessVertical": "gym",
+    "passTemplateId": "pt-iron-weekly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "05:00", "timeSegmentEnd": "23:00",
+    "price": 600, "status": "active",
+    "startDate": "2026-02-10", "endDate": "2026-02-16", "totalOperatingDays": 7, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p052", "createdAt": "2026-02-09T10:00:00Z", "activatedAt": "2026-02-10T05:00:00Z"
+  },
+  {
+    "id": "sp-055", "userId": "user-raj", "userName": "Raj Malhotra", "userEmail": "raj@email.com", "userPhone": "+971 50 555 6666",
+    "businessId": "biz-ironfit", "businessName": "Iron Fitness Studio", "businessVertical": "gym",
+    "passTemplateId": "pt-iron-monthly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "08:00", "timeSegmentEnd": "12:00",
+    "price": 1200, "status": "cancelled",
+    "startDate": "2026-01-15", "endDate": "2026-02-14", "totalOperatingDays": 30, "completedDays": 10,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p053", "createdAt": "2026-01-13T10:00:00Z", "activatedAt": "2026-01-15T08:00:00Z"
+  },
+  {
+    "id": "sp-056", "userId": "user-noor", "userName": "Noor Al-Fahim", "userEmail": "noor@email.com", "userPhone": "+971 50 666 7777",
+    "businessId": "biz-ironfit", "businessName": "Iron Fitness Studio", "businessVertical": "gym",
+    "passTemplateId": "pt-iron-daily-evening", "timeSegmentName": "Evening", "timeSegmentStart": "17:00", "timeSegmentEnd": "23:00",
+    "price": 120, "status": "active",
+    "startDate": "2026-02-12", "endDate": "2026-02-12", "totalOperatingDays": 1, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p054", "createdAt": "2026-02-12T10:00:00Z", "activatedAt": "2026-02-12T17:00:00Z"
+  },
+  {
+    "id": "sp-057", "userId": "user-aisha", "userName": "Aisha Khan", "userEmail": "aisha@email.com", "userPhone": "+971 50 777 8888",
+    "businessId": "biz-ironfit", "businessName": "Iron Fitness Studio", "businessVertical": "gym",
+    "passTemplateId": "pt-iron-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "05:00", "timeSegmentEnd": "23:00",
+    "price": 2500, "status": "paused",
+    "startDate": "2026-02-01", "endDate": "2026-03-02", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p055", "createdAt": "2026-01-30T10:00:00Z", "activatedAt": "2026-02-01T05:00:00Z"
+  },
+  {
+    "id": "sp-058", "userId": "user-khalid", "userName": "Khalid Mansoor", "userEmail": "khalid@email.com", "userPhone": "+971 50 888 9999",
+    "businessId": "biz-ironfit", "businessName": "Iron Fitness Studio", "businessVertical": "gym",
+    "passTemplateId": "pt-iron-weekly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "05:00", "timeSegmentEnd": "23:00",
+    "price": 600, "status": "reserved",
+    "startDate": "2026-02-17", "endDate": "2026-02-23", "totalOperatingDays": 7, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p056", "createdAt": "2026-02-11T10:00:00Z"
+  },
+  {
+    "id": "sp-059", "userId": "user-vivek", "userName": "Vivek Kapoor", "userEmail": "vivek@email.com", "userPhone": "+971 50 100 2001",
+    "businessId": "biz-ironfit", "businessName": "Iron Fitness Studio", "businessVertical": "gym",
+    "passTemplateId": "pt-iron-monthly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "08:00", "timeSegmentEnd": "12:00",
+    "price": 1200, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p057", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T08:00:00Z"
+  },
+  {
+    "id": "sp-060", "userId": "user-neha", "userName": "Neha Tandon", "userEmail": "neha@email.com", "userPhone": "+971 50 200 3001",
+    "businessId": "biz-ironfit", "businessName": "Iron Fitness Studio", "businessVertical": "gym",
+    "passTemplateId": "pt-iron-daily-early", "timeSegmentName": "Early Bird", "timeSegmentStart": "05:00", "timeSegmentEnd": "08:00",
+    "price": 80, "status": "expired",
+    "startDate": "2026-02-05", "endDate": "2026-02-05", "totalOperatingDays": 1, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p058", "createdAt": "2026-02-05T04:00:00Z", "activatedAt": "2026-02-05T05:00:00Z"
+  },
+
+  {
+    "id": "sp-061", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-smartclass", "businessName": "SmartClass Tuition", "businessVertical": "coaching",
+    "subjectId": "subj-sc-math", "subjectName": "JEE Mathematics", "batchId": "batch-sc-math-a", "batchName": "JEE Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "07:00", "slotEndTime": "09:00",
+    "instructorName": "Prof. Rajendra", "durationHours": 2, "price": 800, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p059", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T07:00:00Z"
+  },
+  {
+    "id": "sp-062", "userId": "user-priya", "userName": "Priya Sharma", "userEmail": "priya@email.com", "userPhone": "+971 50 222 3333",
+    "businessId": "biz-smartclass", "businessName": "SmartClass Tuition", "businessVertical": "coaching",
+    "subjectId": "subj-sc-bio", "subjectName": "NEET Biology", "batchId": "batch-sc-bio-a", "batchName": "NEET Bio A",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "17:00", "slotEndTime": "19:00",
+    "instructorName": "Dr. Meghna Chandra", "durationHours": 2, "price": 750, "status": "active",
+    "startDate": "2026-02-04", "endDate": "2026-03-06", "totalOperatingDays": 30, "completedDays": 4,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p060", "createdAt": "2026-02-02T10:00:00Z", "activatedAt": "2026-02-04T17:00:00Z"
+  },
+  {
+    "id": "sp-063", "userId": "user-mike", "userName": "Mike Johnson", "userEmail": "mike@email.com", "userPhone": "+971 50 333 4444",
+    "businessId": "biz-smartclass", "businessName": "SmartClass Tuition", "businessVertical": "coaching",
+    "subjectId": "subj-sc-physics", "subjectName": "NEET Physics", "batchId": "batch-sc-phys-a", "batchName": "NEET Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "17:00", "slotEndTime": "19:00",
+    "instructorName": "Dr. Suresh Iyer", "durationHours": 2, "price": 800, "status": "expired",
+    "startDate": "2026-01-01", "endDate": "2026-01-31", "totalOperatingDays": 30, "completedDays": 30,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p061", "createdAt": "2025-12-28T10:00:00Z", "activatedAt": "2026-01-01T17:00:00Z"
+  },
+  {
+    "id": "sp-064", "userId": "user-sara", "userName": "Sara Al-Maktoum", "userEmail": "sara@email.com", "userPhone": "+971 50 444 5555",
+    "businessId": "biz-smartclass", "businessName": "SmartClass Tuition", "businessVertical": "coaching",
+    "subjectId": "subj-sc-math", "subjectName": "JEE Mathematics", "batchId": "batch-sc-math-b", "batchName": "JEE Batch B",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "07:00", "slotEndTime": "09:00",
+    "instructorName": "Dr. Anita Roy", "durationHours": 2, "price": 800, "status": "active",
+    "startDate": "2026-02-04", "endDate": "2026-03-06", "totalOperatingDays": 30, "completedDays": 4,
+    "autoRenew": false, "switchUsed": true, "transactionId": "txn-p062", "createdAt": "2026-02-02T10:00:00Z", "activatedAt": "2026-02-04T07:00:00Z"
+  },
+  {
+    "id": "sp-065", "userId": "user-raj", "userName": "Raj Malhotra", "userEmail": "raj@email.com", "userPhone": "+971 50 555 6666",
+    "businessId": "biz-smartclass", "businessName": "SmartClass Tuition", "businessVertical": "coaching",
+    "subjectId": "subj-sc-math", "subjectName": "JEE Mathematics", "batchId": "batch-sc-math-a", "batchName": "JEE Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "07:00", "slotEndTime": "09:00",
+    "instructorName": "Prof. Rajendra", "durationHours": 1, "price": 500, "status": "cancelled",
+    "startDate": "2026-01-15", "endDate": "2026-02-14", "totalOperatingDays": 30, "completedDays": 12,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p063", "createdAt": "2026-01-13T10:00:00Z", "activatedAt": "2026-01-15T07:00:00Z"
+  },
+  {
+    "id": "sp-066", "userId": "user-noor", "userName": "Noor Al-Fahim", "userEmail": "noor@email.com", "userPhone": "+971 50 666 7777",
+    "businessId": "biz-smartclass", "businessName": "SmartClass Tuition", "businessVertical": "coaching",
+    "subjectId": "subj-sc-bio", "subjectName": "NEET Biology", "batchId": "batch-sc-bio-a", "batchName": "NEET Bio A",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "17:00", "slotEndTime": "19:00",
+    "instructorName": "Dr. Meghna Chandra", "durationHours": 1, "price": 450, "status": "active",
+    "startDate": "2026-02-06", "endDate": "2026-03-08", "totalOperatingDays": 30, "completedDays": 3,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p064", "createdAt": "2026-02-04T10:00:00Z", "activatedAt": "2026-02-06T17:00:00Z"
+  },
+  {
+    "id": "sp-067", "userId": "user-aisha", "userName": "Aisha Khan", "userEmail": "aisha@email.com", "userPhone": "+971 50 777 8888",
+    "businessId": "biz-smartclass", "businessName": "SmartClass Tuition", "businessVertical": "coaching",
+    "subjectId": "subj-sc-physics", "subjectName": "NEET Physics", "batchId": "batch-sc-phys-a", "batchName": "NEET Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "17:00", "slotEndTime": "19:00",
+    "instructorName": "Dr. Suresh Iyer", "durationHours": 2, "price": 800, "status": "paused",
+    "startDate": "2026-02-05", "endDate": "2026-03-07", "totalOperatingDays": 30, "completedDays": 3,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p065", "createdAt": "2026-02-03T10:00:00Z", "activatedAt": "2026-02-05T17:00:00Z"
+  },
+  {
+    "id": "sp-068", "userId": "user-khalid", "userName": "Khalid Mansoor", "userEmail": "khalid@email.com", "userPhone": "+971 50 888 9999",
+    "businessId": "biz-smartclass", "businessName": "SmartClass Tuition", "businessVertical": "coaching",
+    "subjectId": "subj-sc-math", "subjectName": "JEE Mathematics", "batchId": "batch-sc-math-a", "batchName": "JEE Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "07:00", "slotEndTime": "09:00",
+    "instructorName": "Prof. Rajendra", "durationHours": 3, "price": 1100, "status": "reserved",
+    "startDate": "2026-03-01", "endDate": "2026-03-31", "totalOperatingDays": 30, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p066", "createdAt": "2026-02-10T10:00:00Z"
+  },
+  {
+    "id": "sp-069", "userId": "user-vivek", "userName": "Vivek Kapoor", "userEmail": "vivek@email.com", "userPhone": "+971 50 100 2001",
+    "businessId": "biz-smartclass", "businessName": "SmartClass Tuition", "businessVertical": "coaching",
+    "subjectId": "subj-sc-math", "subjectName": "JEE Mathematics", "batchId": "batch-sc-math-b", "batchName": "JEE Batch B",
+    "schedulePattern": "tts", "scheduleDays": ["tue", "thu", "sat"], "slotStartTime": "07:00", "slotEndTime": "09:00",
+    "instructorName": "Dr. Anita Roy", "durationHours": 2, "price": 800, "status": "active",
+    "startDate": "2026-02-04", "endDate": "2026-03-06", "totalOperatingDays": 30, "completedDays": 4,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p067", "createdAt": "2026-02-02T10:00:00Z", "activatedAt": "2026-02-04T07:00:00Z"
+  },
+  {
+    "id": "sp-070", "userId": "user-neha", "userName": "Neha Tandon", "userEmail": "neha@email.com", "userPhone": "+971 50 200 3001",
+    "businessId": "biz-smartclass", "businessName": "SmartClass Tuition", "businessVertical": "coaching",
+    "subjectId": "subj-sc-physics", "subjectName": "NEET Physics", "batchId": "batch-sc-phys-a", "batchName": "NEET Batch A",
+    "schedulePattern": "mwf", "scheduleDays": ["mon", "wed", "fri"], "slotStartTime": "17:00", "slotEndTime": "19:00",
+    "instructorName": "Dr. Suresh Iyer", "durationHours": 1, "price": 500, "status": "active",
+    "startDate": "2026-02-05", "endDate": "2026-03-07", "totalOperatingDays": 30, "completedDays": 3,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p068", "createdAt": "2026-02-03T10:00:00Z", "activatedAt": "2026-02-05T17:00:00Z"
+  },
+
+  {
+    "id": "sp-071", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-readzone", "businessName": "ReadZone Study Lounge", "businessVertical": "library",
+    "passTemplateId": "pt-rz-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "07:00", "timeSegmentEnd": "23:00",
+    "price": 1800, "status": "active",
+    "startDate": "2026-02-01", "endDate": "2026-03-02", "totalOperatingDays": 30, "completedDays": 7,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p069", "createdAt": "2026-01-30T10:00:00Z", "activatedAt": "2026-02-01T07:00:00Z"
+  },
+  {
+    "id": "sp-072", "userId": "user-priya", "userName": "Priya Sharma", "userEmail": "priya@email.com", "userPhone": "+971 50 222 3333",
+    "businessId": "biz-readzone", "businessName": "ReadZone Study Lounge", "businessVertical": "library",
+    "passTemplateId": "pt-rz-weekly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "07:00", "timeSegmentEnd": "23:00",
+    "price": 700, "status": "active",
+    "startDate": "2026-02-10", "endDate": "2026-02-16", "totalOperatingDays": 7, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p070", "createdAt": "2026-02-09T10:00:00Z", "activatedAt": "2026-02-10T07:00:00Z"
+  },
+  {
+    "id": "sp-073", "userId": "user-mike", "userName": "Mike Johnson", "userEmail": "mike@email.com", "userPhone": "+971 50 333 4444",
+    "businessId": "biz-readzone", "businessName": "ReadZone Study Lounge", "businessVertical": "library",
+    "passTemplateId": "pt-rz-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "07:00", "timeSegmentEnd": "23:00",
+    "price": 1800, "status": "expired",
+    "startDate": "2026-01-01", "endDate": "2026-01-31", "totalOperatingDays": 30, "completedDays": 30,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p071", "createdAt": "2025-12-29T10:00:00Z", "activatedAt": "2026-01-01T07:00:00Z"
+  },
+  {
+    "id": "sp-074", "userId": "user-sara", "userName": "Sara Al-Maktoum", "userEmail": "sara@email.com", "userPhone": "+971 50 444 5555",
+    "businessId": "biz-readzone", "businessName": "ReadZone Study Lounge", "businessVertical": "library",
+    "passTemplateId": "pt-rz-daily-morning", "timeSegmentName": "Morning", "timeSegmentStart": "07:00", "timeSegmentEnd": "12:00",
+    "price": 60, "status": "active",
+    "startDate": "2026-02-12", "endDate": "2026-02-12", "totalOperatingDays": 1, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p072", "createdAt": "2026-02-12T06:00:00Z", "activatedAt": "2026-02-12T07:00:00Z"
+  },
+  {
+    "id": "sp-075", "userId": "user-raj", "userName": "Raj Malhotra", "userEmail": "raj@email.com", "userPhone": "+971 50 555 6666",
+    "businessId": "biz-readzone", "businessName": "ReadZone Study Lounge", "businessVertical": "library",
+    "passTemplateId": "pt-rz-monthly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "07:00", "timeSegmentEnd": "12:00",
+    "price": 800, "status": "cancelled",
+    "startDate": "2026-01-20", "endDate": "2026-02-19", "totalOperatingDays": 30, "completedDays": 12,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p073", "createdAt": "2026-01-18T10:00:00Z", "activatedAt": "2026-01-20T07:00:00Z"
+  },
+  {
+    "id": "sp-076", "userId": "user-noor", "userName": "Noor Al-Fahim", "userEmail": "noor@email.com", "userPhone": "+971 50 666 7777",
+    "businessId": "biz-readzone", "businessName": "ReadZone Study Lounge", "businessVertical": "library",
+    "passTemplateId": "pt-rz-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "07:00", "timeSegmentEnd": "23:00",
+    "price": 1800, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p074", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T07:00:00Z"
+  },
+  {
+    "id": "sp-077", "userId": "user-aisha", "userName": "Aisha Khan", "userEmail": "aisha@email.com", "userPhone": "+971 50 777 8888",
+    "businessId": "biz-readzone", "businessName": "ReadZone Study Lounge", "businessVertical": "library",
+    "passTemplateId": "pt-rz-daily-full", "timeSegmentName": "Full Day", "timeSegmentStart": "07:00", "timeSegmentEnd": "23:00",
+    "price": 120, "status": "expired",
+    "startDate": "2026-02-08", "endDate": "2026-02-08", "totalOperatingDays": 1, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p075", "createdAt": "2026-02-08T06:00:00Z", "activatedAt": "2026-02-08T07:00:00Z"
+  },
+  {
+    "id": "sp-078", "userId": "user-khalid", "userName": "Khalid Mansoor", "userEmail": "khalid@email.com", "userPhone": "+971 50 888 9999",
+    "businessId": "biz-readzone", "businessName": "ReadZone Study Lounge", "businessVertical": "library",
+    "passTemplateId": "pt-rz-quarterly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "07:00", "timeSegmentEnd": "23:00",
+    "price": 4500, "status": "paused",
+    "startDate": "2026-01-15", "endDate": "2026-04-15", "totalOperatingDays": 90, "completedDays": 20,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p076", "createdAt": "2026-01-13T10:00:00Z", "activatedAt": "2026-01-15T07:00:00Z"
+  },
+  {
+    "id": "sp-079", "userId": "user-vivek", "userName": "Vivek Kapoor", "userEmail": "vivek@email.com", "userPhone": "+971 50 100 2001",
+    "businessId": "biz-readzone", "businessName": "ReadZone Study Lounge", "businessVertical": "library",
+    "passTemplateId": "pt-rz-weekly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "07:00", "timeSegmentEnd": "23:00",
+    "price": 700, "status": "reserved",
+    "startDate": "2026-02-17", "endDate": "2026-02-23", "totalOperatingDays": 7, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p077", "createdAt": "2026-02-11T10:00:00Z"
+  },
+  {
+    "id": "sp-080", "userId": "user-neha", "userName": "Neha Tandon", "userEmail": "neha@email.com", "userPhone": "+971 50 200 3001",
+    "businessId": "biz-readzone", "businessName": "ReadZone Study Lounge", "businessVertical": "library",
+    "passTemplateId": "pt-rz-monthly-morning", "timeSegmentName": "Morning", "timeSegmentStart": "07:00", "timeSegmentEnd": "12:00",
+    "price": 800, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p078", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T07:00:00Z"
+  },
+
+  {
+    "id": "sp-081", "userId": "user-demo", "userName": "Aarav Kumar", "userEmail": "aarav@email.com", "userPhone": "+971 50 111 2222",
+    "businessId": "biz-dancewave", "businessName": "DanceWave Academy", "businessVertical": "gym",
+    "passTemplateId": "pt-dw-monthly-evening", "timeSegmentName": "Evening", "timeSegmentStart": "17:00", "timeSegmentEnd": "21:00",
+    "price": 2200, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p079", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T17:00:00Z"
+  },
+  {
+    "id": "sp-082", "userId": "user-priya", "userName": "Priya Sharma", "userEmail": "priya@email.com", "userPhone": "+971 50 222 3333",
+    "businessId": "biz-dancewave", "businessName": "DanceWave Academy", "businessVertical": "gym",
+    "passTemplateId": "pt-dw-weekly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "10:00", "timeSegmentEnd": "21:00",
+    "price": 700, "status": "active",
+    "startDate": "2026-02-10", "endDate": "2026-02-15", "totalOperatingDays": 6, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p080", "createdAt": "2026-02-09T10:00:00Z", "activatedAt": "2026-02-10T10:00:00Z"
+  },
+  {
+    "id": "sp-083", "userId": "user-mike", "userName": "Mike Johnson", "userEmail": "mike@email.com", "userPhone": "+971 50 333 4444",
+    "businessId": "biz-dancewave", "businessName": "DanceWave Academy", "businessVertical": "gym",
+    "passTemplateId": "pt-dw-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "10:00", "timeSegmentEnd": "21:00",
+    "price": 3500, "status": "expired",
+    "startDate": "2026-01-01", "endDate": "2026-01-31", "totalOperatingDays": 30, "completedDays": 30,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p081", "createdAt": "2025-12-29T10:00:00Z", "activatedAt": "2026-01-01T10:00:00Z"
+  },
+  {
+    "id": "sp-084", "userId": "user-sara", "userName": "Sara Al-Maktoum", "userEmail": "sara@email.com", "userPhone": "+971 50 444 5555",
+    "businessId": "biz-dancewave", "businessName": "DanceWave Academy", "businessVertical": "gym",
+    "passTemplateId": "pt-dw-daily-morning", "timeSegmentName": "Morning", "timeSegmentStart": "10:00", "timeSegmentEnd": "14:00",
+    "price": 150, "status": "active",
+    "startDate": "2026-02-12", "endDate": "2026-02-12", "totalOperatingDays": 1, "completedDays": 0,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p082", "createdAt": "2026-02-12T09:00:00Z", "activatedAt": "2026-02-12T10:00:00Z"
+  },
+  {
+    "id": "sp-085", "userId": "user-raj", "userName": "Raj Malhotra", "userEmail": "raj@email.com", "userPhone": "+971 50 555 6666",
+    "businessId": "biz-dancewave", "businessName": "DanceWave Academy", "businessVertical": "gym",
+    "passTemplateId": "pt-dw-monthly-evening", "timeSegmentName": "Evening", "timeSegmentStart": "17:00", "timeSegmentEnd": "21:00",
+    "price": 2200, "status": "cancelled",
+    "startDate": "2026-01-15", "endDate": "2026-02-14", "totalOperatingDays": 30, "completedDays": 12,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p083", "createdAt": "2026-01-13T10:00:00Z", "activatedAt": "2026-01-15T17:00:00Z"
+  },
+  {
+    "id": "sp-086", "userId": "user-noor", "userName": "Noor Al-Fahim", "userEmail": "noor@email.com", "userPhone": "+971 50 666 7777",
+    "businessId": "biz-dancewave", "businessName": "DanceWave Academy", "businessVertical": "gym",
+    "passTemplateId": "pt-dw-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "10:00", "timeSegmentEnd": "21:00",
+    "price": 3500, "status": "active",
+    "startDate": "2026-02-03", "endDate": "2026-03-05", "totalOperatingDays": 30, "completedDays": 5,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p084", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T10:00:00Z"
+  },
+  {
+    "id": "sp-087", "userId": "user-aisha", "userName": "Aisha Khan", "userEmail": "aisha@email.com", "userPhone": "+971 50 777 8888",
+    "businessId": "biz-dancewave", "businessName": "DanceWave Academy", "businessVertical": "gym",
+    "passTemplateId": "pt-dw-daily-evening", "timeSegmentName": "Evening", "timeSegmentStart": "17:00", "timeSegmentEnd": "21:00",
+    "price": 150, "status": "expired",
+    "startDate": "2026-02-08", "endDate": "2026-02-08", "totalOperatingDays": 1, "completedDays": 1,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p085", "createdAt": "2026-02-08T16:00:00Z", "activatedAt": "2026-02-08T17:00:00Z"
+  },
+  {
+    "id": "sp-088", "userId": "user-khalid", "userName": "Khalid Mansoor", "userEmail": "khalid@email.com", "userPhone": "+971 50 888 9999",
+    "businessId": "biz-dancewave", "businessName": "DanceWave Academy", "businessVertical": "gym",
+    "passTemplateId": "pt-dw-weekly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "10:00", "timeSegmentEnd": "21:00",
+    "price": 700, "status": "paused",
+    "startDate": "2026-02-03", "endDate": "2026-02-08", "totalOperatingDays": 6, "completedDays": 3,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p086", "createdAt": "2026-02-01T10:00:00Z", "activatedAt": "2026-02-03T10:00:00Z"
+  },
+  {
+    "id": "sp-089", "userId": "user-vivek", "userName": "Vivek Kapoor", "userEmail": "vivek@email.com", "userPhone": "+971 50 100 2001",
+    "businessId": "biz-dancewave", "businessName": "DanceWave Academy", "businessVertical": "gym",
+    "passTemplateId": "pt-dw-monthly-evening", "timeSegmentName": "Evening", "timeSegmentStart": "17:00", "timeSegmentEnd": "21:00",
+    "price": 2200, "status": "reserved",
+    "startDate": "2026-03-01", "endDate": "2026-03-31", "totalOperatingDays": 30, "completedDays": 0,
+    "autoRenew": true, "switchUsed": false, "transactionId": "txn-p087", "createdAt": "2026-02-10T10:00:00Z"
+  },
+  {
+    "id": "sp-090", "userId": "user-neha", "userName": "Neha Tandon", "userEmail": "neha@email.com", "userPhone": "+971 50 200 3001",
+    "businessId": "biz-dancewave", "businessName": "DanceWave Academy", "businessVertical": "gym",
+    "passTemplateId": "pt-dw-monthly-full", "timeSegmentName": "Full Day", "timeSegmentStart": "10:00", "timeSegmentEnd": "21:00",
+    "price": 3500, "status": "active",
+    "startDate": "2026-02-05", "endDate": "2026-03-07", "totalOperatingDays": 30, "completedDays": 3,
+    "autoRenew": false, "switchUsed": false, "transactionId": "txn-p088", "createdAt": "2026-02-03T10:00:00Z", "activatedAt": "2026-02-05T10:00:00Z"
   }
 ]
