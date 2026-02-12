@@ -12,20 +12,9 @@
       "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800&h=600&fit=crop",
       "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&h=600&fit=crop"
     ],
-    "address": {
-      "street": "Al Seef Tower 2, Office 305",
-      "area": "Dubai Marina",
-      "city": "Dubai",
-      "lat": 25.0757,
-      "lng": 55.1394
-    },
-    "rating": 4.8,
-    "reviews": 320,
-    "verified": true,
-    "status": "approved",
-    "commissionTier": "premium",
-    "commissionRate": 8,
-    "subscriptionFee": 2000,
+    "address": { "street": "Al Seef Tower 2, Office 305", "area": "Dubai Marina", "city": "Dubai", "lat": 25.0757, "lng": 55.1394 },
+    "rating": 4.8, "reviews": 320, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
     "operatingDays": [
       { "day": "mon", "isOpen": true, "openTime": "08:00", "closeTime": "21:00" },
       { "day": "tue", "isOpen": true, "openTime": "08:00", "closeTime": "21:00" },
@@ -40,124 +29,32 @@
       { "id": "seg-abc-afternoon", "name": "Afternoon", "startTime": "12:00", "endTime": "17:00" },
       { "id": "seg-abc-evening", "name": "Evening", "startTime": "17:00", "endTime": "21:00" }
     ],
-    "closedToday": false,
-    "createdAt": "2024-01-15T00:00:00Z",
+    "closedToday": false, "createdAt": "2024-01-15T00:00:00Z",
     "subjects": [
       {
-        "id": "subj-math",
-        "businessId": "biz-abc-coaching",
-        "name": "Mathematics",
-        "description": "Grade 8-12 Math. Covers algebra, geometry, trigonometry.",
-        "icon": "📐",
-        "rating": 4.8,
-        "pricingTiers": [
-          { "durationHours": 1, "price": 300 },
-          { "durationHours": 2, "price": 500 },
-          { "durationHours": 3, "price": 700 }
-        ],
+        "id": "subj-math", "businessId": "biz-abc-coaching", "name": "Mathematics",
+        "description": "Grade 8-12 Math. Covers algebra, geometry, trigonometry.", "icon": "📐", "rating": 4.8,
+        "pricingTiers": [{ "durationHours": 1, "price": 300 }, { "durationHours": 2, "price": 500 }, { "durationHours": 3, "price": 700 }],
         "batches": [
-          {
-            "id": "batch-math-a",
-            "subjectId": "subj-math",
-            "businessId": "biz-abc-coaching",
-            "name": "Batch A",
-            "schedulePattern": "mwf",
-            "startTime": "16:00",
-            "endTime": "17:00",
-            "capacity": 20,
-            "enrolled": 18,
-            "instructorName": "Ramesh Kumar",
-            "instructorRating": 4.9,
-            "isPaused": false
-          },
-          {
-            "id": "batch-math-b",
-            "subjectId": "subj-math",
-            "businessId": "biz-abc-coaching",
-            "name": "Batch B",
-            "schedulePattern": "mwf",
-            "startTime": "17:00",
-            "endTime": "18:00",
-            "capacity": 15,
-            "enrolled": 12,
-            "instructorName": "Priya Sharma",
-            "instructorRating": 4.7,
-            "isPaused": false
-          },
-          {
-            "id": "batch-math-c",
-            "subjectId": "subj-math",
-            "businessId": "biz-abc-coaching",
-            "name": "Batch C",
-            "schedulePattern": "tts",
-            "startTime": "18:00",
-            "endTime": "19:00",
-            "capacity": 10,
-            "enrolled": 10,
-            "instructorName": "Arjun Patel",
-            "instructorRating": 4.6,
-            "customPricing": [
-              { "durationHours": 1, "price": 350 },
-              { "durationHours": 2, "price": 550 }
-            ],
-            "isPaused": false
-          }
+          { "id": "batch-math-a", "subjectId": "subj-math", "businessId": "biz-abc-coaching", "name": "Batch A", "schedulePattern": "mwf", "startTime": "16:00", "endTime": "17:00", "capacity": 20, "enrolled": 18, "instructorName": "Ramesh Kumar", "instructorRating": 4.9, "isPaused": false },
+          { "id": "batch-math-b", "subjectId": "subj-math", "businessId": "biz-abc-coaching", "name": "Batch B", "schedulePattern": "mwf", "startTime": "17:00", "endTime": "18:00", "capacity": 15, "enrolled": 12, "instructorName": "Priya Sharma", "instructorRating": 4.7, "isPaused": false },
+          { "id": "batch-math-c", "subjectId": "subj-math", "businessId": "biz-abc-coaching", "name": "Batch C", "schedulePattern": "tts", "startTime": "18:00", "endTime": "19:00", "capacity": 10, "enrolled": 10, "instructorName": "Arjun Patel", "instructorRating": 4.6, "customPricing": [{ "durationHours": 1, "price": 350 }, { "durationHours": 2, "price": 550 }], "isPaused": false }
         ]
       },
       {
-        "id": "subj-science",
-        "businessId": "biz-abc-coaching",
-        "name": "Science",
-        "description": "Physics, Chemistry, and Biology for grades 9-12.",
-        "icon": "🔬",
-        "rating": 4.6,
-        "pricingTiers": [
-          { "durationHours": 1, "price": 400 },
-          { "durationHours": 2, "price": 600 }
-        ],
+        "id": "subj-science", "businessId": "biz-abc-coaching", "name": "Science",
+        "description": "Physics, Chemistry, and Biology for grades 9-12.", "icon": "🔬", "rating": 4.6,
+        "pricingTiers": [{ "durationHours": 1, "price": 400 }, { "durationHours": 2, "price": 600 }],
         "batches": [
-          {
-            "id": "batch-sci-a",
-            "subjectId": "subj-science",
-            "businessId": "biz-abc-coaching",
-            "name": "Batch A",
-            "schedulePattern": "tts",
-            "startTime": "17:00",
-            "endTime": "18:00",
-            "capacity": 20,
-            "enrolled": 14,
-            "instructorName": "Dr. Meera Singh",
-            "instructorRating": 4.8,
-            "isPaused": false
-          }
+          { "id": "batch-sci-a", "subjectId": "subj-science", "businessId": "biz-abc-coaching", "name": "Batch A", "schedulePattern": "tts", "startTime": "17:00", "endTime": "18:00", "capacity": 20, "enrolled": 14, "instructorName": "Dr. Meera Singh", "instructorRating": 4.8, "isPaused": false }
         ]
       },
       {
-        "id": "subj-guitar",
-        "businessId": "biz-abc-coaching",
-        "name": "Guitar",
-        "description": "Acoustic and electric guitar lessons for all levels.",
-        "icon": "🎸",
-        "rating": 4.9,
-        "pricingTiers": [
-          { "durationHours": 1, "price": 800 },
-          { "durationHours": 2, "price": 1200 }
-        ],
+        "id": "subj-guitar", "businessId": "biz-abc-coaching", "name": "Guitar",
+        "description": "Acoustic and electric guitar lessons for all levels.", "icon": "🎸", "rating": 4.9,
+        "pricingTiers": [{ "durationHours": 1, "price": 800 }, { "durationHours": 2, "price": 1200 }],
         "batches": [
-          {
-            "id": "batch-guitar-a",
-            "subjectId": "subj-guitar",
-            "businessId": "biz-abc-coaching",
-            "name": "Batch A",
-            "schedulePattern": "mwf",
-            "startTime": "18:00",
-            "endTime": "19:00",
-            "capacity": 8,
-            "enrolled": 5,
-            "instructorName": "Vikram Mehta",
-            "instructorRating": 4.9,
-            "isPaused": false
-          }
+          { "id": "batch-guitar-a", "subjectId": "subj-guitar", "businessId": "biz-abc-coaching", "name": "Batch A", "schedulePattern": "mwf", "startTime": "18:00", "endTime": "19:00", "capacity": 8, "enrolled": 5, "instructorName": "Vikram Mehta", "instructorRating": 4.9, "isPaused": false }
         ]
       }
     ],
@@ -173,20 +70,9 @@
     "email": "info@xyzacademy.com",
     "image": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&h=600&fit=crop",
     "galleryImages": [],
-    "address": {
-      "street": "Cluster W, JLT",
-      "area": "JLT",
-      "city": "Dubai",
-      "lat": 25.0765,
-      "lng": 55.1530
-    },
-    "rating": 4.6,
-    "reviews": 180,
-    "verified": true,
-    "status": "approved",
-    "commissionTier": "basic",
-    "commissionRate": 15,
-    "subscriptionFee": 0,
+    "address": { "street": "Cluster W, JLT", "area": "JLT", "city": "Dubai", "lat": 25.0765, "lng": 55.1530 },
+    "rating": 4.6, "reviews": 180, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
     "operatingDays": [
       { "day": "mon", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
       { "day": "tue", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
@@ -200,63 +86,31 @@
       { "id": "seg-xyz-morning", "name": "Morning", "startTime": "09:00", "endTime": "13:00" },
       { "id": "seg-xyz-evening", "name": "Evening", "startTime": "15:00", "endTime": "20:00" }
     ],
-    "closedToday": false,
-    "createdAt": "2024-03-10T00:00:00Z",
+    "closedToday": false, "createdAt": "2024-03-10T00:00:00Z",
     "subjects": [
       {
-        "id": "subj-xyz-math",
-        "businessId": "biz-xyz-academy",
-        "name": "Mathematics",
-        "description": "Competitive math preparation.",
-        "icon": "📐",
-        "rating": 4.7,
-        "pricingTiers": [
-          { "durationHours": 1, "price": 400 },
-          { "durationHours": 2, "price": 650 }
-        ],
+        "id": "subj-xyz-math", "businessId": "biz-xyz-academy", "name": "Mathematics",
+        "description": "Competitive math preparation.", "icon": "📐", "rating": 4.7,
+        "pricingTiers": [{ "durationHours": 1, "price": 400 }, { "durationHours": 2, "price": 650 }],
         "batches": [
-          {
-            "id": "batch-xyz-math-a",
-            "subjectId": "subj-xyz-math",
-            "businessId": "biz-xyz-academy",
-            "name": "Batch Alpha",
-            "schedulePattern": "mwf",
-            "startTime": "16:00",
-            "endTime": "17:00",
-            "capacity": 25,
-            "enrolled": 20,
-            "instructorName": "Alok Nath",
-            "instructorRating": 4.8,
-            "isPaused": false
-          }
+          { "id": "batch-xyz-math-a", "subjectId": "subj-xyz-math", "businessId": "biz-xyz-academy", "name": "Batch Alpha", "schedulePattern": "mwf", "startTime": "16:00", "endTime": "17:00", "capacity": 25, "enrolled": 20, "instructorName": "Alok Nath", "instructorRating": 4.8, "isPaused": false },
+          { "id": "batch-xyz-math-b", "subjectId": "subj-xyz-math", "businessId": "biz-xyz-academy", "name": "Batch Beta", "schedulePattern": "tts", "startTime": "16:00", "endTime": "17:00", "capacity": 20, "enrolled": 8, "instructorName": "Neha Gupta", "instructorRating": 4.5, "isPaused": false }
         ]
       },
       {
-        "id": "subj-xyz-physics",
-        "businessId": "biz-xyz-academy",
-        "name": "Physics",
-        "description": "Advanced physics with lab sessions.",
-        "icon": "⚡",
-        "rating": 4.5,
-        "pricingTiers": [
-          { "durationHours": 1, "price": 450 },
-          { "durationHours": 2, "price": 700 }
-        ],
+        "id": "subj-xyz-physics", "businessId": "biz-xyz-academy", "name": "Physics",
+        "description": "Advanced physics with lab sessions.", "icon": "⚡", "rating": 4.5,
+        "pricingTiers": [{ "durationHours": 1, "price": 450 }, { "durationHours": 2, "price": 700 }],
         "batches": [
-          {
-            "id": "batch-xyz-phys-a",
-            "subjectId": "subj-xyz-physics",
-            "businessId": "biz-xyz-academy",
-            "name": "Batch A",
-            "schedulePattern": "tts",
-            "startTime": "17:00",
-            "endTime": "18:00",
-            "capacity": 20,
-            "enrolled": 15,
-            "instructorName": "Dr. Rajan",
-            "instructorRating": 4.6,
-            "isPaused": false
-          }
+          { "id": "batch-xyz-phys-a", "subjectId": "subj-xyz-physics", "businessId": "biz-xyz-academy", "name": "Batch A", "schedulePattern": "tts", "startTime": "17:00", "endTime": "18:00", "capacity": 20, "enrolled": 15, "instructorName": "Dr. Rajan", "instructorRating": 4.6, "isPaused": false }
+        ]
+      },
+      {
+        "id": "subj-xyz-chemistry", "businessId": "biz-xyz-academy", "name": "Chemistry",
+        "description": "Organic, inorganic and physical chemistry.", "icon": "🧪", "rating": 4.4,
+        "pricingTiers": [{ "durationHours": 1, "price": 400 }, { "durationHours": 2, "price": 650 }],
+        "batches": [
+          { "id": "batch-xyz-chem-a", "subjectId": "subj-xyz-chemistry", "businessId": "biz-xyz-academy", "name": "Batch A", "schedulePattern": "mwf", "startTime": "18:00", "endTime": "19:00", "capacity": 15, "enrolled": 11, "instructorName": "Dr. Kavita Rao", "instructorRating": 4.7, "isPaused": false }
         ]
       }
     ],
@@ -275,20 +129,9 @@
       "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=600&fit=crop",
       "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop"
     ],
-    "address": {
-      "street": "Building 7, Sector 10",
-      "area": "Business Bay",
-      "city": "Dubai",
-      "lat": 25.1850,
-      "lng": 55.2640
-    },
-    "rating": 4.6,
-    "reviews": 450,
-    "verified": true,
-    "status": "approved",
-    "commissionTier": "basic",
-    "commissionRate": 15,
-    "subscriptionFee": 0,
+    "address": { "street": "Building 7, Sector 10", "area": "Business Bay", "city": "Dubai", "lat": 25.1850, "lng": 55.2640 },
+    "rating": 4.6, "reviews": 450, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
     "operatingDays": [
       { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
       { "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
@@ -304,8 +147,7 @@
       { "id": "seg-fz-evening", "name": "Evening", "startTime": "18:00", "endTime": "22:00" },
       { "id": "seg-fz-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "22:00" }
     ],
-    "closedToday": false,
-    "createdAt": "2024-02-01T00:00:00Z",
+    "closedToday": false, "createdAt": "2024-02-01T00:00:00Z",
     "passTemplates": [
       { "id": "pt-fz-daily-morning", "businessId": "biz-fitzone", "name": "Daily Morning", "duration": "daily", "timeSegmentId": "seg-fz-morning", "timeSegmentName": "Morning", "price": 100, "validityDays": 1, "isActive": true },
       { "id": "pt-fz-daily-evening", "businessId": "biz-fitzone", "name": "Daily Evening", "duration": "daily", "timeSegmentId": "seg-fz-evening", "timeSegmentName": "Evening", "price": 100, "validityDays": 1, "isActive": true },
@@ -328,20 +170,9 @@
     "email": "namaste@zenfit.ae",
     "image": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800&h=600&fit=crop",
     "galleryImages": [],
-    "address": {
-      "street": "Palm Strip Mall",
-      "area": "Jumeirah",
-      "city": "Dubai",
-      "lat": 25.2330,
-      "lng": 55.2680
-    },
-    "rating": 4.9,
-    "reviews": 210,
-    "verified": true,
-    "status": "approved",
-    "commissionTier": "premium",
-    "commissionRate": 8,
-    "subscriptionFee": 2000,
+    "address": { "street": "Palm Strip Mall", "area": "Jumeirah", "city": "Dubai", "lat": 25.2330, "lng": 55.2680 },
+    "rating": 4.9, "reviews": 210, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
     "operatingDays": [
       { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },
       { "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },
@@ -356,12 +187,13 @@
       { "id": "seg-zen-evening", "name": "Evening", "startTime": "16:00", "endTime": "20:00" },
       { "id": "seg-zen-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "20:00" }
     ],
-    "closedToday": false,
-    "createdAt": "2024-04-01T00:00:00Z",
+    "closedToday": false, "createdAt": "2024-04-01T00:00:00Z",
     "passTemplates": [
       { "id": "pt-zen-daily-morning", "businessId": "biz-zenfit", "name": "Daily Morning", "duration": "daily", "timeSegmentId": "seg-zen-morning", "timeSegmentName": "Morning", "price": 120, "validityDays": 1, "isActive": true },
       { "id": "pt-zen-weekly-morning", "businessId": "biz-zenfit", "name": "Weekly Morning", "duration": "weekly", "timeSegmentId": "seg-zen-morning", "timeSegmentName": "Morning", "price": 500, "validityDays": 6, "isActive": true },
-      { "id": "pt-zen-monthly-full", "businessId": "biz-zenfit", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-zen-fullday", "timeSegmentName": "Full Day", "price": 2500, "validityDays": 30, "isActive": true }
+      { "id": "pt-zen-weekly-evening", "businessId": "biz-zenfit", "name": "Weekly Evening", "duration": "weekly", "timeSegmentId": "seg-zen-evening", "timeSegmentName": "Evening", "price": 550, "validityDays": 6, "isActive": true },
+      { "id": "pt-zen-monthly-full", "businessId": "biz-zenfit", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-zen-fullday", "timeSegmentName": "Full Day", "price": 2500, "validityDays": 30, "isActive": true },
+      { "id": "pt-zen-quarterly-full", "businessId": "biz-zenfit", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-zen-fullday", "timeSegmentName": "Full Day", "price": 6000, "validityDays": 90, "isActive": true }
     ],
     "amenities": ["wifi", "ac", "shower", "lockers"]
   },
@@ -378,20 +210,9 @@
       "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800&h=600&fit=crop",
       "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=600&fit=crop"
     ],
-    "address": {
-      "street": "Knowledge Village, Block A",
-      "area": "Al Sufouh",
-      "city": "Dubai",
-      "lat": 25.0990,
-      "lng": 55.1630
-    },
-    "rating": 4.7,
-    "reviews": 280,
-    "verified": true,
-    "status": "approved",
-    "commissionTier": "premium",
-    "commissionRate": 8,
-    "subscriptionFee": 2000,
+    "address": { "street": "Knowledge Village, Block A", "area": "Al Sufouh", "city": "Dubai", "lat": 25.0990, "lng": 55.1630 },
+    "rating": 4.7, "reviews": 280, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
     "operatingDays": [
       { "day": "mon", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },
       { "day": "tue", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },
@@ -406,8 +227,7 @@
       { "id": "seg-lib-second", "name": "Second Half", "startTime": "13:00", "endTime": "18:00" },
       { "id": "seg-lib-fullday", "name": "Full Day", "startTime": "08:00", "endTime": "18:00" }
     ],
-    "closedToday": false,
-    "createdAt": "2024-01-20T00:00:00Z",
+    "closedToday": false, "createdAt": "2024-01-20T00:00:00Z",
     "passTemplates": [
       { "id": "pt-lib-daily-first", "businessId": "biz-citylib", "name": "Daily First Half", "duration": "daily", "timeSegmentId": "seg-lib-first", "timeSegmentName": "First Half", "price": 50, "validityDays": 1, "isActive": true },
       { "id": "pt-lib-daily-second", "businessId": "biz-citylib", "name": "Daily Second Half", "duration": "daily", "timeSegmentId": "seg-lib-second", "timeSegmentName": "Second Half", "price": 50, "validityDays": 1, "isActive": true },
@@ -423,26 +243,15 @@
     "id": "biz-learnhub",
     "name": "Learn Hub",
     "vertical": "coaching",
-    "description": "Modern learning center with interactive teaching methods.",
+    "description": "Modern learning center with interactive teaching methods. IELTS, English, and Arabic classes.",
     "contactPerson": "Aisha Khan",
     "phone": "+971 50 678 9012",
     "email": "hello@learnhub.ae",
     "image": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&h=600&fit=crop",
     "galleryImages": [],
-    "address": {
-      "street": "Al Wahda Street",
-      "area": "Sharjah",
-      "city": "Sharjah",
-      "lat": 25.3463,
-      "lng": 55.4209
-    },
-    "rating": 4.3,
-    "reviews": 95,
-    "verified": false,
-    "status": "pending",
-    "commissionTier": "basic",
-    "commissionRate": 15,
-    "subscriptionFee": 0,
+    "address": { "street": "Al Wahda Street", "area": "Sharjah", "city": "Sharjah", "lat": 25.3463, "lng": 55.4209 },
+    "rating": 4.3, "reviews": 95, "verified": false, "status": "pending",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
     "operatingDays": [
       { "day": "mon", "isOpen": true, "openTime": "09:00", "closeTime": "19:00" },
       { "day": "tue", "isOpen": true, "openTime": "09:00", "closeTime": "19:00" },
@@ -456,37 +265,206 @@
       { "id": "seg-lh-morning", "name": "Morning", "startTime": "09:00", "endTime": "13:00" },
       { "id": "seg-lh-evening", "name": "Evening", "startTime": "15:00", "endTime": "19:00" }
     ],
-    "closedToday": false,
-    "createdAt": "2026-02-08T00:00:00Z",
+    "closedToday": false, "createdAt": "2026-02-08T00:00:00Z",
     "subjects": [
       {
-        "id": "subj-lh-eng",
-        "businessId": "biz-learnhub",
-        "name": "English",
-        "description": "IELTS and general English classes.",
-        "icon": "📝",
-        "rating": 4.4,
-        "pricingTiers": [
-          { "durationHours": 1, "price": 250 },
-          { "durationHours": 2, "price": 400 }
-        ],
+        "id": "subj-lh-eng", "businessId": "biz-learnhub", "name": "English",
+        "description": "IELTS and general English classes.", "icon": "📝", "rating": 4.4,
+        "pricingTiers": [{ "durationHours": 1, "price": 250 }, { "durationHours": 2, "price": 400 }],
         "batches": [
-          {
-            "id": "batch-lh-eng-a",
-            "subjectId": "subj-lh-eng",
-            "businessId": "biz-learnhub",
-            "name": "Batch A",
-            "schedulePattern": "mwf",
-            "startTime": "10:00",
-            "endTime": "11:00",
-            "capacity": 15,
-            "enrolled": 8,
-            "instructorName": "Sarah Ahmed",
-            "isPaused": false
-          }
+          { "id": "batch-lh-eng-a", "subjectId": "subj-lh-eng", "businessId": "biz-learnhub", "name": "Batch A", "schedulePattern": "mwf", "startTime": "10:00", "endTime": "11:00", "capacity": 15, "enrolled": 8, "instructorName": "Sarah Ahmed", "isPaused": false }
+        ]
+      },
+      {
+        "id": "subj-lh-arabic", "businessId": "biz-learnhub", "name": "Arabic",
+        "description": "Modern Standard Arabic for beginners to advanced.", "icon": "🌍", "rating": 4.2,
+        "pricingTiers": [{ "durationHours": 1, "price": 300 }, { "durationHours": 2, "price": 500 }],
+        "batches": [
+          { "id": "batch-lh-arabic-a", "subjectId": "subj-lh-arabic", "businessId": "biz-learnhub", "name": "Batch A", "schedulePattern": "tts", "startTime": "15:00", "endTime": "16:00", "capacity": 12, "enrolled": 5, "instructorName": "Khalid Mansoor", "isPaused": false }
         ]
       }
     ],
     "amenities": ["wifi", "ac"]
+  },
+  {
+    "id": "biz-ironfit",
+    "name": "Iron Fitness Studio",
+    "vertical": "gym",
+    "description": "Hardcore strength training, CrossFit, and powerlifting. For serious athletes only.",
+    "contactPerson": "Raj Malhotra",
+    "phone": "+971 50 789 0123",
+    "email": "info@ironfit.ae",
+    "image": "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=600&fit=crop",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop"
+    ],
+    "address": { "street": "Warehouse 12, Al Quoz", "area": "Al Quoz", "city": "Dubai", "lat": 25.1650, "lng": 55.2350 },
+    "rating": 4.5, "reviews": 310, "verified": true, "status": "approved",
+    "commissionTier": "enterprise", "commissionRate": 0, "subscriptionFee": 5000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },
+      { "day": "tue", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },
+      { "day": "wed", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },
+      { "day": "thu", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },
+      { "day": "fri", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },
+      { "day": "sat", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },
+      { "day": "sun", "isOpen": true, "openTime": "08:00", "closeTime": "14:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-iron-early", "name": "Early Bird", "startTime": "05:00", "endTime": "08:00" },
+      { "id": "seg-iron-morning", "name": "Morning", "startTime": "08:00", "endTime": "12:00" },
+      { "id": "seg-iron-afternoon", "name": "Afternoon", "startTime": "12:00", "endTime": "17:00" },
+      { "id": "seg-iron-evening", "name": "Evening", "startTime": "17:00", "endTime": "23:00" },
+      { "id": "seg-iron-fullday", "name": "Full Day", "startTime": "05:00", "endTime": "23:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-06-15T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-iron-daily-early", "businessId": "biz-ironfit", "name": "Daily Early Bird", "duration": "daily", "timeSegmentId": "seg-iron-early", "timeSegmentName": "Early Bird", "price": 80, "validityDays": 1, "isActive": true },
+      { "id": "pt-iron-daily-evening", "businessId": "biz-ironfit", "name": "Daily Evening", "duration": "daily", "timeSegmentId": "seg-iron-evening", "timeSegmentName": "Evening", "price": 120, "validityDays": 1, "isActive": true },
+      { "id": "pt-iron-weekly-full", "businessId": "biz-ironfit", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-iron-fullday", "timeSegmentName": "Full Day", "price": 600, "validityDays": 7, "isActive": true },
+      { "id": "pt-iron-monthly-morning", "businessId": "biz-ironfit", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-iron-morning", "timeSegmentName": "Morning", "price": 1200, "validityDays": 30, "isActive": true },
+      { "id": "pt-iron-monthly-full", "businessId": "biz-ironfit", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-iron-fullday", "timeSegmentName": "Full Day", "price": 2500, "validityDays": 30, "isActive": true },
+      { "id": "pt-iron-quarterly-full", "businessId": "biz-ironfit", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-iron-fullday", "timeSegmentName": "Full Day", "price": 6500, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["parking", "ac", "shower", "lockers", "trainer", "supplements"]
+  },
+  {
+    "id": "biz-smartclass",
+    "name": "SmartClass Tuition",
+    "vertical": "coaching",
+    "description": "Technology-driven coaching for JEE/NEET aspirants. AI-powered doubt solving and personalized learning paths.",
+    "contactPerson": "Dr. Vivek Kapoor",
+    "phone": "+971 50 890 1234",
+    "email": "admissions@smartclass.ae",
+    "image": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1523050854058-8df90110c476?w=800&h=600&fit=crop"
+    ],
+    "address": { "street": "Silicon Oasis HQ, Building 4", "area": "Silicon Oasis", "city": "Dubai", "lat": 25.1162, "lng": 55.3785 },
+    "rating": 4.7, "reviews": 420, "verified": true, "status": "approved",
+    "commissionTier": "enterprise", "commissionRate": 0, "subscriptionFee": 5000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "07:00", "closeTime": "21:00" },
+      { "day": "tue", "isOpen": true, "openTime": "07:00", "closeTime": "21:00" },
+      { "day": "wed", "isOpen": true, "openTime": "07:00", "closeTime": "21:00" },
+      { "day": "thu", "isOpen": true, "openTime": "07:00", "closeTime": "21:00" },
+      { "day": "fri", "isOpen": true, "openTime": "07:00", "closeTime": "21:00" },
+      { "day": "sat", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },
+      { "day": "sun", "isOpen": false, "openTime": "08:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-sc-morning", "name": "Morning", "startTime": "07:00", "endTime": "12:00" },
+      { "id": "seg-sc-afternoon", "name": "Afternoon", "startTime": "12:00", "endTime": "17:00" },
+      { "id": "seg-sc-evening", "name": "Evening", "startTime": "17:00", "endTime": "21:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-05-01T00:00:00Z",
+    "subjects": [
+      {
+        "id": "subj-sc-math", "businessId": "biz-smartclass", "name": "JEE Mathematics",
+        "description": "Advanced calculus, algebra, and coordinate geometry for IIT-JEE.", "icon": "📐", "rating": 4.8,
+        "pricingTiers": [{ "durationHours": 1, "price": 500 }, { "durationHours": 2, "price": 800 }, { "durationHours": 3, "price": 1100 }],
+        "batches": [
+          { "id": "batch-sc-math-a", "subjectId": "subj-sc-math", "businessId": "biz-smartclass", "name": "JEE Batch A", "schedulePattern": "mwf", "startTime": "07:00", "endTime": "09:00", "capacity": 30, "enrolled": 28, "instructorName": "Prof. Rajendra", "instructorRating": 4.9, "isPaused": false },
+          { "id": "batch-sc-math-b", "subjectId": "subj-sc-math", "businessId": "biz-smartclass", "name": "JEE Batch B", "schedulePattern": "tts", "startTime": "07:00", "endTime": "09:00", "capacity": 30, "enrolled": 22, "instructorName": "Dr. Anita Roy", "instructorRating": 4.7, "isPaused": false }
+        ]
+      },
+      {
+        "id": "subj-sc-physics", "businessId": "biz-smartclass", "name": "NEET Physics",
+        "description": "Medical entrance physics with conceptual clarity.", "icon": "⚡", "rating": 4.6,
+        "pricingTiers": [{ "durationHours": 1, "price": 500 }, { "durationHours": 2, "price": 800 }],
+        "batches": [
+          { "id": "batch-sc-phys-a", "subjectId": "subj-sc-physics", "businessId": "biz-smartclass", "name": "NEET Batch A", "schedulePattern": "mwf", "startTime": "17:00", "endTime": "19:00", "capacity": 25, "enrolled": 20, "instructorName": "Dr. Suresh Iyer", "instructorRating": 4.8, "isPaused": false }
+        ]
+      },
+      {
+        "id": "subj-sc-bio", "businessId": "biz-smartclass", "name": "NEET Biology",
+        "description": "Botany and zoology for NEET with lab practicals.", "icon": "🧬", "rating": 4.7,
+        "pricingTiers": [{ "durationHours": 1, "price": 450 }, { "durationHours": 2, "price": 750 }],
+        "batches": [
+          { "id": "batch-sc-bio-a", "subjectId": "subj-sc-bio", "businessId": "biz-smartclass", "name": "NEET Bio A", "schedulePattern": "tts", "startTime": "17:00", "endTime": "19:00", "capacity": 25, "enrolled": 18, "instructorName": "Dr. Meghna Chandra", "instructorRating": 4.8, "isPaused": false }
+        ]
+      }
+    ],
+    "amenities": ["wifi", "ac", "projector", "lab", "parking"]
+  },
+  {
+    "id": "biz-readzone",
+    "name": "ReadZone Study Lounge",
+    "vertical": "library",
+    "description": "Premium co-study space with private cabins, group discussion rooms, and 24/7 access for night owls.",
+    "contactPerson": "Noor Al-Fahim",
+    "phone": "+971 50 901 2345",
+    "email": "hello@readzone.ae",
+    "image": "https://images.unsplash.com/photo-1568667256549-094345857637?w=800&h=600&fit=crop",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&h=600&fit=crop"
+    ],
+    "address": { "street": "Mall of Emirates, Level 3", "area": "Al Barsha", "city": "Dubai", "lat": 25.1181, "lng": 55.2003 },
+    "rating": 4.4, "reviews": 175, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
+      { "day": "tue", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
+      { "day": "wed", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
+      { "day": "thu", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
+      { "day": "fri", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
+      { "day": "sat", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
+      { "day": "sun", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-rz-morning", "name": "Morning", "startTime": "07:00", "endTime": "12:00" },
+      { "id": "seg-rz-afternoon", "name": "Afternoon", "startTime": "12:00", "endTime": "17:00" },
+      { "id": "seg-rz-evening", "name": "Evening", "startTime": "17:00", "endTime": "23:00" },
+      { "id": "seg-rz-fullday", "name": "Full Day", "startTime": "07:00", "endTime": "23:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-07-10T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-rz-daily-morning", "businessId": "biz-readzone", "name": "Daily Morning", "duration": "daily", "timeSegmentId": "seg-rz-morning", "timeSegmentName": "Morning", "price": 60, "validityDays": 1, "isActive": true },
+      { "id": "pt-rz-daily-full", "businessId": "biz-readzone", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-rz-fullday", "timeSegmentName": "Full Day", "price": 120, "validityDays": 1, "isActive": true },
+      { "id": "pt-rz-weekly-full", "businessId": "biz-readzone", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-rz-fullday", "timeSegmentName": "Full Day", "price": 700, "validityDays": 7, "isActive": true },
+      { "id": "pt-rz-monthly-morning", "businessId": "biz-readzone", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-rz-morning", "timeSegmentName": "Morning", "price": 800, "validityDays": 30, "isActive": true },
+      { "id": "pt-rz-monthly-full", "businessId": "biz-readzone", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-rz-fullday", "timeSegmentName": "Full Day", "price": 1800, "validityDays": 30, "isActive": true },
+      { "id": "pt-rz-quarterly-full", "businessId": "biz-readzone", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-rz-fullday", "timeSegmentName": "Full Day", "price": 4500, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "parking", "lockers", "printer", "cafe"]
+  },
+  {
+    "id": "biz-dancewave",
+    "name": "DanceWave Academy",
+    "vertical": "gym",
+    "description": "Bollywood, Hip-Hop, Contemporary, and Salsa dance classes for all ages and levels.",
+    "contactPerson": "Neha Tandon",
+    "phone": "+971 50 012 3456",
+    "email": "dance@dancewave.ae",
+    "image": "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?w=800&h=600&fit=crop",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1547153760-18fc86c6498e?w=800&h=600&fit=crop"
+    ],
+    "address": { "street": "City Walk, Building 8", "area": "Jumeirah", "city": "Dubai", "lat": 25.2050, "lng": 55.2620 },
+    "rating": 4.8, "reviews": 195, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
+      { "day": "tue", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
+      { "day": "wed", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
+      { "day": "thu", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
+      { "day": "fri", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
+      { "day": "sat", "isOpen": true, "openTime": "10:00", "closeTime": "18:00" },
+      { "day": "sun", "isOpen": false, "openTime": "10:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-dw-morning", "name": "Morning", "startTime": "10:00", "endTime": "14:00" },
+      { "id": "seg-dw-evening", "name": "Evening", "startTime": "17:00", "endTime": "21:00" },
+      { "id": "seg-dw-fullday", "name": "Full Day", "startTime": "10:00", "endTime": "21:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-08-01T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-dw-daily-morning", "businessId": "biz-dancewave", "name": "Daily Morning", "duration": "daily", "timeSegmentId": "seg-dw-morning", "timeSegmentName": "Morning", "price": 150, "validityDays": 1, "isActive": true },
+      { "id": "pt-dw-daily-evening", "businessId": "biz-dancewave", "name": "Daily Evening", "duration": "daily", "timeSegmentId": "seg-dw-evening", "timeSegmentName": "Evening", "price": 150, "validityDays": 1, "isActive": true },
+      { "id": "pt-dw-weekly-full", "businessId": "biz-dancewave", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-dw-fullday", "timeSegmentName": "Full Day", "price": 700, "validityDays": 6, "isActive": true },
+      { "id": "pt-dw-monthly-evening", "businessId": "biz-dancewave", "name": "Monthly Evening", "duration": "monthly", "timeSegmentId": "seg-dw-evening", "timeSegmentName": "Evening", "price": 2200, "validityDays": 30, "isActive": true },
+      { "id": "pt-dw-monthly-full", "businessId": "biz-dancewave", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-dw-fullday", "timeSegmentName": "Full Day", "price": 3500, "validityDays": 30, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "parking", "shower", "lockers", "mirrors"]
   }
 ]
