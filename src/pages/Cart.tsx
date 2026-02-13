@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -8,11 +8,12 @@ import { Switch } from '@/components/ui/switch';
 import { usePlatformStore } from '@/store/platformStore';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
-import { format, parseISO, addDays } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import type { DayOfWeek } from '@/types/platform';
+import { validateCart } from '@/lib/conflictDetection';
 import {
   ShoppingCart, Trash2, Calendar, Clock, Users,
-  CreditCard, ArrowLeft, Timer, AlertCircle, Check,
+  CreditCard, Timer, AlertTriangle, Check, XCircle, Info,
 } from 'lucide-react';
 
 const DAY_SHORT: Record<DayOfWeek, string> = {
@@ -30,11 +31,17 @@ export default function CartPage() {
   const {
     cart, removeFromCart, clearCart, updateCartItemStartDate,
     updateCartItemAutoRenew, getCartTotal, getRemainingReservationTime,
-    checkout, getBusinessById,
+    checkout, getBusinessById, studentPasses,
   } = usePlatformStore();
   const { user, isAuthenticated } = useAuthStore();
   const [remainingTime, setRemainingTime] = useState(getRemainingReservationTime());
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Stage 3: Validate entire cart
+  const cartValidation = useMemo(() => {
+    const activePasses = studentPasses.filter(p => p.status === 'active' || p.status === 'reserved');
+    return validateCart(cart, activePasses);
+  }, [cart, studentPasses]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -54,7 +61,7 @@ export default function CartPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Generate weekly schedule preview for coaching items
+  // Weekly schedule preview for coaching items
   const schedulePreview = () => {
     const days: DayOfWeek[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     const coachingItems = cart.filter(i => i.businessVertical === 'coaching' && i.scheduleDays);
@@ -74,20 +81,28 @@ export default function CartPage() {
               </tr>
             </thead>
             <tbody>
-              {coachingItems.map(item => (
-                <tr key={item.id} className="border-t border-border">
-                  <td className="py-2 px-2 font-medium whitespace-nowrap">{item.slotTime?.split('-').map(formatTime).join('-')}</td>
-                  {days.map(d => (
-                    <td key={d} className="py-2 px-2 text-center">
-                      {item.scheduleDays?.includes(d) ? (
-                        <span className="inline-block px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium">
-                          {item.subjectName?.substring(0, 4)}
-                        </span>
-                      ) : '--'}
+              {coachingItems.map(item => {
+                const isConflicting = cartValidation.conflictingItemIds.has(item.id);
+                return (
+                  <tr key={item.id} className={`border-t border-border ${isConflicting ? 'bg-destructive/5' : ''}`}>
+                    <td className="py-2 px-2 font-medium whitespace-nowrap">
+                      {item.slotTime?.split('-').map(formatTime).join('-')}
+                      {isConflicting && <XCircle className="h-3 w-3 text-destructive inline ml-1" />}
                     </td>
-                  ))}
-                </tr>
-              ))}
+                    {days.map(d => (
+                      <td key={d} className="py-2 px-2 text-center">
+                        {item.scheduleDays?.includes(d) ? (
+                          <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                            isConflicting ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'
+                          }`}>
+                            {item.subjectName?.substring(0, 4)}
+                          </span>
+                        ) : '--'}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -102,8 +117,13 @@ export default function CartPage() {
       return;
     }
 
+    // Final conflict check
+    if (cartValidation.hasConflicts) {
+      toast.error('Cannot proceed — resolve schedule conflicts first');
+      return;
+    }
+
     setIsProcessing(true);
-    // Simulate Paytm payment
     await new Promise(r => setTimeout(r, 2000));
 
     const userName = user && 'name' in user ? user.name : (user as any).businessName || '';
@@ -155,16 +175,80 @@ export default function CartPage() {
             )}
           </div>
 
+          {/* Conflict Banner (Stage 3) */}
+          {cartValidation.hasConflicts ? (
+            <div className="mb-6 p-4 rounded-2xl bg-destructive/10 border border-destructive/30">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-destructive mb-2">
+                    ⚠️ Your cart contains conflicting schedules
+                  </h3>
+                  <p className="text-sm text-destructive/80 mb-3">
+                    Please remove conflicting items before proceeding to checkout.
+                  </p>
+                  <div className="space-y-2">
+                    {cartValidation.cartPairConflicts.map((pair, i) => (
+                      <div key={i} className="text-sm text-destructive bg-destructive/5 p-2 rounded-lg">
+                        <strong>{pair.itemA.subjectName}</strong> conflicts with <strong>{pair.itemB.subjectName}</strong>
+                        {pair.detail.overlapDays.length > 0 && (
+                          <span> on {pair.detail.overlapDays.map(d => DAY_SHORT[d]).join(', ')}</span>
+                        )}
+                        {pair.detail.overlapTimeRange && <span> ({pair.detail.overlapTimeRange})</span>}
+                      </div>
+                    ))}
+                    {cartValidation.enrollmentConflicts.map((ec, i) => (
+                      <div key={`e-${i}`} className="text-sm text-destructive bg-destructive/5 p-2 rounded-lg">
+                        <strong>{ec.cartItem.subjectName || ec.cartItem.timeSegmentName}</strong> conflicts with active enrollment: {ec.detail.conflictingItem.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="mb-6 p-4 rounded-2xl bg-success/10 border border-success/30">
+              <div className="flex items-center gap-3">
+                <Check className="h-5 w-5 text-success" />
+                <span className="font-medium text-success">✓ All schedules are compatible. You can proceed to checkout.</span>
+              </div>
+            </div>
+          )}
+
+          {/* Info Messages */}
+          {cartValidation.infoMessages.length > 0 && (
+            <div className="mb-6 space-y-2">
+              {cartValidation.infoMessages.map((msg, i) => (
+                <div key={i} className="p-3 rounded-xl bg-muted/50 border border-border flex items-start gap-2">
+                  <Info className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-muted-foreground">{msg}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Schedule Preview */}
           {schedulePreview()}
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
-              {cart.map((item, idx) => {
-                const business = getBusinessById(item.businessId);
+              {cart.map((item) => {
+                const isConflicting = cartValidation.conflictingItemIds.has(item.id);
                 return (
-                  <div key={item.id} className="bg-card rounded-2xl border border-border p-6">
+                  <div key={item.id} className={`bg-card rounded-2xl border p-6 ${
+                    isConflicting
+                      ? 'border-destructive ring-1 ring-destructive/20 bg-destructive/5'
+                      : 'border-border'
+                  }`}>
+                    {isConflicting && (
+                      <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-destructive/10">
+                        <XCircle className="h-4 w-4 text-destructive" />
+                        <span className="text-xs text-destructive font-medium">
+                          Schedule Conflict — remove this item or the conflicting item to proceed
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <Badge variant="secondary" className="capitalize mb-2">{item.businessVertical}</Badge>
@@ -218,8 +302,8 @@ export default function CartPage() {
                         <div className="text-xl font-bold text-primary">₹{item.price}</div>
                         <Button
                           variant="ghost"
-                          size="icon-sm"
-                          className="mt-2 text-destructive"
+                          size="icon"
+                          className="mt-2 text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => removeFromCart(item.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -238,7 +322,10 @@ export default function CartPage() {
                 <div className="space-y-3 mb-4">
                   {cart.map(item => (
                     <div key={item.id} className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground truncate mr-2">
+                      <span className={`truncate mr-2 ${
+                        cartValidation.conflictingItemIds.has(item.id) ? 'text-destructive' : 'text-muted-foreground'
+                      }`}>
+                        {cartValidation.conflictingItemIds.has(item.id) && '⚠️ '}
                         {item.subjectName || item.timeSegmentName}
                       </span>
                       <span className="font-medium">₹{item.price}</span>
@@ -256,18 +343,27 @@ export default function CartPage() {
                   className="w-full"
                   size="lg"
                   onClick={handleCheckout}
-                  disabled={isProcessing}
+                  disabled={isProcessing || cartValidation.hasConflicts}
                 >
                   {isProcessing ? (
                     <>Processing...</>
+                  ) : cartValidation.hasConflicts ? (
+                    <><AlertTriangle className="h-4 w-4 mr-2" /> Resolve Conflicts First</>
                   ) : (
                     <><CreditCard className="h-4 w-4 mr-2" /> Pay ₹{getCartTotal().toLocaleString()} with Paytm</>
                   )}
                 </Button>
 
-                <p className="text-xs text-muted-foreground text-center mt-3">
-                  Your slots are reserved for {formatTimer(remainingTime)}
-                </p>
+                {cartValidation.hasConflicts && (
+                  <p className="text-xs text-destructive text-center mt-3">
+                    Remove conflicting items to enable checkout
+                  </p>
+                )}
+                {!cartValidation.hasConflicts && remainingTime > 0 && (
+                  <p className="text-xs text-muted-foreground text-center mt-3">
+                    Your slots are reserved for {formatTimer(remainingTime)}
+                  </p>
+                )}
               </div>
             </div>
           </div>

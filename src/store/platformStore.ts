@@ -16,6 +16,13 @@ import type {
   DayOfWeek,
   DAYS_MAP,
 } from '@/types/platform';
+import {
+  checkScheduleConflicts,
+  cartItemToSchedule,
+  passToSchedule,
+  type ScheduleItem,
+  type ConflictCheckResult,
+} from '@/lib/conflictDetection';
 import platformBusinessesData from '@/data/mock/platformBusinesses.json';
 import studentPassesData from '@/data/mock/studentPasses.json';
 import { addDays, format, parseISO, isAfter, isBefore, differenceInDays } from 'date-fns';
@@ -377,9 +384,8 @@ export const usePlatformStore = create<PlatformStore>()(
 
       // ─── CONFLICT DETECTION ────────────────────────────────
       checkConflict: (item) => {
-        // Only check coaching conflicts (time-slot based)
+        // For gym/library, check if user already has active pass for same business
         if (item.businessVertical !== 'coaching' || !item.scheduleDays) {
-          // For gym/library, check if user already has active pass for same business
           const existingPass = get().studentPasses.find(p =>
             p.businessId === item.businessId &&
             (p.status === 'active' || p.status === 'reserved')
@@ -397,49 +403,39 @@ export const usePlatformStore = create<PlatformStore>()(
           return { hasConflict: false, conflictDays: [] };
         }
 
-        const itemDays = item.scheduleDays || [];
-        const itemStart = item.slotTime || '';
+        // Coaching: use full conflict detection engine
+        const [startTime, endTime] = (item.slotTime || '').split('-');
+        if (!startTime || !endTime) return { hasConflict: false, conflictDays: [] };
 
-        // Check against active passes
-        for (const pass of get().studentPasses) {
-          if (pass.status !== 'active' && pass.status !== 'reserved') continue;
-          if (!pass.scheduleDays) continue;
-          const overlap = itemDays.filter(d => pass.scheduleDays?.includes(d));
-          if (overlap.length > 0 && pass.slotStartTime === itemStart) {
-            return {
-              hasConflict: true,
-              conflictingItem: pass,
-              conflictDays: overlap,
-              conflictTime: itemStart,
-            };
-          }
-        }
+        const existingSchedules: ScheduleItem[] = [
+          ...get().cart.map(cartItemToSchedule).filter((s): s is ScheduleItem => s !== null),
+          ...get().studentPasses.map(passToSchedule).filter((s): s is ScheduleItem => s !== null),
+        ];
 
-        // Check against cart
-        for (const cartItem of get().cart) {
-          if (!cartItem.scheduleDays) continue;
-          const overlap = itemDays.filter(d => cartItem.scheduleDays?.includes(d));
-          if (overlap.length > 0 && cartItem.slotTime === itemStart) {
-            return {
-              hasConflict: true,
-              conflictingItem: cartItem,
-              conflictDays: overlap,
-              conflictTime: itemStart,
-            };
-          }
-        }
+        const result: ConflictCheckResult = checkScheduleConflicts(
+          {
+            batchId: item.batchId,
+            subjectId: item.subjectId,
+            subjectName: item.subjectName,
+            businessId: item.businessId,
+            businessName: item.businessName,
+            scheduleDays: item.scheduleDays,
+            startTime,
+            endTime,
+          },
+          existingSchedules,
+        );
 
-        // Check same batch
-        const sameBatch = get().studentPasses.find(p =>
-          p.batchId === item.batchId && (p.status === 'active' || p.status === 'reserved')
-        ) || get().cart.find(c => c.batchId === item.batchId);
-
-        if (sameBatch) {
+        if (result.hasConflict) {
+          const first = result.conflicts[0];
           return {
             hasConflict: true,
-            conflictingItem: sameBatch,
-            conflictDays: itemDays,
-          };
+            conflictingItem: undefined,
+            conflictDays: first.overlapDays,
+            conflictTime: first.overlapTimeRange,
+            // Attach full conflict details for UI
+            _conflictResult: result,
+          } as ConflictInfo & { _conflictResult: ConflictCheckResult };
         }
 
         return { hasConflict: false, conflictDays: [] };
