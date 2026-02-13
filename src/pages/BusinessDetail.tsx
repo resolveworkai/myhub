@@ -14,6 +14,7 @@ import {
   Star, MapPin, Clock, Phone, Mail, Heart, Share2, Shield,
   ChevronLeft, ChevronRight, Users, Calendar, ArrowLeft,
   Loader2, Lock, AlertTriangle, ShoppingCart, Check, Info,
+  XCircle,
 } from 'lucide-react';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -21,10 +22,9 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+import { checkBatchConflict, type ConflictCheckResult, DAY_SHORT_MAP, minutesToTime } from '@/lib/conflictDetection';
 
-const DAY_SHORT: Record<DayOfWeek, string> = {
-  mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun',
-};
+const DAY_SHORT: Record<DayOfWeek, string> = DAY_SHORT_MAP;
 
 const SCHEDULE_DAYS: Record<string, DayOfWeek[]> = {
   mwf: ['mon', 'wed', 'fri'],
@@ -42,7 +42,7 @@ const formatTime = (t: string) => {
 export default function BusinessDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getBusinessById, addToCart, cart, hasActivePass } = usePlatformStore();
+  const { getBusinessById, addToCart, cart, hasActivePass, studentPasses } = usePlatformStore();
   const { user, isAuthenticated } = useAuthStore();
   const [currentImage, setCurrentImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -51,9 +51,38 @@ export default function BusinessDetail() {
   const [selectedDuration, setSelectedDuration] = useState<number>(1);
   const [startDate, setStartDate] = useState(format(addDays(new Date(), 1), 'yyyy-MM-dd'));
   const [showConflict, setShowConflict] = useState(false);
-  const [conflictMsg, setConflictMsg] = useState('');
+  const [conflictMessages, setConflictMessages] = useState<string[]>([]);
 
   const business = useMemo(() => getBusinessById(id || ''), [id, getBusinessById]);
+
+  // Build conflict map for all batches (Stage 1: browse-time indicators)
+  const batchConflictMap = useMemo(() => {
+    if (!business?.subjects) return new Map<string, ConflictCheckResult>();
+    const map = new Map<string, ConflictCheckResult>();
+    const activePasses = studentPasses.filter(p => p.status === 'active' || p.status === 'reserved');
+    for (const subject of business.subjects) {
+      for (const batch of subject.batches) {
+        const result = checkBatchConflict(
+          batch, subject.id, subject.name,
+          business.id, business.name,
+          cart, activePasses,
+        );
+        map.set(batch.id, result);
+      }
+    }
+    return map;
+  }, [business, cart, studentPasses]);
+
+  // Check conflict for the currently selected batch in the dialog
+  const selectedBatchConflict = useMemo(() => {
+    if (!selectedBatch || !selectedSubject || !business) return null;
+    const activePasses = studentPasses.filter(p => p.status === 'active' || p.status === 'reserved');
+    return checkBatchConflict(
+      selectedBatch, selectedSubject.id, selectedSubject.name,
+      business.id, business.name,
+      cart, activePasses,
+    );
+  }, [selectedBatch, selectedSubject, business, cart, studentPasses]);
 
   if (!business) {
     return (
@@ -86,6 +115,13 @@ export default function BusinessDetail() {
     }
     if (!selectedBatch || !selectedSubject) return;
 
+    // Pre-check conflict before attempting
+    if (selectedBatchConflict?.hasConflict) {
+      setConflictMessages(selectedBatchConflict.conflicts.map(c => c.message));
+      setShowConflict(true);
+      return;
+    }
+
     const pricing = selectedBatch.customPricing || selectedSubject.pricingTiers;
     const tier = pricing.find(p => p.durationHours === selectedDuration);
     if (!tier) return;
@@ -111,9 +147,20 @@ export default function BusinessDetail() {
     });
 
     if (conflict) {
-      setConflictMsg(`Schedule conflict: This batch overlaps with an existing booking on ${conflict.conflictDays.map(d => DAY_SHORT[d]).join(', ')}`);
+      const fullResult = (conflict as any)._conflictResult;
+      if (fullResult?.conflicts?.length) {
+        setConflictMessages(fullResult.conflicts.map((c: any) => c.message));
+      } else {
+        setConflictMessages([`Schedule conflict detected on ${conflict.conflictDays.map(d => DAY_SHORT[d]).join(', ')}`]);
+      }
       setShowConflict(true);
     } else {
+      // Show info messages if any
+      if (selectedBatchConflict?.infoMessages?.length) {
+        for (const msg of selectedBatchConflict.infoMessages) {
+          toast.info(msg, { duration: 6000 });
+        }
+      }
       toast.success('Added to cart!', { description: `${selectedSubject.name} - ${selectedBatch.name}` });
       setSelectedBatch(null);
     }
@@ -126,7 +173,6 @@ export default function BusinessDetail() {
       return;
     }
 
-    const segment = business.timeSegments.find(s => s.id === template.timeSegmentId);
     const conflict = addToCart({
       businessId: business.id,
       businessName: business.name,
@@ -139,7 +185,7 @@ export default function BusinessDetail() {
     });
 
     if (conflict) {
-      setConflictMsg('You already have an active pass or cart item for this business.');
+      setConflictMessages(['You already have an active pass or cart item for this business.']);
       setShowConflict(true);
     } else {
       toast.success('Added to cart!', { description: `${template.name} - ₹${template.price}` });
@@ -259,13 +305,34 @@ export default function BusinessDetail() {
                             const isFull = batch.enrolled >= batch.capacity;
                             const days = SCHEDULE_DAYS[batch.schedulePattern] || batch.customDays || [];
                             const spotsLeft = batch.capacity - batch.enrolled;
+                            const conflictResult = batchConflictMap.get(batch.id);
+                            const hasConflict = conflictResult?.hasConflict ?? false;
+                            const conflictMsg = conflictResult?.conflicts?.[0]?.message || '';
+
                             return (
-                              <div key={batch.id} className={`p-4 rounded-xl border ${isFull ? 'border-destructive/30 bg-destructive/5' : 'border-border hover:border-primary/30'} transition-all`}>
+                              <div key={batch.id} className={`p-4 rounded-xl border transition-all ${
+                                hasConflict
+                                  ? 'border-destructive bg-destructive/5 ring-1 ring-destructive/20'
+                                  : isFull
+                                    ? 'border-destructive/30 bg-destructive/5'
+                                    : 'border-border hover:border-primary/30'
+                              }`}>
+                                {/* Conflict Badge */}
+                                {hasConflict && (
+                                  <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-destructive/10">
+                                    <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                                    <span className="text-xs text-destructive font-medium">Schedule Conflict</span>
+                                  </div>
+                                )}
+
                                 <div className="flex items-start justify-between gap-4">
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1">
                                       <span className="font-semibold">{batch.name}</span>
-                                      {spotsLeft <= 3 && spotsLeft > 0 && (
+                                      {hasConflict && (
+                                        <Badge variant="destructive" className="text-xs">Conflict</Badge>
+                                      )}
+                                      {!hasConflict && spotsLeft <= 3 && spotsLeft > 0 && (
                                         <Badge variant="destructive" className="text-xs">
                                           {spotsLeft} spot{spotsLeft > 1 ? 's' : ''} left!
                                         </Badge>
@@ -291,8 +358,20 @@ export default function BusinessDetail() {
                                         {batch.enrolled}/{batch.capacity} enrolled
                                       </div>
                                     </div>
+
+                                    {/* Conflict explanation */}
+                                    {hasConflict && conflictMsg && (
+                                      <p className="text-xs text-destructive mt-2 leading-relaxed">{conflictMsg}</p>
+                                    )}
+
+                                    {/* Info messages (back-to-back, different locations) */}
+                                    {!hasConflict && conflictResult?.infoMessages?.map((msg, i) => (
+                                      <p key={i} className="text-xs text-muted-foreground mt-2 leading-relaxed">{msg}</p>
+                                    ))}
                                   </div>
-                                  {!isFull && (
+
+                                  {/* Action buttons */}
+                                  {!isFull && !hasConflict && (
                                     <div className="flex flex-col gap-2">
                                       {(batch.customPricing || subject.pricingTiers).map(tier => (
                                         <Button
@@ -310,7 +389,12 @@ export default function BusinessDetail() {
                                       ))}
                                     </div>
                                   )}
-                                  {isFull && (
+                                  {hasConflict && (
+                                    <Button size="sm" variant="ghost" disabled className="text-destructive opacity-50">
+                                      <XCircle className="h-3.5 w-3.5 mr-1" /> Blocked
+                                    </Button>
+                                  )}
+                                  {isFull && !hasConflict && (
                                     <Button size="sm" variant="ghost" className="text-muted-foreground">
                                       Show Alternatives
                                     </Button>
@@ -328,7 +412,6 @@ export default function BusinessDetail() {
                 {/* GYM/LIBRARY: Pass Templates */}
                 {isGymOrLibrary && (
                   <TabsContent value="passes" className="mt-6 space-y-6">
-                    {/* Group by duration */}
                     {(['daily', 'weekly', 'monthly', 'quarterly'] as const).map(dur => {
                       const templates = business.passTemplates?.filter(pt => pt.duration === dur && pt.isActive) || [];
                       if (templates.length === 0) return null;
@@ -503,6 +586,30 @@ export default function BusinessDetail() {
                 <div className="text-sm text-muted-foreground">Instructor: {selectedBatch.instructorName}</div>
               </div>
 
+              {/* Conflict warning in dialog */}
+              {selectedBatchConflict?.hasConflict && (
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                    <div className="text-xs text-destructive space-y-1">
+                      {selectedBatchConflict.conflicts.map((c, i) => (
+                        <p key={i}>{c.message}</p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Compatibility message */}
+              {selectedBatchConflict && !selectedBatchConflict.hasConflict && (
+                <div className="p-3 rounded-lg bg-success/10 border border-success/20">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-success" />
+                    <span className="text-xs text-success font-medium">✓ This batch is compatible with your current schedule</span>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="text-sm font-medium block mb-2">Duration</label>
                 <Select value={selectedDuration.toString()} onValueChange={v => setSelectedDuration(Number(v))}>
@@ -545,8 +652,15 @@ export default function BusinessDetail() {
                 <span className="font-semibold">
                   ₹{(selectedBatch.customPricing || selectedSubject.pricingTiers).find(t => t.durationHours === selectedDuration)?.price || 0}
                 </span>
-                <Button onClick={handleAddCoachingToCart}>
-                  <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
+                <Button
+                  onClick={handleAddCoachingToCart}
+                  disabled={selectedBatchConflict?.hasConflict}
+                >
+                  {selectedBatchConflict?.hasConflict ? (
+                    <><XCircle className="h-4 w-4 mr-2" /> Cannot Add</>
+                  ) : (
+                    <><ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart</>
+                  )}
                 </Button>
               </div>
             </div>
@@ -556,14 +670,20 @@ export default function BusinessDetail() {
 
       {/* Conflict Dialog */}
       <Dialog open={showConflict} onOpenChange={setShowConflict}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" /> Schedule Conflict
+              <AlertTriangle className="h-5 w-5 text-destructive" /> Schedule Conflict
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">{conflictMsg}</p>
-          <Button variant="outline" onClick={() => setShowConflict(false)}>OK</Button>
+          <div className="space-y-3">
+            {conflictMessages.map((msg, i) => (
+              <div key={i} className="p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                <p className="text-sm text-foreground leading-relaxed">{msg}</p>
+              </div>
+            ))}
+          </div>
+          <Button variant="outline" onClick={() => setShowConflict(false)}>OK, I understand</Button>
         </DialogContent>
       </Dialog>
 
