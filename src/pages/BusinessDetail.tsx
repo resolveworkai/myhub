@@ -23,6 +23,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { checkBatchConflict, type ConflictCheckResult, DAY_SHORT_MAP, minutesToTime } from '@/lib/conflictDetection';
+import StudentClassBrowser from '@/components/business/StudentClassBrowser';
 
 const DAY_SHORT: Record<DayOfWeek, string> = DAY_SHORT_MAP;
 
@@ -254,8 +255,13 @@ export default function BusinessDetail() {
               </div>
 
               {/* Tabs */}
-              <Tabs defaultValue={isCoaching ? 'subjects' : 'passes'} className="w-full">
+              <Tabs defaultValue={isCoaching ? 'classes' : 'passes'} className="w-full">
                 <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
+                  {isCoaching && (
+                    <TabsTrigger value="classes" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
+                      📅 Classes
+                    </TabsTrigger>
+                  )}
                   {isCoaching && (
                     <TabsTrigger value="subjects" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
                       📚 Subjects
@@ -273,6 +279,13 @@ export default function BusinessDetail() {
                     ℹ️ About
                   </TabsTrigger>
                 </TabsList>
+
+                {/* COACHING: New Class Scheduling System */}
+                {isCoaching && (
+                  <TabsContent value="classes" className="mt-6">
+                    <StudentClassBrowser businessId={business.id} businessName={business.name} />
+                  </TabsContent>
+                )}
 
                 {/* COACHING: Subjects & Batches */}
                 {isCoaching && (
