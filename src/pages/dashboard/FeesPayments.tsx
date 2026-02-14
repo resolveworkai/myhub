@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getUserPayments, getUserDashboard } from "@/lib/apiService";
 
 interface Fee {
   id: string;
@@ -60,103 +61,101 @@ interface Payment {
   invoiceUrl: string;
 }
 
-const pendingFees: Fee[] = [
-  {
-    id: "fee-001",
-    business: "FitZone Premium Gym",
-    businessId: "fitzone-001",
-    businessImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=100&h=100&fit=crop",
-    type: "membership",
-    description: "Monthly Premium Membership - February 2026",
-    amount: 2500,
-    dueDate: "Jan 25, 2026",
-    daysLeft: 3,
-    status: "pending",
-  },
-  {
-    id: "fee-002",
-    business: "Central Public Library",
-    businessId: "central-library",
-    businessImage: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=100&h=100&fit=crop",
-    type: "membership",
-    description: "Annual Membership Renewal",
-    amount: 500,
-    dueDate: "Feb 1, 2026",
-    daysLeft: 10,
-    status: "pending",
-  },
-  {
-    id: "fee-003",
-    business: "Elite Coaching Center",
-    businessId: "elite-coaching",
-    businessImage: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=100&h=100&fit=crop",
-    type: "session",
-    description: "Personal Training Session (5 Sessions)",
-    amount: 1500,
-    dueDate: "Jan 20, 2026",
-    daysLeft: -3,
-    status: "overdue",
-  },
-];
-
-const paymentHistory: Payment[] = [
-  {
-    id: "pay-001",
-    business: "FitZone Premium Gym",
-    businessImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=100&h=100&fit=crop",
-    amount: 2500,
-    date: "Dec 25, 2025",
-    method: "Credit Card",
-    transactionId: "TXN-2025-123456",
-    invoiceUrl: "#",
-  },
-  {
-    id: "pay-002",
-    business: "Central Public Library",
-    businessImage: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=100&h=100&fit=crop",
-    amount: 500,
-    date: "Dec 20, 2025",
-    method: "UPI",
-    transactionId: "TXN-2025-123400",
-    invoiceUrl: "#",
-  },
-  {
-    id: "pay-003",
-    business: "FitZone Premium Gym",
-    businessImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=100&h=100&fit=crop",
-    amount: 2500,
-    date: "Nov 25, 2025",
-    method: "Debit Card",
-    transactionId: "TXN-2025-112233",
-    invoiceUrl: "#",
-  },
-  {
-    id: "pay-004",
-    business: "Elite Coaching Center",
-    businessImage: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=100&h=100&fit=crop",
-    amount: 1500,
-    date: "Nov 15, 2025",
-    method: "Net Banking",
-    transactionId: "TXN-2025-110011",
-    invoiceUrl: "#",
-  },
-];
-
 export default function FeesPayments() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const payId = searchParams.get('pay');
   
+  const [loading, setLoading] = useState(true);
+  const [pendingFees, setPendingFees] = useState<Fee[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<Payment[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(!!payId);
-  const [selectedFee, setSelectedFee] = useState<Fee | null>(
-    payId ? pendingFees.find(f => f.id === payId) || pendingFees[0] : null
-  );
+  const [selectedFee, setSelectedFee] = useState<Fee | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [dashboardData, paymentsData] = await Promise.all([
+          getUserDashboard(),
+          getUserPayments(1, 100),
+        ]);
+
+        // Transform pending fees
+        const fees: Fee[] = dashboardData.pendingFees.map((fee) => {
+          const dueDate = new Date(fee.dueDate);
+          const today = new Date();
+          const daysLeft = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          
+          return {
+            id: fee.id,
+            business: fee.businessName,
+            businessId: fee.businessId,
+            businessImage: `https://ui-avatars.com/api/?name=${encodeURIComponent(fee.businessName)}&background=random`,
+            type: fee.feeType === 'membership' ? 'membership' : 'session',
+            description: fee.feeType === 'membership' ? `${fee.venueName} Membership` : `${fee.venueName} Session`,
+            amount: fee.amount,
+            dueDate: dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            daysLeft,
+            status: fee.status === 'overdue' ? 'overdue' : 'pending',
+          };
+        });
+        setPendingFees(fees);
+
+        // Transform payment history
+        const history: Payment[] = paymentsData.payments
+          .filter((p: any) => p.paymentStatus === 'completed')
+          .map((p: any) => ({
+            id: p.id,
+            business: p.venueName || 'Unknown',
+            businessImage: `https://ui-avatars.com/api/?name=${encodeURIComponent(p.venueName || '')}&background=random`,
+            amount: p.amount,
+            date: new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            method: p.paymentMethod || 'Unknown',
+            transactionId: p.transactionId || p.id.substring(0, 13).toUpperCase(),
+            invoiceUrl: '#',
+          }));
+        setPaymentHistory(history);
+
+        // Set selected fee if payId is provided
+        if (payId) {
+          const fee = fees.find(f => f.id === payId);
+          if (fee) {
+            setSelectedFee(fee);
+          }
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to load fees and payments");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [payId]);
+
   const totalPending = pendingFees.filter(f => f.status === "pending").reduce((acc, f) => acc + f.amount, 0);
   const totalOverdue = pendingFees.filter(f => f.status === "overdue").reduce((acc, f) => acc + f.amount, 0);
-  const totalPaidThisMonth = paymentHistory.slice(0, 2).reduce((acc, p) => acc + p.amount, 0);
+  
+  // Calculate paid this month
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const totalPaidThisMonth = paymentHistory
+    .filter(p => {
+      const paymentDate = new Date(p.date);
+      return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+    })
+    .reduce((acc, p) => acc + p.amount, 0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   const handlePayNow = (fee: Fee) => {
     setSelectedFee(fee);

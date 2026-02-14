@@ -213,7 +213,7 @@ export const suspendUser = asyncHandler(async (req: AuthRequest, res: Response) 
 });
 
 /**
- * Get pass configurations
+ * Get pass configurations (global)
  */
 export const getPassConfigurations = asyncHandler(async (req: AuthRequest, res: Response) => {
   const configs = await adminService.getPassConfigurations();
@@ -221,6 +221,61 @@ export const getPassConfigurations = asyncHandler(async (req: AuthRequest, res: 
   res.json({
     success: true,
     data: configs,
+  });
+});
+
+/**
+ * Get business passes (per business user)
+ */
+export const getBusinessPasses = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const passes = await adminService.getBusinessPasses();
+
+  res.json({
+    success: true,
+    data: passes,
+  });
+});
+
+/**
+ * Update business pass prices
+ */
+export const updateBusinessPassPrices = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { businessId, passType, price, enabled } = req.body;
+  const adminId = req.user?.id;
+
+  if (!adminId) {
+    return res.status(401).json({
+      success: false,
+      error: { message: 'Authentication required', code: 'UNAUTHORIZED' },
+    });
+  }
+
+  if (!businessId || !passType || price === undefined || enabled === undefined) {
+    return res.status(400).json({
+      success: false,
+      error: { message: 'businessId, passType, price, and enabled are required', code: 'VALIDATION_ERROR' },
+    });
+  }
+
+  if (!['daily', 'weekly', 'monthly'].includes(passType)) {
+    return res.status(400).json({
+      success: false,
+      error: { message: 'passType must be daily, weekly, or monthly', code: 'VALIDATION_ERROR' },
+    });
+  }
+
+  const result = await adminService.updateBusinessPassPrices(
+    businessId,
+    passType as 'daily' | 'weekly' | 'monthly',
+    parseFloat(price),
+    enabled,
+    adminId
+  );
+
+  res.json({
+    success: true,
+    message: 'Business pass updated successfully',
+    data: result,
   });
 });
 

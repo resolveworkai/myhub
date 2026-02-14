@@ -14,6 +14,7 @@ interface UpdateUserData {
   };
   marketingConsent?: boolean;
   avatar?: string;
+  notificationPreferences?: Record<string, any>;
 }
 
 class UserService {
@@ -27,7 +28,8 @@ class UserService {
         location_lat, location_lng, location_address,
         preferences_categories, preferences_price_range,
         email_verified, phone_verified, marketing_consent,
-        account_status, created_at, last_login
+        account_status, created_at, last_login,
+        notification_preferences
        FROM users
        WHERE id = $1 AND deleted_at IS NULL`,
       [userId]
@@ -100,6 +102,20 @@ class UserService {
         paramCount++;
         updates.push(`avatar = $${paramCount}`);
         params.push(data.avatar);
+      }
+
+      if (data.notificationPreferences !== undefined) {
+        // Get current preferences
+        const currentResult = await client.query(
+          `SELECT notification_preferences FROM users WHERE id = $1`,
+          [userId]
+        );
+        const currentPreferences = currentResult.rows[0]?.notification_preferences || {};
+        const mergedPreferences = { ...currentPreferences, ...data.notificationPreferences };
+        
+        paramCount++;
+        updates.push(`notification_preferences = $${paramCount}`);
+        params.push(JSON.stringify(mergedPreferences));
       }
 
       if (updates.length === 0) {
@@ -208,23 +224,32 @@ class UserService {
   async getUserPayments(userId: string, page: number = 1, limit: number = 20) {
     const offset = (page - 1) * limit;
 
-    // Get total count
-    const countResult = await pool.query(
-      `SELECT COUNT(*) as total FROM payments WHERE user_id = $1`,
+    // Get user email for member_email matching
+    const userResult = await pool.query(
+      `SELECT email FROM users WHERE id = $1`,
       [userId]
     );
-    const total = parseInt(countResult.rows[0].total);
+    const userEmail = userResult.rows[0]?.email || '';
 
-    // Get payments
+    // Get total count - check both user_id and member_email
+    const countResult = await pool.query(
+      `SELECT COUNT(*) as total 
+       FROM payments 
+       WHERE (user_id = $1 OR member_email = $2)`,
+      [userId, userEmail]
+    );
+    const total = parseInt(countResult.rows[0].total, 10);
+
+    // Get payments - check both user_id and member_email
     const result = await pool.query(
       `SELECT p.*, v.name as venue_name, b.booking_date, b.booking_time
        FROM payments p
        LEFT JOIN bookings b ON p.booking_id = b.id
        LEFT JOIN venues v ON p.venue_id = v.id
-       WHERE p.user_id = $1
+       WHERE (p.user_id = $1 OR p.member_email = $2)
        ORDER BY p.created_at DESC
-       LIMIT $2 OFFSET $3`,
-      [userId, limit, offset]
+       LIMIT $3 OFFSET $4`,
+      [userId, userEmail, limit, offset]
     );
 
     return {
@@ -297,6 +322,171 @@ class UserService {
     } finally {
       client.release();
     }
+  }
+
+  /**
+   * Get user dashboard data
+   */
+  async getUserDashboard(userId: string) {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get today's schedule (bookings)
+    const todayScheduleResult = await pool.query(
+      `SELECT 
+        b.id,
+        b.booking_date,
+        b.booking_time,
+        b.duration,
+        b.status,
+        b.venue_type,
+        v.name as venue_name,
+        v.image as venue_image,
+        v.location_address,
+        bu.business_name,
+        bu.id as business_id
+       FROM bookings b
+       JOIN venues v ON b.venue_id = v.id
+       JOIN business_users bu ON v.business_user_id = bu.id
+       WHERE b.user_id = $1 
+         AND b.booking_date = $2
+         AND b.status IN ('pending', 'confirmed')
+       ORDER BY b.booking_time ASC`,
+      [userId, today]
+    );
+
+    // Get pending fees (unpaid payments and overdue memberships)
+    const pendingFeesResult = await pool.query(
+      `SELECT 
+        p.id,
+        p.amount,
+        p.payment_status,
+        p.created_at,
+        v.name as venue_name,
+        bu.business_name,
+        bu.id as business_id,
+        b.booking_date,
+        'payment' as fee_type
+       FROM payments p
+       LEFT JOIN bookings b ON p.booking_id = b.id
+       LEFT JOIN venues v ON p.venue_id = v.id
+       LEFT JOIN business_users bu ON COALESCE(v.business_user_id, (SELECT business_user_id FROM bookings WHERE id = p.booking_id LIMIT 1)) = bu.id
+       WHERE (p.user_id = $1 OR p.member_email = (SELECT email FROM users WHERE id = $1))
+         AND p.payment_status = 'pending'
+       UNION ALL
+       SELECT 
+        m.id,
+        m.price as amount,
+        CASE WHEN m.end_date < CURRENT_DATE THEN 'overdue' ELSE 'pending' END as payment_status,
+        m.created_at,
+        v.name as venue_name,
+        bu.business_name,
+        bu.id as business_id,
+        m.end_date as booking_date,
+        'membership' as fee_type
+       FROM memberships m
+       JOIN venues v ON m.venue_id = v.id
+       JOIN business_users bu ON m.business_user_id = bu.id
+       WHERE m.user_id = $1
+         AND m.status = 'active'
+         AND m.end_date >= CURRENT_DATE
+         AND NOT EXISTS (
+           SELECT 1 FROM payments 
+           WHERE payment_status = 'completed' 
+             AND (booking_id IN (SELECT id FROM bookings WHERE venue_id = m.venue_id AND user_id = $1)
+                  OR venue_id = m.venue_id)
+         )
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+
+    // Get active enrollments (memberships)
+    const enrollmentsResult = await pool.query(
+      `SELECT 
+        m.id,
+        m.membership_type,
+        m.start_date,
+        m.end_date,
+        m.price,
+        m.status,
+        m.auto_renew,
+        v.id as venue_id,
+        v.name as venue_name,
+        v.image as venue_image,
+        v.category,
+        bu.id as business_id,
+        bu.business_name,
+        bu.business_type
+       FROM memberships m
+       JOIN venues v ON m.venue_id = v.id
+       JOIN business_users bu ON m.business_user_id = bu.id
+       WHERE m.user_id = $1
+         AND m.status = 'active'
+         AND m.end_date >= CURRENT_DATE
+       ORDER BY m.end_date ASC`,
+      [userId]
+    );
+
+    // Get dashboard stats
+    const statsResult = await pool.query(
+      `SELECT 
+        (SELECT COUNT(*) FROM bookings WHERE user_id = $1 AND status = 'completed') as total_visits,
+        (SELECT COUNT(*) FROM bookings WHERE user_id = $1 AND booking_date = $2 AND status IN ('pending', 'confirmed')) as upcoming_today,
+        (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE (user_id = $1 OR member_email = (SELECT email FROM users WHERE id = $1)) AND payment_status = 'pending') as pending_fees,
+        (SELECT COUNT(*) FROM memberships WHERE user_id = $1 AND status = 'active' AND end_date >= CURRENT_DATE) as active_enrollments`,
+      [userId, today]
+    );
+
+    const stats = statsResult.rows[0];
+
+    return {
+      todaySchedule: todayScheduleResult.rows.map((row: any) => ({
+        id: row.id,
+        businessName: row.business_name,
+        businessId: row.business_id,
+        venueName: row.venue_name,
+        venueImage: row.venue_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(row.venue_name)}&background=random`,
+        date: row.booking_date,
+        time: row.booking_time,
+        duration: row.duration,
+        status: row.status,
+        type: row.venue_type,
+        address: row.location_address,
+      })),
+      pendingFees: pendingFeesResult.rows.map((row: any) => ({
+        id: row.id,
+        businessName: row.business_name,
+        businessId: row.business_id,
+        venueName: row.venue_name,
+        amount: parseFloat(row.amount),
+        status: row.payment_status,
+        dueDate: row.booking_date,
+        feeType: row.fee_type,
+        createdAt: row.created_at,
+      })),
+      enrollments: enrollmentsResult.rows.map((row: any) => ({
+        id: row.id,
+        businessId: row.business_id,
+        businessName: row.business_name,
+        businessType: row.business_type,
+        venueId: row.venue_id,
+        venueName: row.venue_name,
+        venueImage: row.venue_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(row.venue_name)}&background=random`,
+        category: row.category,
+        membershipType: row.membership_type,
+        startDate: row.start_date,
+        endDate: row.end_date,
+        price: parseFloat(row.price),
+        status: row.status,
+        autoRenew: row.auto_renew,
+        expiresIn: Math.ceil((new Date(row.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)),
+      })),
+      stats: {
+        totalVisits: parseInt(stats.total_visits) || 0,
+        upcomingToday: parseInt(stats.upcoming_today) || 0,
+        pendingFees: parseFloat(stats.pending_fees) || 0,
+        activeEnrollments: parseInt(stats.active_enrollments) || 0,
+      },
+    };
   }
 
   /**

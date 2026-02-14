@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,9 +24,11 @@ import {
   ExternalLink,
   Phone,
   Navigation,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getUserBookings, cancelBooking, type Booking } from "@/lib/apiService";
 
 interface Appointment {
   id: string;
@@ -43,104 +45,64 @@ interface Appointment {
   bookingId: string;
 }
 
-const allAppointments: Appointment[] = [
-  {
-    id: "apt-001",
-    business: "FitZone Premium Gym",
-    businessId: "fitzone-001",
-    businessImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=200&h=200&fit=crop",
-    date: "Jan 23, 2026",
-    time: "6:00 PM",
-    duration: "1 hour",
-    type: "gym",
-    status: "upcoming",
-    address: "123 Fitness Street, Dubai",
-    phone: "+971-50-123-4567",
-    bookingId: "BK-2026-001234",
-  },
-  {
-    id: "apt-002",
-    business: "Central Public Library",
-    businessId: "central-library",
-    businessImage: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=200&h=200&fit=crop",
-    date: "Jan 24, 2026",
-    time: "10:00 AM",
-    duration: "2 hours",
-    type: "library",
-    status: "upcoming",
-    address: "456 Knowledge Ave, Dubai",
-    phone: "+971-50-234-5678",
-    bookingId: "BK-2026-001235",
-  },
-  {
-    id: "apt-003",
-    business: "Elite Coaching Center",
-    businessId: "elite-coaching",
-    businessImage: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=200&h=200&fit=crop",
-    date: "Jan 25, 2026",
-    time: "3:00 PM",
-    duration: "1.5 hours",
-    type: "coaching",
-    status: "upcoming",
-    address: "789 Training Blvd, Dubai",
-    phone: "+971-50-345-6789",
-    bookingId: "BK-2026-001236",
-  },
-  {
-    id: "apt-004",
-    business: "FitZone Premium Gym",
-    businessId: "fitzone-001",
-    businessImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=200&h=200&fit=crop",
-    date: "Jan 20, 2026",
-    time: "7:00 PM",
-    duration: "1 hour",
-    type: "gym",
-    status: "completed",
-    address: "123 Fitness Street, Dubai",
-    phone: "+971-50-123-4567",
-    bookingId: "BK-2026-001200",
-  },
-  {
-    id: "apt-005",
-    business: "Central Public Library",
-    businessId: "central-library",
-    businessImage: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=200&h=200&fit=crop",
-    date: "Jan 18, 2026",
-    time: "2:00 PM",
-    duration: "3 hours",
-    type: "library",
-    status: "completed",
-    address: "456 Knowledge Ave, Dubai",
-    phone: "+971-50-234-5678",
-    bookingId: "BK-2026-001150",
-  },
-  {
-    id: "apt-006",
-    business: "Power Gym",
-    businessId: "power-gym",
-    businessImage: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=200&h=200&fit=crop",
-    date: "Jan 15, 2026",
-    time: "8:00 AM",
-    duration: "1 hour",
-    type: "gym",
-    status: "cancelled",
-    address: "321 Muscle Ave, Dubai",
-    phone: "+971-50-456-7890",
-    bookingId: "BK-2026-001100",
-  },
-];
-
 export default function MyAppointments() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const viewId = searchParams.get('view');
   
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(
-    viewId ? allAppointments.find(a => a.id === viewId) || null : null
-  );
+  const [loading, setLoading] = useState(true);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null);
 
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setLoading(true);
+        const result = await getUserBookings({ limit: 100 });
+        setBookings(result.bookings);
+        
+        // Set selected appointment if viewId is provided
+        if (viewId) {
+          const booking = result.bookings.find(b => b.id === viewId);
+          if (booking) {
+            setSelectedAppointment(transformBookingToAppointment(booking));
+          }
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to load appointments");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, [viewId]);
+
+  const transformBookingToAppointment = (booking: Booking): Appointment => {
+    const bookingDate = new Date(booking.bookingDate);
+    const timeStr = booking.bookingTime || '';
+    const [hours, minutes] = timeStr.split(':');
+    const time12h = hours ? new Date(2000, 0, 1, parseInt(hours), parseInt(minutes || '0')).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '';
+    
+    return {
+      id: booking.id,
+      business: booking.venueName || booking.businessName || 'Unknown',
+      businessId: booking.venueId || booking.businessId || '',
+      businessImage: booking.venueImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(booking.venueName || '')}&background=random`,
+      date: bookingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      time: time12h,
+      duration: `${booking.duration || 60} minutes`,
+      type: (booking.venueType || 'gym') as "gym" | "library" | "coaching",
+      status: booking.status === 'confirmed' || booking.status === 'pending' ? 'upcoming' : booking.status === 'completed' ? 'completed' : 'cancelled',
+      address: booking.venueAddress || 'Address not available',
+      phone: booking.businessPhone || '+971-XX-XXX-XXXX',
+      bookingId: booking.id.substring(0, 13).toUpperCase(),
+    };
+  };
+
+  const allAppointments = bookings.map(transformBookingToAppointment);
   const upcomingAppointments = allAppointments.filter(a => a.status === "upcoming");
   const completedAppointments = allAppointments.filter(a => a.status === "completed");
   const cancelledAppointments = allAppointments.filter(a => a.status === "cancelled");
@@ -156,13 +118,22 @@ export default function MyAppointments() {
     setCancelDialogOpen(true);
   };
 
-  const confirmCancelAppointment = () => {
-    if (appointmentToCancel) {
+  const confirmCancelAppointment = async () => {
+    if (!appointmentToCancel) return;
+
+    try {
+      await cancelBooking(appointmentToCancel.id);
       toast.success(`Appointment cancelled`, {
         description: `Your booking at ${appointmentToCancel.business} has been cancelled.`,
       });
       setCancelDialogOpen(false);
       setAppointmentToCancel(null);
+      
+      // Refresh bookings
+      const result = await getUserBookings({ limit: 100 });
+      setBookings(result.bookings);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to cancel appointment");
     }
   };
 
@@ -266,6 +237,14 @@ export default function MyAppointments() {
       )}
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 lg:p-8">

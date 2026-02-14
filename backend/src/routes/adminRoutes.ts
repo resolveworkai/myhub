@@ -10,6 +10,8 @@ import {
   getUserDetails,
   suspendUser,
   getPassConfigurations,
+  getBusinessPasses,
+  updateBusinessPassPrices,
   createPassConfiguration,
   updatePassConfiguration,
   deletePassConfiguration,
@@ -25,6 +27,7 @@ import {
   suspendUserSchema,
   createPassConfigurationSchema,
   updatePassConfigurationSchema,
+  updateBusinessPassPricesSchema,
   updatePlatformSettingSchema,
 } from '../validators/adminValidators';
 
@@ -53,6 +56,8 @@ router.post('/users/:id/suspend', validate(suspendUserSchema), suspendUser);
 
 // Pass configuration
 router.get('/passes', getPassConfigurations);
+router.get('/passes/businesses', getBusinessPasses);
+router.patch('/passes/businesses', validate(updateBusinessPassPricesSchema), updateBusinessPassPrices);
 router.post('/passes', validate(createPassConfigurationSchema), createPassConfiguration);
 router.patch('/passes/:id', validate(updatePassConfigurationSchema), updatePassConfiguration);
 router.delete('/passes/:id', deletePassConfiguration);

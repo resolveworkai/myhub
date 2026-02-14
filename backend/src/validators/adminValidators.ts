@@ -34,3 +34,10 @@ export const updatePlatformSettingSchema = Joi.object({
   value: Joi.any().required(),
   description: Joi.string().allow('', null).optional(),
 });
+
+export const updateBusinessPassPricesSchema = Joi.object({
+  businessId: Joi.string().uuid().required(),
+  passType: Joi.string().valid('daily', 'weekly', 'monthly').required(),
+  price: Joi.number().min(0).required(),
+  enabled: Joi.boolean().required(),
+});

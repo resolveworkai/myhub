@@ -256,6 +256,43 @@ export const deletePassConfiguration = async (id: string): Promise<void> => {
   await api.delete(`/admin/passes/${id}`);
 };
 
+export interface BusinessPass {
+  businessId: string;
+  businessName: string;
+  ownerName: string;
+  businessType: string;
+  dailyPass: {
+    enabled: boolean;
+    price: number;
+  };
+  weeklyPass: {
+    enabled: boolean;
+    price: number;
+  };
+  monthlyPass: {
+    enabled: boolean;
+    price: number;
+  };
+  verificationStatus: 'pending' | 'verified' | 'rejected';
+  accountStatus: 'active' | 'suspended' | 'pending_verification';
+  createdAt: string;
+}
+
+export const getBusinessPasses = async (): Promise<BusinessPass[]> => {
+  const result = await api.get<BusinessPass[]>('/admin/passes/businesses');
+  return result;
+};
+
+export const updateBusinessPassPrices = async (data: {
+  businessId: string;
+  passType: 'daily' | 'weekly' | 'monthly';
+  price: number;
+  enabled: boolean;
+}): Promise<BusinessPass> => {
+  const result = await api.patch<BusinessPass>('/admin/passes/businesses', data);
+  return result;
+};
+
 // ========== ANALYTICS ==========
 
 export const getAnalytics = async (period: 'week' | 'month' | 'year' = 'month'): Promise<AnalyticsData> => {

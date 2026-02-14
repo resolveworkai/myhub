@@ -497,7 +497,7 @@ class AdminService {
   }
 
   /**
-   * Get pass configurations
+   * Get pass configurations (global)
    */
   async getPassConfigurations() {
     const result = await pool.query(
@@ -518,6 +518,101 @@ class AdminService {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }));
+  }
+
+  /**
+   * Get business passes (per business user)
+   */
+  async getBusinessPasses() {
+    const result = await pool.query(
+      `SELECT 
+        id,
+        business_name,
+        owner_name,
+        business_type,
+        daily_package_price,
+        weekly_package_price,
+        monthly_package_price,
+        verification_status,
+        account_status,
+        created_at
+       FROM business_users
+       WHERE deleted_at IS NULL
+       ORDER BY business_name ASC`
+    );
+
+    return result.rows.map((row) => ({
+      businessId: row.id,
+      businessName: row.business_name,
+      ownerName: row.owner_name,
+      businessType: row.business_type,
+      dailyPass: {
+        enabled: row.daily_package_price > 0,
+        price: parseFloat(row.daily_package_price),
+      },
+      weeklyPass: {
+        enabled: row.weekly_package_price > 0,
+        price: parseFloat(row.weekly_package_price),
+      },
+      monthlyPass: {
+        enabled: row.monthly_package_price > 0,
+        price: parseFloat(row.monthly_package_price),
+      },
+      verificationStatus: row.verification_status,
+      accountStatus: row.account_status,
+      createdAt: row.created_at,
+    }));
+  }
+
+  /**
+   * Update business pass prices
+   */
+  async updateBusinessPassPrices(
+    businessId: string,
+    passType: 'daily' | 'weekly' | 'monthly',
+    price: number,
+    enabled: boolean,
+    adminId: string
+  ) {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      const priceValue = enabled ? price : 0;
+      const columnName = `${passType}_package_price`;
+
+      const result = await client.query(
+        `UPDATE business_users 
+         SET ${columnName} = $1, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $2 AND deleted_at IS NULL
+         RETURNING id, business_name, ${columnName}`,
+        [priceValue, businessId]
+      );
+
+      if (result.rows.length === 0) {
+        throw new NotFoundError('Business not found');
+      }
+
+      await this.logAdminAction(adminId, 'update_business_pass', 'business_users', businessId);
+
+      await client.query('COMMIT');
+
+      logger.info('Business pass updated', { businessId, passType, price: priceValue, enabled });
+
+      return {
+        businessId: result.rows[0].id,
+        businessName: result.rows[0].business_name,
+        passType,
+        price: parseFloat(result.rows[0][columnName]),
+        enabled: parseFloat(result.rows[0][columnName]) > 0,
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   /**

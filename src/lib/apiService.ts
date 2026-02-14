@@ -556,6 +556,63 @@ export const createBooking = async (bookingData: {
 };
 
 // Get user bookings
+// ========== USER DASHBOARD ==========
+
+export interface UserDashboardData {
+  todaySchedule: Array<{
+    id: string;
+    businessName: string;
+    businessId: string;
+    venueName: string;
+    venueImage: string;
+    date: string;
+    time: string;
+    duration: number;
+    status: string;
+    type: string;
+    address: string;
+  }>;
+  pendingFees: Array<{
+    id: string;
+    businessName: string;
+    businessId: string;
+    venueName: string;
+    amount: number;
+    status: string;
+    dueDate: string;
+    feeType: string;
+    createdAt: string;
+  }>;
+  enrollments: Array<{
+    id: string;
+    businessId: string;
+    businessName: string;
+    businessType: string;
+    venueId: string;
+    venueName: string;
+    venueImage: string;
+    category: string;
+    membershipType: string;
+    startDate: string;
+    endDate: string;
+    price: number;
+    status: string;
+    autoRenew: boolean;
+    expiresIn: number;
+  }>;
+  stats: {
+    totalVisits: number;
+    upcomingToday: number;
+    pendingFees: number;
+    activeEnrollments: number;
+  };
+}
+
+export const getUserDashboard = async (): Promise<UserDashboardData> => {
+  const result = await api.get<UserDashboardData>('/users/me/dashboard');
+  return result;
+};
+
 export const getUserBookings = async (filters: {
   status?: string;
   page?: number;

@@ -45,122 +45,130 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  getPassConfigurations,
-  createPassConfiguration,
-  updatePassConfiguration,
-  deletePassConfiguration,
-  getBusinesses,
-  type PassConfiguration,
-  type BusinessListItem,
+  getBusinessPasses,
+  updateBusinessPassPrices,
+  type BusinessPass,
 } from "@/lib/adminApiService";
 
 export function PassApprovalSection() {
-  const [passConfigs, setPassConfigs] = useState<PassConfiguration[]>([]);
-  const [businesses, setBusinesses] = useState<BusinessListItem[]>([]);
+  const [businessPasses, setBusinessPasses] = useState<BusinessPass[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedConfig, setSelectedConfig] = useState<PassConfiguration | null>(null);
+  const [selectedBusiness, setSelectedBusiness] = useState<BusinessPass | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newPassData, setNewPassData] = useState({
-    name: '',
-    description: '',
-    passType: 'daily' as 'daily' | 'weekly' | 'monthly' | 'custom',
-    durationDays: 1,
-    price: 0,
-  });
+  const [updatingPass, setUpdatingPass] = useState<string | null>(null);
 
-  // Fetch pass configurations and businesses
+  // Fetch business passes
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const passes = await getBusinessPasses();
+      setBusinessPasses(passes);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load business passes");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [configs, businessesResult] = await Promise.all([
-          getPassConfigurations(),
-          getBusinesses({ limit: 1000 }),
-        ]);
-        setPassConfigs(configs);
-        setBusinesses(businessesResult.businesses);
-      } catch (error: any) {
-      toast.error(error.message || "Failed to load pass configurations");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
-  const handleCreatePass = async () => {
+  const handleTogglePass = async (businessId: string, passType: 'daily' | 'weekly' | 'monthly', currentEnabled: boolean, currentPrice: number) => {
+    const passKey = `${businessId}-${passType}`;
+    setUpdatingPass(passKey);
+    
     try {
-      if (!newPassData.name || !newPassData.passType || !newPassData.durationDays || !newPassData.price) {
-      toast.error("Please fill in all required fields");
+      const newEnabled = !currentEnabled;
+      const newPrice = newEnabled ? (currentPrice > 0 ? currentPrice : 299) : 0;
+      
+      await updateBusinessPassPrices({
+        businessId,
+        passType,
+        price: newPrice,
+        enabled: newEnabled,
+      });
+
+      // Update local state
+      setBusinessPasses(prev => prev.map(business => {
+        if (business.businessId === businessId) {
+          return {
+            ...business,
+            [`${passType}Pass`]: {
+              enabled: newEnabled,
+              price: newPrice,
+            },
+          };
+        }
+        return business;
+      }));
+
+      toast.success(`${passType.charAt(0).toUpperCase() + passType.slice(1)} pass ${newEnabled ? 'enabled' : 'disabled'} successfully`);
+    } catch (error: any) {
+      toast.error(error.message || `Failed to ${currentEnabled ? 'disable' : 'enable'} ${passType} pass`);
+    } finally {
+      setUpdatingPass(null);
+    }
+  };
+
+  const handleUpdatePrice = async (businessId: string, passType: 'daily' | 'weekly' | 'monthly', newPrice: number) => {
+    const passKey = `${businessId}-${passType}`;
+    setUpdatingPass(passKey);
+    
+    try {
+      if (newPrice < 0) {
+        toast.error('Price cannot be negative');
         return;
       }
 
-      const newConfig = await createPassConfiguration(newPassData);
-      setPassConfigs(prev => [...prev, newConfig]);
-      setCreateDialogOpen(false);
-      setNewPassData({
-        name: '',
-        description: '',
-        passType: 'daily',
-        durationDays: 1,
-        price: 0,
+      await updateBusinessPassPrices({
+        businessId,
+        passType,
+        price: newPrice,
+        enabled: newPrice > 0,
       });
-      toast.success("Pass configuration created successfully");
+
+      // Update local state
+      setBusinessPasses(prev => prev.map(business => {
+        if (business.businessId === businessId) {
+          return {
+            ...business,
+            [`${passType}Pass`]: {
+              enabled: newPrice > 0,
+              price: newPrice,
+            },
+          };
+        }
+        return business;
+      }));
+
+      toast.success(`${passType.charAt(0).toUpperCase() + passType.slice(1)} pass price updated successfully`);
     } catch (error: any) {
-      toast.error(error.message || "Failed to create pass configuration");
+      toast.error(error.message || `Failed to update ${passType} pass price`);
+    } finally {
+      setUpdatingPass(null);
     }
   };
 
-  const handleUpdatePass = async (id: string, updates: Partial<PassConfiguration>) => {
-    try {
-      const updated = await updatePassConfiguration(id, updates);
-      setPassConfigs(prev => prev.map(c => c.id === id ? updated : c));
-      toast.success("Pass configuration updated successfully");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update pass configuration");
-    }
-  };
-
-  const handleDeletePass = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this pass configuration?")) {
-      return;
-    }
-
-    try {
-      await deletePassConfiguration(id);
-      setPassConfigs(prev => prev.filter(c => c.id !== id));
-      toast.success("Pass configuration deleted successfully");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete pass configuration");
-    }
-  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-3">
-            <Ticket className="h-7 w-7 text-primary" />
-            Pass Management
-          </h1>
-          <p className="text-muted-foreground">
-            Manage pass configurations for the platform
-          </p>
-        </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Pass
-        </Button>
+      <div>
+        <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-3">
+          <Ticket className="h-7 w-7 text-primary" />
+          Business Pass Management
+        </h1>
+        <p className="text-muted-foreground">
+          View and manage pass configurations for each business
+        </p>
       </div>
 
-      {/* Pass Configurations Table */}
+      {/* Business Passes Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Pass Configurations</CardTitle>
+          <CardTitle>Business Passes</CardTitle>
           <CardDescription>
-            Manage pass types and their pricing
+            Daily, Weekly, and Monthly pass prices for each business
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -173,71 +181,158 @@ export function PassApprovalSection() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Price</TableHead>
+                    <TableHead>Business Name</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead className="text-center">Daily Pass</TableHead>
+                    <TableHead className="text-center">Weekly Pass</TableHead>
+                    <TableHead className="text-center">Monthly Pass</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {passConfigs.length === 0 ? (
+                  {businessPasses.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No pass configurations found. Create one to get started.
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        No business passes found.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    passConfigs.map((config) => (
-                      <TableRow key={config.id}>
-                        <TableCell className="font-medium">{config.name}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="capitalize">
-                            {config.passType}
-                          </Badge>
+                    businessPasses.map((business) => (
+                      <TableRow key={business.businessId}>
+                        <TableCell className="font-medium">{business.businessName}</TableCell>
+                        <TableCell>{business.ownerName}</TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <Switch
+                              checked={business.dailyPass.enabled}
+                              onCheckedChange={() => handleTogglePass(business.businessId, 'daily', business.dailyPass.enabled, business.dailyPass.price)}
+                              disabled={updatingPass === `${business.businessId}-daily`}
+                            />
+                            {business.dailyPass.enabled ? (
+                              <>
+                                <Badge variant="success" className="mb-1">Active</Badge>
+                                <div className="flex items-center gap-1">
+                                  {/* <span className="text-xs">₹</span> */}
+                                  {/* <Input
+                                    type="number"
+                                    value={business.dailyPass.price}
+                                    onBlur={(e) => {
+                                      const newPrice = parseFloat(e.target.value) || 0;
+                                      if (newPrice >= 0 && newPrice !== business.dailyPass.price) {
+                                        handleUpdatePrice(business.businessId, 'daily', newPrice);
+                                      }
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.currentTarget.blur();
+                                      }
+                                    }}
+                                    className="w-20 h-8 text-sm"
+                                    min="0"
+                                    step="1"
+                                    disabled={updatingPass === `${business.businessId}-daily`}
+                                  /> */}
+                                </div>
+                              </>
+                            ) : (
+                              <Badge variant="secondary">Disabled</Badge>
+                            )}
+                          </div>
                         </TableCell>
-                        <TableCell>{config.durationDays} days</TableCell>
-                        <TableCell>₹{config.price}</TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <Switch
+                              checked={business.weeklyPass.enabled}
+                              onCheckedChange={() => handleTogglePass(business.businessId, 'weekly', business.weeklyPass.enabled, business.weeklyPass.price)}
+                              disabled={updatingPass === `${business.businessId}-weekly`}
+                            />
+                            {business.weeklyPass.enabled ? (
+                              <>
+                                <Badge variant="success" className="mb-1">Active</Badge>
+                                {/* <div className="flex items-center gap-1">
+                                  <span className="text-xs">₹</span>
+                                  <Input
+                                    type="number"
+                                    value={business.weeklyPass.price}
+                                    onBlur={(e) => {
+                                      const newPrice = parseFloat(e.target.value) || 0;
+                                      if (newPrice >= 0 && newPrice !== business.weeklyPass.price) {
+                                        handleUpdatePrice(business.businessId, 'weekly', newPrice);
+                                      }
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.currentTarget.blur();
+                                      }
+                                    }}
+                                    className="w-20 h-8 text-sm"
+                                    min="0"
+                                    step="1"
+                                    disabled={updatingPass === `${business.businessId}-weekly`}
+                                  />
+                                </div> */}
+                              </>
+                            ) : (
+                              <Badge variant="secondary">Disabled</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <Switch
+                              checked={business.monthlyPass.enabled}
+                              onCheckedChange={() => handleTogglePass(business.businessId, 'monthly', business.monthlyPass.enabled, business.monthlyPass.price)}
+                              disabled={updatingPass === `${business.businessId}-monthly`}
+                            />
+                            {business.monthlyPass.enabled ? (
+                              <>
+                                <Badge variant="success" className="mb-1">Active</Badge>
+                                {/* <div className="flex items-center gap-1">
+                                  <span className="text-xs">₹</span>
+                                  <Input
+                                    type="number"
+                                    value={business.monthlyPass.price}
+                                    onBlur={(e) => {
+                                      const newPrice = parseFloat(e.target.value) || 0;
+                                      if (newPrice >= 0 && newPrice !== business.monthlyPass.price) {
+                                        handleUpdatePrice(business.businessId, 'monthly', newPrice);
+                                      }
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.currentTarget.blur();
+                                      }
+                                    }}
+                                    className="w-20 h-8 text-sm"
+                                    min="0"
+                                    step="1"
+                                    disabled={updatingPass === `${business.businessId}-monthly`}
+                                  />
+                                </div> */}
+                              </>
+                            ) : (
+                              <Badge variant="secondary">Disabled</Badge>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>
-                          <Badge variant={config.isActive ? "success" : "secondary"}>
-                            {config.isActive ? "Active" : "Inactive"}
+                          <Badge variant={business.verificationStatus === 'verified' ? "success" : business.verificationStatus === 'rejected' ? "destructive" : "warning"}>
+                            {business.verificationStatus}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              onClick={() => {
-                                setSelectedConfig(config);
-                                setDetailsOpen(true);
-                              }}
-                              title="View Details"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              onClick={() => handleUpdatePass(config.id, { isActive: !config.isActive })}
-                              title={config.isActive ? "Deactivate" : "Activate"}
-                            >
-                              {config.isActive ? (
-                                <XCircle className="h-4 w-4 text-warning" />
-                              ) : (
-                                <CheckCircle2 className="h-4 w-4 text-success" />
-                              )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              onClick={() => handleDeletePass(config.id)}
-                              title="Delete"
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => {
+                              setSelectedBusiness(business);
+                              setDetailsOpen(true);
+                            }}
+                            title="View Details"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
@@ -254,128 +349,69 @@ export function PassApprovalSection() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Ticket className="h-5 w-5 text-primary" />
-              Pass Configuration Details
+              <Building2 className="h-5 w-5 text-primary" />
+              {selectedBusiness?.businessName}
             </DialogTitle>
             <DialogDescription>
-              {selectedConfig?.name}
+              Pass configuration details
             </DialogDescription>
           </DialogHeader>
           
-          {selectedConfig && (
+          {selectedBusiness && (
             <div className="space-y-4">
               <div className="p-4 rounded-xl border">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Type:</span>
-                    <Badge variant="secondary" className="capitalize">
-                      {selectedConfig.passType}
-                    </Badge>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Daily Pass:</span>
+                    {selectedBusiness.dailyPass.enabled ? (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="success">Active</Badge>
+                        <span className="font-medium">₹{selectedBusiness.dailyPass.price}</span>
+                      </div>
+                    ) : (
+                      <Badge variant="secondary">Disabled</Badge>
+                    )}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Duration:</span>
-                    <span className="font-medium">{selectedConfig.durationDays} days</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Weekly Pass:</span>
+                    {selectedBusiness.weeklyPass.enabled ? (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="success">Active</Badge>
+                        <span className="font-medium">₹{selectedBusiness.weeklyPass.price}</span>
+                      </div>
+                    ) : (
+                      <Badge variant="secondary">Disabled</Badge>
+                    )}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Price:</span>
-                    <span className="font-medium">₹{selectedConfig.price}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Monthly Pass:</span>
+                    {selectedBusiness.monthlyPass.enabled ? (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="success">Active</Badge>
+                        <span className="font-medium">₹{selectedBusiness.monthlyPass.price}</span>
+                      </div>
+                    ) : (
+                      <Badge variant="secondary">Disabled</Badge>
+                    )}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Status:</span>
-                    <Badge variant={selectedConfig.isActive ? "success" : "secondary"}>
-                      {selectedConfig.isActive ? "Active" : "Inactive"}
-                    </Badge>
-                  </div>
-                  {selectedConfig.description && (
-                    <div className="pt-2 border-t">
-                      <span className="text-muted-foreground">Description:</span>
-                      <p className="mt-1 text-sm">{selectedConfig.description}</p>
+                  <div className="pt-2 border-t">
+                    <div className="flex justify-between mb-2">
+                      <span className="text-muted-foreground">Business Type:</span>
+                      <Badge variant="secondary" className="capitalize">
+                        {selectedBusiness.businessType}
+                      </Badge>
                     </div>
-                  )}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Verification:</span>
+                      <Badge variant={selectedBusiness.verificationStatus === 'verified' ? "success" : selectedBusiness.verificationStatus === 'rejected' ? "destructive" : "warning"}>
+                        {selectedBusiness.verificationStatus}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Create Pass Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create Pass Configuration</DialogTitle>
-            <DialogDescription>
-              Create a new pass type for the platform
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label>Name *</Label>
-              <Input
-                value={newPassData.name}
-                onChange={(e) => setNewPassData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g., Monthly Premium"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label>Description</Label>
-              <Textarea
-                value={newPassData.description}
-                onChange={(e) => setNewPassData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Optional description"
-                rows={3}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label>Pass Type *</Label>
-              <Select
-                value={newPassData.passType}
-                onValueChange={(value) => setNewPassData(prev => ({ ...prev, passType: value as 'daily' | 'weekly' | 'monthly' | 'custom' }))}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select pass type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Duration (Days) *</Label>
-              <Input
-                type="number"
-                value={newPassData.durationDays}
-                onChange={(e) => setNewPassData(prev => ({ ...prev, durationDays: parseInt(e.target.value) || 1 }))}
-                min="1"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label>Price (₹) *</Label>
-              <Input
-                type="number"
-                value={newPassData.price}
-                onChange={(e) => setNewPassData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
-                min="0"
-                step="0.01"
-                className="mt-1"
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreatePass}>
-                Create Pass
-              </Button>
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
     </div>

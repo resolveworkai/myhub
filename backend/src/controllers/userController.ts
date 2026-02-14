@@ -151,6 +151,27 @@ export const getUserPayments = asyncHandler(async (req: AuthRequest, res: Respon
 });
 
 /**
+ * Get user dashboard data
+ */
+export const getUserDashboard = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      error: { message: 'Authentication required', code: 'UNAUTHORIZED' },
+    });
+  }
+
+  const dashboardData = await userService.getUserDashboard(userId);
+
+  res.json({
+    success: true,
+    data: dashboardData,
+  });
+});
+
+/**
  * Change password
  */
 export const changePassword = asyncHandler(async (req: AuthRequest, res: Response) => {

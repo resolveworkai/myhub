@@ -120,7 +120,7 @@ export const config: Config = {
   },
   rateLimit: {
     windowMs: getEnvNumber('RATE_LIMIT_WINDOW_MS', 900000), // 15 minutes
-    maxRequests: getEnvNumber('RATE_LIMIT_MAX_REQUESTS', 500),
+    maxRequests: getEnvNumber('RATE_LIMIT_MAX_REQUESTS', 2000),
     authWindowMs: getEnvNumber('RATE_LIMIT_AUTH_WINDOW_MS', 900000), // 15 minutes
     authMaxRequests: getEnvNumber('RATE_LIMIT_AUTH_MAX_REQUESTS', 5),
   },

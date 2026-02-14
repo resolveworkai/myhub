@@ -6,6 +6,7 @@ import {
   addFavorite,
   removeFavorite,
   getUserPayments,
+  getUserDashboard,
   changePassword,
 } from '../controllers/userController';
 import { authenticate, requireUser } from '../middleware/auth';
@@ -33,6 +34,9 @@ router.delete('/me/favorites/:venueId', removeFavorite);
 // Bookings route (delegated to booking routes)
 // Payments route
 router.get('/me/payments', getUserPayments);
+
+// Dashboard route
+router.get('/me/dashboard', getUserDashboard);
 
 // Password change
 router.post('/me/change-password', validate(changePasswordSchema), changePassword);

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, matchPath, useLocation } from "react-router-dom";
+import { useDebouncedValue } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -110,7 +111,7 @@ const COLORS = ["hsl(var(--primary))", "hsl(var(--info))", "hsl(var(--success))"
 
 export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { value: searchQuery, debouncedValue: debouncedSearchQuery, setValue: setSearchQuery } = useDebouncedValue("", 500);
   const [businessFilter, setBusinessFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [loadingBusinesses, setLoadingBusinesses] = useState(false);
@@ -194,7 +195,7 @@ export default function AdminDashboard() {
       try {
         setLoadingBusinesses(true);
         const result = await getBusinesses({
-          search: searchQuery || undefined,
+          search: debouncedSearchQuery || undefined,
           businessType: businessFilter !== "all" ? businessFilter : undefined,
           page: businessPagination.page,
           limit: businessPagination.limit,
@@ -213,7 +214,7 @@ export default function AdminDashboard() {
     };
 
     fetchBusinesses();
-  }, [searchQuery, businessFilter, businessPagination.page, currentPath]);
+  }, [debouncedSearchQuery, businessFilter, businessPagination.page, currentPath]);
 
   // Fetch users
   useEffect(() => {
@@ -223,7 +224,7 @@ export default function AdminDashboard() {
       try {
         setLoadingUsers(true);
         const result = await getUsers({
-          search: searchQuery || undefined,
+          search: debouncedSearchQuery || undefined,
           page: userPagination.page,
           limit: userPagination.limit,
         });
@@ -241,7 +242,7 @@ export default function AdminDashboard() {
     };
 
     fetchUsers();
-  }, [searchQuery, userPagination.page, currentPath]);
+  }, [debouncedSearchQuery, userPagination.page, currentPath]);
 
   // Fetch analytics
   useEffect(() => {

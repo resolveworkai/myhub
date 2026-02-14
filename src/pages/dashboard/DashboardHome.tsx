@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,61 +15,12 @@ import {
   ExternalLink,
   Wallet,
   HelpCircle,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PaymentMethodsModal } from "@/components/payments/PaymentMethodsModal";
 import { SupportModal } from "@/components/support/SupportModal";
-
-const enrollments = [
-  {
-    id: "fitzone-001",
-    name: "FitZone Premium Gym",
-    type: "gym",
-    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=100&h=100&fit=crop",
-    membership: "Premium",
-    expiresIn: "25 days",
-  },
-  {
-    id: "central-library",
-    name: "Central Public Library",
-    type: "library",
-    image: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=100&h=100&fit=crop",
-    membership: "Basic",
-    expiresIn: "10 days",
-  },
-];
-
-const upcomingAppointments = [
-  {
-    id: "apt-001",
-    business: "FitZone Premium Gym",
-    businessId: "fitzone-001",
-    date: "Today",
-    time: "6:00 PM",
-    type: "gym",
-    status: "upcoming",
-  },
-  {
-    id: "apt-002",
-    business: "Central Public Library",
-    businessId: "central-library",
-    date: "Tomorrow",
-    time: "10:00 AM",
-    type: "library",
-    status: "upcoming",
-  },
-];
-
-const pendingFees = [
-  {
-    id: "fee-001",
-    business: "FitZone Premium Gym",
-    businessId: "fitzone-001",
-    amount: 2500,
-    dueDate: "Jan 25, 2026",
-    daysLeft: 3,
-  },
-];
+import { getUserDashboard, type UserDashboardData } from "@/lib/apiService";
 
 interface DashboardHomeProps {
   userName: string;
@@ -77,9 +28,27 @@ interface DashboardHomeProps {
 
 export default function DashboardHome({ userName }: DashboardHomeProps) {
   const navigate = useNavigate();
-  const currentStreak = 12;
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<UserDashboardData | null>(null);
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const currentStreak = 12; // TODO: Calculate from actual data
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const data = await getUserDashboard();
+        setDashboardData(data);
+      } catch (error: any) {
+        toast.error(error.message || "Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const handleCheckIn = (appointmentId: string, businessName: string) => {
     toast.success(`Checked in at ${businessName}!`, {
@@ -87,12 +56,30 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
     });
   };
 
-  const handlePayNow = (feeId: string, businessName: string, amount: number) => {
+  const handlePayNow = (feeId: string) => {
     navigate(`/dashboard/fees?pay=${feeId}`);
   };
 
   const handleViewAppointment = (appointmentId: string) => {
     navigate(`/dashboard/appointments?view=${appointmentId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  const upcomingAppointments = dashboardData?.todaySchedule || [];
+  const pendingFees = dashboardData?.pendingFees || [];
+  const enrollments = dashboardData?.enrollments || [];
+  const stats = dashboardData?.stats || {
+    totalVisits: 0,
+    upcomingToday: 0,
+    pendingFees: 0,
+    activeEnrollments: 0,
   };
 
   return (
@@ -118,7 +105,7 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
             <Calendar className="h-6 w-6 text-primary" />
             <ExternalLink className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="text-2xl font-bold mb-1">{upcomingAppointments.length}</div>
+          <div className="text-2xl font-bold mb-1">{stats.upcomingToday}</div>
           <div className="text-sm text-muted-foreground">Upcoming</div>
         </Link>
 
@@ -127,7 +114,7 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
           <div className="flex items-center justify-between mb-4">
             <CheckCircle2 className="h-6 w-6 text-success" />
           </div>
-          <div className="text-2xl font-bold mb-1">47</div>
+          <div className="text-2xl font-bold mb-1">{stats.totalVisits}</div>
           <div className="text-sm text-muted-foreground">Total Visits</div>
         </div>
 
@@ -140,7 +127,7 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
             <AlertCircle className="h-6 w-6 text-warning" />
             <ExternalLink className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="text-2xl font-bold mb-1">₹{pendingFees.reduce((acc, f) => acc + f.amount, 0).toLocaleString()}</div>
+          <div className="text-2xl font-bold mb-1">₹{stats.pendingFees.toLocaleString()}</div>
           <div className="text-sm text-muted-foreground">Pending Fees</div>
         </Link>
       </div>
@@ -164,13 +151,13 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
                     className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
                   >
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
-                      {apt.type === "gym" ? "🏋️" : "📚"}
+                      {apt.type === "gym" ? "🏋️" : apt.type === "library" ? "📚" : "🎯"}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold">{apt.business}</h3>
+                      <h3 className="font-semibold">{apt.businessName}</h3>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-4 w-4" />
-                        {apt.date} at {apt.time}
+                        Today at {apt.time}
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -184,7 +171,7 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
                       <Button 
                         size="sm" 
                         variant="default"
-                        onClick={() => handleCheckIn(apt.id, apt.business)}
+                        onClick={() => handleCheckIn(apt.id, apt.businessName)}
                       >
                         Check In
                       </Button>
@@ -212,33 +199,42 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
               </Link>
             </div>
             <div className="space-y-4">
-              {enrollments.map((enrollment) => (
-                <Link
-                  key={enrollment.id}
-                  to={`/venue/${enrollment.id}`}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/50 transition-all group"
-                >
-                  <img
-                    src={enrollment.image}
-                    alt={enrollment.name}
-                    className="w-16 h-16 rounded-xl object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold group-hover:text-primary transition-colors">
-                        {enrollment.name}
-                      </h3>
-                      <Badge variant="secondary" className="text-xs">
-                        {enrollment.membership}
-                      </Badge>
+              {enrollments.length > 0 ? (
+                enrollments.map((enrollment) => (
+                  <Link
+                    key={enrollment.id}
+                    to={`/venue/${enrollment.venueId}`}
+                    className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/50 transition-all group"
+                  >
+                    <img
+                      src={enrollment.venueImage}
+                      alt={enrollment.venueName}
+                      className="w-16 h-16 rounded-xl object-cover"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold group-hover:text-primary transition-colors">
+                          {enrollment.venueName}
+                        </h3>
+                        <Badge variant="secondary" className="text-xs capitalize">
+                          {enrollment.membershipType}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Expires in {enrollment.expiresIn} days
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Expires in {enrollment.expiresIn}
-                    </p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                </Link>
-              ))}
+                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </Link>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No active enrollments</p>
+                  <Button variant="outline" className="mt-4" onClick={() => navigate('/explore')}>
+                    Explore Venues
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -252,28 +248,36 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
                 <AlertCircle className="h-5 w-5 text-warning" />
                 Pending Fees
               </h2>
-              {pendingFees.map((fee) => (
-                <div key={fee.id} className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium">{fee.business}</span>
-                    <span className="font-bold text-lg">₹{fee.amount.toLocaleString()}</span>
+              {pendingFees.slice(0, 3).map((fee) => {
+                const dueDate = new Date(fee.dueDate);
+                const today = new Date();
+                const daysLeft = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                
+                return (
+                  <div key={fee.id} className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium">{fee.businessName}</span>
+                      <span className="font-bold text-lg">₹{fee.amount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Due: {dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <Badge variant={daysLeft < 0 ? "destructive" : daysLeft <= 3 ? "warning" : "outline"} className={daysLeft < 0 ? "" : daysLeft <= 3 ? "text-warning border-warning" : ""}>
+                        {daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days left`}
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Due: {fee.dueDate}</span>
-                    <Badge variant="outline" className="text-warning border-warning">
-                      {fee.daysLeft} days left
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-              <Button 
-                variant="default" 
-                className="w-full mt-4"
-                onClick={() => handlePayNow(pendingFees[0].id, pendingFees[0].business, pendingFees[0].amount)}
-              >
-                <CreditCard className="h-4 w-4 mr-2" />
-                Pay Now
-              </Button>
+                );
+              })}
+              {pendingFees.length > 0 && (
+                <Button 
+                  variant="default" 
+                  className="w-full mt-4"
+                  onClick={() => handlePayNow(pendingFees[0].id)}
+                >
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Pay Now
+                </Button>
+              )}
             </div>
           )}
 

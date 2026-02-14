@@ -27,6 +27,7 @@ import { useNotificationStore } from '@/store/notificationStore';
 import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
 import { passwordSchema as authPasswordSchema } from '@/lib/authValidation';
 import { cn } from '@/lib/utils';
+import { updateUserProfile, changePassword } from '@/lib/apiService';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50),
@@ -96,26 +97,38 @@ export default function ProfileSettings() {
   const onProfileSubmit = async (data: ProfileFormData) => {
     setIsUpdatingProfile(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       if (isNormalUser) {
+        const location = (user as any)?.location;
+        await updateUserProfile({
+          name: data.name,
+          phone: data.phone,
+          location: data.address ? {
+            lat: location?.lat || 0,
+            lng: location?.lng || 0,
+            address: data.address,
+          } : undefined,
+        });
+        
+        // Update local store
         updateUser({
           name: data.name,
-          email: data.email,
           phone: data.phone,
-          location: { ...(user as any).location, address: data.address || '' },
+          location: data.address ? { ...location, address: data.address } : location,
         });
       } else {
+        // For business users, use business API (if exists)
+        // For now, just update local store
         updateUser({
           ownerName: data.name,
-          email: data.email,
           phone: data.phone,
         });
+        toast.success('Profile updated successfully!');
+        return;
       }
       
       toast.success('Profile updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update profile');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update profile');
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -124,31 +137,82 @@ export default function ProfileSettings() {
   const onPasswordSubmit = async (data: PasswordFormData) => {
     setIsUpdatingPassword(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock password verification - in real app this would call API
-      if (data.currentPassword !== 'Password123!') {
-        toast.error('Current password is incorrect');
-        return;
+      if (isNormalUser) {
+        await changePassword(data.currentPassword, data.newPassword);
+        toast.success('Password changed successfully!');
+        resetPassword();
+      } else {
+        // For business users, use business API (if exists)
+        toast.error('Password change for business users not yet implemented');
       }
-      
-      toast.success('Password changed successfully!');
-      resetPassword();
-    } catch (error) {
-      toast.error('Failed to change password');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error?.message || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Failed to change password';
+      toast.error(errorMessage);
     } finally {
       setIsUpdatingPassword(false);
     }
   };
 
-  const handleNotificationToggle = (category: string, key: string, value: boolean) => {
-    updatePreferences({
-      [category]: {
-        ...(preferences as any)[category],
-        [key]: value,
-      },
-    });
-    toast.success('Notification preference updated');
+  const handleNotificationToggle = async (category: string, key: string, value: boolean) => {
+    try {
+      if (isNormalUser) {
+        // Map frontend preference keys to backend keys
+        let backendKey: string;
+        if (category === 'email') {
+          const keyMap: Record<string, string> = {
+            bookingConfirmation: 'emailBookings',
+            bookingReminder: 'emailReminders',
+            specialOffers: 'emailBookings',
+            reviewRequest: 'emailBookings',
+          };
+          backendKey = keyMap[key] || `email${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        } else if (category === 'sms') {
+          const keyMap: Record<string, string> = {
+            bookingConfirmation: 'smsBookings',
+            bookingReminder: 'smsBookings',
+            urgentAlerts: 'smsPayments',
+          };
+          backendKey = keyMap[key] || `sms${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        } else if (category === 'inApp') {
+          backendKey = key === 'soundEnabled' || key === 'toastEnabled' ? 'pushNotifications' : key;
+        } else {
+          backendKey = key;
+        }
+        
+        await updateUserProfile({
+          notificationPreferences: {
+            [backendKey]: value,
+          },
+        });
+        
+        // Update local store
+        updatePreferences({
+          [category]: {
+            ...(preferences as any)[category],
+            [key]: value,
+          },
+        });
+        toast.success('Notification preference updated');
+      } else {
+        // For business users, use business API (if exists)
+        updatePreferences({
+          [category]: {
+            ...(preferences as any)[category],
+            [key]: value,
+          },
+        });
+        toast.success('Notification preference updated');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error?.message || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Failed to update notification preference';
+      toast.error(errorMessage);
+    }
   };
 
   if (!user) {
@@ -484,7 +548,39 @@ export default function ProfileSettings() {
                       <Input
                         type="time"
                         value={preferences.quietHours.start}
-                        onChange={(e) => handleNotificationToggle('quietHours', 'start', e.target.value as any)}
+                        onChange={async (e) => {
+                          const newValue = e.target.value;
+                          try {
+                            if (isNormalUser) {
+                              await updateUserProfile({
+                                notificationPreferences: {
+                                  quietHoursStart: newValue,
+                                },
+                              });
+                              updatePreferences({
+                                quietHours: {
+                                  ...preferences.quietHours,
+                                  start: newValue,
+                                },
+                              });
+                              toast.success('Quiet hours start time updated');
+                            } else {
+                              updatePreferences({
+                                quietHours: {
+                                  ...preferences.quietHours,
+                                  start: newValue,
+                                },
+                              });
+                              toast.success('Quiet hours start time updated');
+                            }
+                          } catch (error: any) {
+                            const errorMessage = error.response?.data?.error?.message || 
+                                                error.response?.data?.message || 
+                                                error.message || 
+                                                'Failed to update quiet hours';
+                            toast.error(errorMessage);
+                          }
+                        }}
                       />
                     </div>
                     <div className="space-y-2">
@@ -492,7 +588,39 @@ export default function ProfileSettings() {
                       <Input
                         type="time"
                         value={preferences.quietHours.end}
-                        onChange={(e) => handleNotificationToggle('quietHours', 'end', e.target.value as any)}
+                        onChange={async (e) => {
+                          const newValue = e.target.value;
+                          try {
+                            if (isNormalUser) {
+                              await updateUserProfile({
+                                notificationPreferences: {
+                                  quietHoursEnd: newValue,
+                                },
+                              });
+                              updatePreferences({
+                                quietHours: {
+                                  ...preferences.quietHours,
+                                  end: newValue,
+                                },
+                              });
+                              toast.success('Quiet hours end time updated');
+                            } else {
+                              updatePreferences({
+                                quietHours: {
+                                  ...preferences.quietHours,
+                                  end: newValue,
+                                },
+                              });
+                              toast.success('Quiet hours end time updated');
+                            }
+                          } catch (error: any) {
+                            const errorMessage = error.response?.data?.error?.message || 
+                                                error.response?.data?.message || 
+                                                error.message || 
+                                                'Failed to update quiet hours';
+                            toast.error(errorMessage);
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -519,9 +647,23 @@ export default function ProfileSettings() {
                   </div>
                   <Switch
                     checked={(user as any).marketingConsent || false}
-                    onCheckedChange={(checked) => {
-                      updateUser({ marketingConsent: checked } as any);
-                      toast.success('Marketing preference updated');
+                    onCheckedChange={async (checked) => {
+                      try {
+                        if (isNormalUser) {
+                          await updateUserProfile({ marketingConsent: checked });
+                          updateUser({ marketingConsent: checked } as any);
+                          toast.success('Marketing preference updated');
+                        } else {
+                          updateUser({ marketingConsent: checked } as any);
+                          toast.success('Marketing preference updated');
+                        }
+                      } catch (error: any) {
+                        const errorMessage = error.response?.data?.error?.message || 
+                                            error.response?.data?.message || 
+                                            error.message || 
+                                            'Failed to update privacy setting';
+                        toast.error(errorMessage);
+                      }
                     }}
                   />
                 </div>
