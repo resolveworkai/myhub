@@ -1,0 +1,16 @@
+[
+  { "id": "cpay-001", "enrollmentId": "enr-001", "studentId": "user-aarav", "classId": "cls-001", "paymentMonth": "January 2026", "amount": 3000, "paymentDate": "2026-01-05", "status": "paid", "createdAt": "2026-01-05T10:00:00Z" },
+  { "id": "cpay-002", "enrollmentId": "enr-001", "studentId": "user-aarav", "classId": "cls-001", "paymentMonth": "February 2026", "amount": 3000, "paymentDate": "2026-02-03", "status": "paid", "createdAt": "2026-02-03T10:00:00Z" },
+  { "id": "cpay-003", "enrollmentId": "enr-001", "studentId": "user-aarav", "classId": "cls-001", "paymentMonth": "March 2026", "amount": 3000, "paymentDate": "", "status": "pending", "createdAt": "2026-03-01T00:00:00Z" },
+  { "id": "cpay-004", "enrollmentId": "enr-002", "studentId": "user-aarav", "classId": "cls-003", "paymentMonth": "Q1 2026", "amount": 9500, "paymentDate": "2026-01-05", "status": "paid", "createdAt": "2026-01-05T10:00:00Z" },
+  { "id": "cpay-005", "enrollmentId": "enr-003", "studentId": "user-priya", "classId": "cls-002", "paymentMonth": "Full Course", "amount": 16000, "paymentDate": "2026-01-10", "status": "paid", "createdAt": "2026-01-10T10:00:00Z" },
+  { "id": "cpay-006", "enrollmentId": "enr-004", "studentId": "user-priya", "classId": "cls-004", "paymentMonth": "January 2026", "amount": 3200, "paymentDate": "2026-01-10", "status": "paid", "createdAt": "2026-01-10T10:00:00Z" },
+  { "id": "cpay-007", "enrollmentId": "enr-004", "studentId": "user-priya", "classId": "cls-004", "paymentMonth": "February 2026", "amount": 3200, "paymentDate": "2026-02-05", "status": "paid", "createdAt": "2026-02-05T10:00:00Z" },
+  { "id": "cpay-008", "enrollmentId": "enr-004", "studentId": "user-priya", "classId": "cls-004", "paymentMonth": "March 2026", "amount": 3200, "paymentDate": "", "status": "overdue", "createdAt": "2026-03-01T00:00:00Z" },
+  { "id": "cpay-009", "enrollmentId": "enr-005", "studentId": "user-rahul", "classId": "cls-008", "paymentMonth": "January 2026", "amount": 3500, "paymentDate": "2026-01-15", "status": "paid", "createdAt": "2026-01-15T10:00:00Z" },
+  { "id": "cpay-010", "enrollmentId": "enr-005", "studentId": "user-rahul", "classId": "cls-008", "paymentMonth": "February 2026", "amount": 3500, "paymentDate": "2026-02-10", "status": "paid", "createdAt": "2026-02-10T10:00:00Z" },
+  { "id": "cpay-011", "enrollmentId": "enr-006", "studentId": "user-rahul", "classId": "cls-005", "paymentMonth": "February 2026", "amount": 2500, "paymentDate": "2026-02-01", "status": "paid", "createdAt": "2026-02-01T10:00:00Z" },
+  { "id": "cpay-012", "enrollmentId": "enr-007", "studentId": "user-sneha", "classId": "cls-001", "paymentMonth": "Full Course", "amount": 16000, "paymentDate": "2026-01-08", "status": "paid", "createdAt": "2026-01-08T10:00:00Z" },
+  { "id": "cpay-013", "enrollmentId": "enr-008", "studentId": "user-sneha", "classId": "cls-009", "paymentMonth": "January 2026", "amount": 2000, "paymentDate": "2026-01-08", "status": "paid", "createdAt": "2026-01-08T10:00:00Z" },
+  { "id": "cpay-014", "enrollmentId": "enr-008", "studentId": "user-sneha", "classId": "cls-009", "paymentMonth": "February 2026", "amount": 2000, "paymentDate": "", "status": "pending", "createdAt": "2026-02-01T00:00:00Z" }
+]

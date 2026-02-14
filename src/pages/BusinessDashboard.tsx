@@ -21,6 +21,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import type { Subject, Batch, PassTemplate, DayOfWeek } from "@/types/platform";
+import ClassManagement from "@/components/business/ClassManagement";
 
 const DAY_SHORT: Record<DayOfWeek, string> = {
   mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun',
@@ -32,6 +33,7 @@ const formatTime = (t: string) => {
 
 const navigation = [
   { name: "Dashboard", href: "/business-dashboard", icon: LayoutDashboard },
+  { name: "Class Management", href: "/business-dashboard/classes", icon: Calendar },
   { name: "Subjects & Batches", href: "/business-dashboard/subjects", icon: Calendar },
   { name: "Students", href: "/business-dashboard/students", icon: Users },
   { name: "Revenue", href: "/business-dashboard/revenue", icon: CreditCard },
@@ -139,6 +141,7 @@ export default function BusinessDashboard() {
 
   const currentPath = location.pathname;
   const isHome = currentPath === '/business-dashboard';
+  const isClasses = currentPath.includes('/classes');
   const isSubjects = currentPath.includes('/subjects');
   const isStudents = currentPath.includes('/students');
   const isRevenue = currentPath.includes('/revenue');
@@ -147,6 +150,7 @@ export default function BusinessDashboard() {
   const isCoaching = business?.vertical === 'coaching';
 
   const renderContent = () => {
+    if (isClasses) return <ClassManagement businessId={business.id} />;
     if (isSubjects) return renderSubjectsPage();
     if (isStudents) return renderStudentsPage();
     if (isRevenue) return renderRevenuePage();
