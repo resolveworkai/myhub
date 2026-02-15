@@ -6,6 +6,7 @@ import {
   Menu,
   X,
   ChevronDown,
+  ShoppingCart,
   Building2,
   HelpCircle,
   Check,
@@ -19,6 +20,7 @@ import {
 import { useAuthStore } from "@/store/authStore";
 import { UserMenu } from "./UserMenu";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { CartDropdown } from "./CartDropdown";
 import { languages } from "@/i18n";
 import { useEnabledCategories } from "@/hooks/useEnabledCategories";
 
@@ -155,6 +157,8 @@ export function Header() {
               </DropdownMenu>
 
               {/* Auth-dependent buttons */}
+              <CartDropdown isHomePage={isHomePage} />
+
               {isAuthenticated ? (
                 <>
                   <NotificationDropdown />
@@ -262,6 +266,12 @@ export function Header() {
           <div className="pt-4 mt-4 border-t border-border space-y-3">
             {isAuthenticated ? (
               <>
+                <Link to="/cart" onClick={closeMobileMenu} className="block">
+                  <Button variant="outline" className="w-full h-12 touch-target gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    Cart
+                  </Button>
+                </Link>
                 <Link 
                   to={accountType === 'business' ? '/business-dashboard' : '/dashboard'} 
                   onClick={closeMobileMenu}
