@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePlatformStore } from '@/store/platformStore';
 import { useClassScheduleStore } from '@/store/classScheduleStore';
+import { CartSidebar } from './CartSidebar';
 
 interface CartDropdownProps {
   isHomePage?: boolean;
@@ -11,14 +12,16 @@ interface CartDropdownProps {
 export function CartDropdown({ isHomePage = false }: CartDropdownProps) {
   const platformCart = usePlatformStore((s) => s.cart);
   const classCart = useClassScheduleStore((s) => s.classCart);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const totalItems = platformCart.length + classCart.length;
 
   return (
-    <Link to="/cart">
+    <>
       <Button
         variant="ghost"
         size="icon"
+        onClick={() => setSidebarOpen(true)}
         className={`relative ${
           isHomePage
             ? 'text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10'
@@ -32,6 +35,8 @@ export function CartDropdown({ isHomePage = false }: CartDropdownProps) {
           </span>
         )}
       </Button>
-    </Link>
+
+      <CartSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    </>
   );
 }
