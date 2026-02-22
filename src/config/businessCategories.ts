@@ -36,7 +36,7 @@ export interface BusinessCategoryConfig {
 export const businessCategoryConfig: Record<BusinessCategoryId, BusinessCategoryConfig> = {
   gym: {
     id: "gym",
-    enabled: true, // Toggle gym visibility
+    enabled: false, // Toggle gym visibility
     name: "Gym",
     namePlural: "Gyms",
     icon: Dumbbell,
@@ -49,7 +49,7 @@ export const businessCategoryConfig: Record<BusinessCategoryId, BusinessCategory
   },
   coaching: {
     id: "coaching",
-    enabled: true, // Toggle coaching visibility
+    enabled: false, // Toggle coaching visibility
     name: "Coaching",
     namePlural: "Coaching",
     icon: GraduationCap,
