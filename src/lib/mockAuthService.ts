@@ -16,6 +16,11 @@ let users: User[] = (usersData as any[]).map(u => ({
   password: 'Password123!', // Mock password for existing users
 }));
 
+// Password overrides for specific test accounts
+const passwordOverrides: Record<string, string> = {
+  'tester@test.com': 'Test@123',
+};
+
 let businessUsers: BusinessUser[] = (businessUsersData as any[]).map(bu => ({
   ...bu,
   address: {
@@ -45,7 +50,7 @@ let businessUsers: BusinessUser[] = (businessUsersData as any[]).map(bu => ({
   totalRevenue: 0,
   failedLoginAttempts: 0,
   lockedUntil: null,
-  password: 'Password123!', // Mock password for existing users
+  password: passwordOverrides[bu.email.toLowerCase()] || 'Password123!',
 }));
 
 // Store OTPs in memory
