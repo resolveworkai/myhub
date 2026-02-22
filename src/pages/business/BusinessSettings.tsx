@@ -39,6 +39,7 @@ import { BusinessAttributesEditor } from "@/components/business/BusinessAttribut
 import { PassConfigCard } from "@/components/business/PassConfigCard";
 import { NotificationSettingsCard } from "@/components/business/NotificationSettingsCard";
 import { cn } from "@/lib/utils";
+import { SubscriptionPlanCard } from "@/components/business/SubscriptionPlanCard";
 
 export default function BusinessSettings() {
   const { user, updateUser } = useAuthStore();
@@ -398,6 +399,11 @@ export default function BusinessSettings() {
             <Shield className="h-4 w-4 mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Security</span>
             <span className="sm:hidden">🔒</span>
+          </TabsTrigger>
+          <TabsTrigger value="subscription" className="shrink-0 text-xs sm:text-sm">
+            <DollarSign className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Subscription</span>
+            <span className="sm:hidden">💎</span>
           </TabsTrigger>
         </TabsList>
 
@@ -844,6 +850,11 @@ export default function BusinessSettings() {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Subscription */}
+        <TabsContent value="subscription">
+          <SubscriptionPlanCard businessId={businessUser.id} />
         </TabsContent>
       </Tabs>
     </div>

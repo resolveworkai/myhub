@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { usePlatformStore } from "@/store/platformStore";
+import { useBusinessSubscriptionStore, getPlanDetails } from "@/store/businessSubscriptionStore";
 import { toast } from "sonner";
 import {
   LayoutDashboard, Users, Building2, Settings, BarChart3, Shield, Bell,
@@ -213,6 +214,7 @@ export default function AdminDashboard() {
               <TableHead>Business</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Subscription</TableHead>
               <TableHead>Tier</TableHead>
               <TableHead>Commission</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -235,6 +237,22 @@ export default function AdminDashboard() {
                   <Badge variant={biz.status === 'approved' ? 'success' : biz.status === 'pending' ? 'warning' : biz.status === 'paused' ? 'outline' : 'destructive'} className="capitalize text-xs">
                     {biz.status}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                  {(() => {
+                    const sub = useBusinessSubscriptionStore.getState().getSubscription(biz.id);
+                    if (!sub) return <Badge variant="outline" className="text-xs">No Plan</Badge>;
+                    return (
+                      <div className="space-y-1">
+                        <Badge variant={sub.currentPlan === 'enterprise' ? 'default' : sub.currentPlan === 'growth' ? 'secondary' : 'outline'} className="capitalize text-xs">
+                          {sub.currentPlan}
+                        </Badge>
+                        {sub.scheduledDowngrade && (
+                          <div className="text-xs text-warning">↓ {sub.scheduledDowngrade.toPlan} on {sub.scheduledDowngrade.effectiveDate}</div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell><Badge variant="outline" className="capitalize text-xs">{biz.commissionTier}</Badge></TableCell>
                 <TableCell>{biz.commissionRate}%</TableCell>
@@ -302,15 +320,58 @@ export default function AdminDashboard() {
     );
   };
 
-  const renderAnalytics = () => (
+  const renderAnalytics = () => {
+    const allSubTxns = useBusinessSubscriptionStore.getState().getAllTransactions();
+    const totalSubRevenue = allSubTxns.filter(t => t.status === 'success').reduce((s, t) => s + t.amount, 0);
+    
+    return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl font-bold">Platform Analytics</h1>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total GMV" value={`₹${totalRevenue.toLocaleString()}`} sub="" icon={<DollarSign className="h-5 w-5 text-success" />} />
         <StatCard label="Transactions" value={transactions.length.toString()} sub="" icon={<Activity className="h-5 w-5 text-primary" />} />
-        <StatCard label="Approved Businesses" value={approvedBusinesses.length.toString()} sub="" icon={<Building2 className="h-5 w-5 text-info" />} />
+        <StatCard label="Subscription Revenue" value={`₹${totalSubRevenue.toLocaleString()}`} sub={`${allSubTxns.length} changes`} icon={<TrendingUp className="h-5 w-5 text-info" />} />
         <StatCard label="Active Passes" value={studentPasses.filter(p => p.status === 'active').length.toString()} sub="" icon={<Users className="h-5 w-5 text-warning" />} />
       </div>
+
+      {/* Subscription Transactions */}
+      {allSubTxns.length > 0 && (
+        <div className="bg-card rounded-2xl border border-border p-6">
+          <h2 className="font-display text-lg font-semibold mb-4">Business Subscription Changes</h2>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Business</TableHead>
+                <TableHead>Change</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Order ID</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {allSubTxns.slice(0, 20).map(txn => (
+                <TableRow key={txn.id}>
+                  <TableCell className="text-sm">{new Date(txn.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="font-medium">{txn.businessName}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Badge variant={txn.type === 'upgrade' ? 'success' : 'warning'} className="text-xs capitalize">{txn.type}</Badge>
+                      <span className="text-xs text-muted-foreground">{txn.fromPlan} → {txn.toPlan}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium">{txn.amount > 0 ? `₹${txn.amount.toLocaleString()}` : '—'}</TableCell>
+                  <TableCell>
+                    <Badge variant={txn.status === 'success' ? 'success' : txn.status === 'pending' ? 'warning' : 'destructive'} className="text-xs">{txn.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-xs font-mono text-muted-foreground">{txn.orderId}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
       <div className="bg-card rounded-2xl border border-border p-6">
         <h2 className="font-display text-lg font-semibold mb-4">Business Distribution</h2>
         <div className="h-64">
@@ -326,7 +387,8 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const renderSettings = () => (
     <div className="space-y-6">
