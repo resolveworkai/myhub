@@ -117,218 +117,6 @@
     "amenities": ["wifi", "ac", "projector"]
   },
   {
-    "id": "biz-fitzone",
-    "name": "FitZone Gym",
-    "vertical": "gym",
-    "description": "State-of-the-art fitness center with modern equipment, personal training, and group classes.",
-    "contactPerson": "Ahmed Hassan",
-    "phone": "+971 50 345 6789",
-    "email": "info@fitzone.ae",
-    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop",
-    "galleryImages": [
-      "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop"
-    ],
-    "address": { "street": "Building 7, Sector 10", "area": "Business Bay", "city": "Dubai", "lat": 25.1850, "lng": 55.2640 },
-    "rating": 4.6, "reviews": 450, "verified": true, "status": "approved",
-    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
-    "operatingDays": [
-      { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
-      { "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
-      { "day": "wed", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
-      { "day": "thu", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
-      { "day": "fri", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
-      { "day": "sat", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
-      { "day": "sun", "isOpen": false, "openTime": "06:00", "closeTime": "22:00" }
-    ],
-    "timeSegments": [
-      { "id": "seg-fz-morning", "name": "Morning", "startTime": "06:00", "endTime": "10:00" },
-      { "id": "seg-fz-midday", "name": "Midday", "startTime": "10:00", "endTime": "14:00" },
-      { "id": "seg-fz-evening", "name": "Evening", "startTime": "18:00", "endTime": "22:00" },
-      { "id": "seg-fz-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "22:00" }
-    ],
-    "closedToday": false, "createdAt": "2024-02-01T00:00:00Z",
-    "passTemplates": [
-      { "id": "pt-fz-daily-morning", "businessId": "biz-fitzone", "name": "Daily Morning", "duration": "daily", "timeSegmentId": "seg-fz-morning", "timeSegmentName": "Morning", "price": 100, "validityDays": 1, "isActive": true },
-      { "id": "pt-fz-daily-evening", "businessId": "biz-fitzone", "name": "Daily Evening", "duration": "daily", "timeSegmentId": "seg-fz-evening", "timeSegmentName": "Evening", "price": 100, "validityDays": 1, "isActive": true },
-      { "id": "pt-fz-daily-full", "businessId": "biz-fitzone", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-fz-fullday", "timeSegmentName": "Full Day", "price": 150, "validityDays": 1, "isActive": true },
-      { "id": "pt-fz-weekly-morning", "businessId": "biz-fitzone", "name": "Weekly Morning", "duration": "weekly", "timeSegmentId": "seg-fz-morning", "timeSegmentName": "Morning", "price": 400, "validityDays": 6, "isActive": true },
-      { "id": "pt-fz-weekly-full", "businessId": "biz-fitzone", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-fz-fullday", "timeSegmentName": "Full Day", "price": 800, "validityDays": 6, "isActive": true },
-      { "id": "pt-fz-monthly-morning", "businessId": "biz-fitzone", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-fz-morning", "timeSegmentName": "Morning", "price": 1000, "validityDays": 30, "isActive": true },
-      { "id": "pt-fz-monthly-full", "businessId": "biz-fitzone", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-fz-fullday", "timeSegmentName": "Full Day", "price": 2000, "validityDays": 30, "isActive": true },
-      { "id": "pt-fz-quarterly-full", "businessId": "biz-fitzone", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-fz-fullday", "timeSegmentName": "Full Day", "price": 5000, "validityDays": 90, "isActive": true }
-    ],
-    "amenities": ["wifi", "parking", "ac", "shower", "lockers", "trainer"]
-  },
-  {
-    "id": "biz-zenfit",
-    "name": "Zen Yoga & Wellness",
-    "vertical": "gym",
-    "description": "Find your balance with expert yoga instructors and holistic wellness programs.",
-    "contactPerson": "Maya Desai",
-    "phone": "+971 50 456 7890",
-    "email": "namaste@zenfit.ae",
-    "image": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800&h=600&fit=crop",
-    "galleryImages": [],
-    "address": { "street": "Palm Strip Mall", "area": "Jumeirah", "city": "Dubai", "lat": 25.2330, "lng": 55.2680 },
-    "rating": 4.9, "reviews": 210, "verified": true, "status": "approved",
-    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
-    "operatingDays": [
-      { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },
-      { "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },
-      { "day": "wed", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },
-      { "day": "thu", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },
-      { "day": "fri", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },
-      { "day": "sat", "isOpen": true, "openTime": "07:00", "closeTime": "18:00" },
-      { "day": "sun", "isOpen": false, "openTime": "07:00", "closeTime": "18:00" }
-    ],
-    "timeSegments": [
-      { "id": "seg-zen-morning", "name": "Morning", "startTime": "06:00", "endTime": "10:00" },
-      { "id": "seg-zen-evening", "name": "Evening", "startTime": "16:00", "endTime": "20:00" },
-      { "id": "seg-zen-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "20:00" }
-    ],
-    "closedToday": false, "createdAt": "2024-04-01T00:00:00Z",
-    "passTemplates": [
-      { "id": "pt-zen-daily-morning", "businessId": "biz-zenfit", "name": "Daily Morning", "duration": "daily", "timeSegmentId": "seg-zen-morning", "timeSegmentName": "Morning", "price": 120, "validityDays": 1, "isActive": true },
-      { "id": "pt-zen-weekly-morning", "businessId": "biz-zenfit", "name": "Weekly Morning", "duration": "weekly", "timeSegmentId": "seg-zen-morning", "timeSegmentName": "Morning", "price": 500, "validityDays": 6, "isActive": true },
-      { "id": "pt-zen-weekly-evening", "businessId": "biz-zenfit", "name": "Weekly Evening", "duration": "weekly", "timeSegmentId": "seg-zen-evening", "timeSegmentName": "Evening", "price": 550, "validityDays": 6, "isActive": true },
-      { "id": "pt-zen-monthly-full", "businessId": "biz-zenfit", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-zen-fullday", "timeSegmentName": "Full Day", "price": 2500, "validityDays": 30, "isActive": true },
-      { "id": "pt-zen-quarterly-full", "businessId": "biz-zenfit", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-zen-fullday", "timeSegmentName": "Full Day", "price": 6000, "validityDays": 90, "isActive": true }
-    ],
-    "amenities": ["wifi", "ac", "shower", "lockers"]
-  },
-  {
-    "id": "biz-citylib",
-    "name": "City Library Hub",
-    "vertical": "library",
-    "description": "Quiet study spaces, high-speed WiFi, extensive book collection, and digital resources.",
-    "contactPerson": "Fatima Al-Rashid",
-    "phone": "+971 50 567 8901",
-    "email": "hello@citylibrary.ae",
-    "image": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&h=600&fit=crop",
-    "galleryImages": [
-      "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=600&fit=crop"
-    ],
-    "address": { "street": "Knowledge Village, Block A", "area": "Al Sufouh", "city": "Dubai", "lat": 25.0990, "lng": 55.1630 },
-    "rating": 4.7, "reviews": 280, "verified": true, "status": "approved",
-    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
-    "operatingDays": [
-      { "day": "mon", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },
-      { "day": "tue", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },
-      { "day": "wed", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },
-      { "day": "thu", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },
-      { "day": "fri", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },
-      { "day": "sat", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },
-      { "day": "sun", "isOpen": false, "openTime": "08:00", "closeTime": "18:00" }
-    ],
-    "timeSegments": [
-      { "id": "seg-lib-first", "name": "First Half", "startTime": "08:00", "endTime": "13:00" },
-      { "id": "seg-lib-second", "name": "Second Half", "startTime": "13:00", "endTime": "18:00" },
-      { "id": "seg-lib-fullday", "name": "Full Day", "startTime": "08:00", "endTime": "18:00" }
-    ],
-    "closedToday": false, "createdAt": "2024-01-20T00:00:00Z",
-    "passTemplates": [
-      { "id": "pt-lib-daily-first", "businessId": "biz-citylib", "name": "Daily First Half", "duration": "daily", "timeSegmentId": "seg-lib-first", "timeSegmentName": "First Half", "price": 50, "validityDays": 1, "isActive": true },
-      { "id": "pt-lib-daily-second", "businessId": "biz-citylib", "name": "Daily Second Half", "duration": "daily", "timeSegmentId": "seg-lib-second", "timeSegmentName": "Second Half", "price": 50, "validityDays": 1, "isActive": true },
-      { "id": "pt-lib-daily-full", "businessId": "biz-citylib", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-lib-fullday", "timeSegmentName": "Full Day", "price": 100, "validityDays": 1, "isActive": true },
-      { "id": "pt-lib-weekly-first", "businessId": "biz-citylib", "name": "Weekly First Half", "duration": "weekly", "timeSegmentId": "seg-lib-first", "timeSegmentName": "First Half", "price": 300, "validityDays": 6, "isActive": true },
-      { "id": "pt-lib-weekly-full", "businessId": "biz-citylib", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-lib-fullday", "timeSegmentName": "Full Day", "price": 600, "validityDays": 6, "isActive": true },
-      { "id": "pt-lib-monthly-first", "businessId": "biz-citylib", "name": "Monthly First Half", "duration": "monthly", "timeSegmentId": "seg-lib-first", "timeSegmentName": "First Half", "price": 1000, "validityDays": 30, "isActive": true },
-      { "id": "pt-lib-monthly-full", "businessId": "biz-citylib", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-lib-fullday", "timeSegmentName": "Full Day", "price": 2000, "validityDays": 30, "isActive": true }
-    ],
-    "amenities": ["wifi", "ac", "parking", "lockers"]
-  },
-  {
-    "id": "biz-learnhub",
-    "name": "Learn Hub",
-    "vertical": "coaching",
-    "description": "Modern learning center with interactive teaching methods. IELTS, English, and Arabic classes.",
-    "contactPerson": "Aisha Khan",
-    "phone": "+971 50 678 9012",
-    "email": "hello@learnhub.ae",
-    "image": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&h=600&fit=crop",
-    "galleryImages": [],
-    "address": { "street": "Al Wahda Street", "area": "Sharjah", "city": "Sharjah", "lat": 25.3463, "lng": 55.4209 },
-    "rating": 4.3, "reviews": 95, "verified": false, "status": "pending",
-    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
-    "operatingDays": [
-      { "day": "mon", "isOpen": true, "openTime": "09:00", "closeTime": "19:00" },
-      { "day": "tue", "isOpen": true, "openTime": "09:00", "closeTime": "19:00" },
-      { "day": "wed", "isOpen": true, "openTime": "09:00", "closeTime": "19:00" },
-      { "day": "thu", "isOpen": true, "openTime": "09:00", "closeTime": "19:00" },
-      { "day": "fri", "isOpen": true, "openTime": "09:00", "closeTime": "19:00" },
-      { "day": "sat", "isOpen": true, "openTime": "09:00", "closeTime": "15:00" },
-      { "day": "sun", "isOpen": false, "openTime": "09:00", "closeTime": "15:00" }
-    ],
-    "timeSegments": [
-      { "id": "seg-lh-morning", "name": "Morning", "startTime": "09:00", "endTime": "13:00" },
-      { "id": "seg-lh-evening", "name": "Evening", "startTime": "15:00", "endTime": "19:00" }
-    ],
-    "closedToday": false, "createdAt": "2026-02-08T00:00:00Z",
-    "subjects": [
-      {
-        "id": "subj-lh-eng", "businessId": "biz-learnhub", "name": "English",
-        "description": "IELTS and general English classes.", "icon": "📝", "rating": 4.4,
-        "pricingTiers": [{ "durationHours": 1, "price": 250 }, { "durationHours": 2, "price": 400 }],
-        "batches": [
-          { "id": "batch-lh-eng-a", "subjectId": "subj-lh-eng", "businessId": "biz-learnhub", "name": "Batch A", "schedulePattern": "mwf", "startTime": "10:00", "endTime": "11:00", "capacity": 15, "enrolled": 8, "instructorName": "Sarah Ahmed", "isPaused": false }
-        ]
-      },
-      {
-        "id": "subj-lh-arabic", "businessId": "biz-learnhub", "name": "Arabic",
-        "description": "Modern Standard Arabic for beginners to advanced.", "icon": "🌍", "rating": 4.2,
-        "pricingTiers": [{ "durationHours": 1, "price": 300 }, { "durationHours": 2, "price": 500 }],
-        "batches": [
-          { "id": "batch-lh-arabic-a", "subjectId": "subj-lh-arabic", "businessId": "biz-learnhub", "name": "Batch A", "schedulePattern": "tts", "startTime": "15:00", "endTime": "16:00", "capacity": 12, "enrolled": 5, "instructorName": "Khalid Mansoor", "isPaused": false }
-        ]
-      }
-    ],
-    "amenities": ["wifi", "ac"]
-  },
-  {
-    "id": "biz-ironfit",
-    "name": "Iron Fitness Studio",
-    "vertical": "gym",
-    "description": "Hardcore strength training, CrossFit, and powerlifting. For serious athletes only.",
-    "contactPerson": "Raj Malhotra",
-    "phone": "+971 50 789 0123",
-    "email": "info@ironfit.ae",
-    "image": "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=600&fit=crop",
-    "galleryImages": [
-      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop"
-    ],
-    "address": { "street": "Warehouse 12, Al Quoz", "area": "Al Quoz", "city": "Dubai", "lat": 25.1650, "lng": 55.2350 },
-    "rating": 4.5, "reviews": 310, "verified": true, "status": "approved",
-    "commissionTier": "enterprise", "commissionRate": 0, "subscriptionFee": 5000,
-    "operatingDays": [
-      { "day": "mon", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },
-      { "day": "tue", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },
-      { "day": "wed", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },
-      { "day": "thu", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },
-      { "day": "fri", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },
-      { "day": "sat", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },
-      { "day": "sun", "isOpen": true, "openTime": "08:00", "closeTime": "14:00" }
-    ],
-    "timeSegments": [
-      { "id": "seg-iron-early", "name": "Early Bird", "startTime": "05:00", "endTime": "08:00" },
-      { "id": "seg-iron-morning", "name": "Morning", "startTime": "08:00", "endTime": "12:00" },
-      { "id": "seg-iron-afternoon", "name": "Afternoon", "startTime": "12:00", "endTime": "17:00" },
-      { "id": "seg-iron-evening", "name": "Evening", "startTime": "17:00", "endTime": "23:00" },
-      { "id": "seg-iron-fullday", "name": "Full Day", "startTime": "05:00", "endTime": "23:00" }
-    ],
-    "closedToday": false, "createdAt": "2024-06-15T00:00:00Z",
-    "passTemplates": [
-      { "id": "pt-iron-daily-early", "businessId": "biz-ironfit", "name": "Daily Early Bird", "duration": "daily", "timeSegmentId": "seg-iron-early", "timeSegmentName": "Early Bird", "price": 80, "validityDays": 1, "isActive": true },
-      { "id": "pt-iron-daily-evening", "businessId": "biz-ironfit", "name": "Daily Evening", "duration": "daily", "timeSegmentId": "seg-iron-evening", "timeSegmentName": "Evening", "price": 120, "validityDays": 1, "isActive": true },
-      { "id": "pt-iron-weekly-full", "businessId": "biz-ironfit", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-iron-fullday", "timeSegmentName": "Full Day", "price": 600, "validityDays": 7, "isActive": true },
-      { "id": "pt-iron-monthly-morning", "businessId": "biz-ironfit", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-iron-morning", "timeSegmentName": "Morning", "price": 1200, "validityDays": 30, "isActive": true },
-      { "id": "pt-iron-monthly-full", "businessId": "biz-ironfit", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-iron-fullday", "timeSegmentName": "Full Day", "price": 2500, "validityDays": 30, "isActive": true },
-      { "id": "pt-iron-quarterly-full", "businessId": "biz-ironfit", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-iron-fullday", "timeSegmentName": "Full Day", "price": 6500, "validityDays": 90, "isActive": true }
-    ],
-    "amenities": ["parking", "ac", "shower", "lockers", "trainer", "supplements"]
-  },
-  {
     "id": "biz-smartclass",
     "name": "SmartClass Tuition",
     "vertical": "coaching",
@@ -337,9 +125,7 @@
     "phone": "+971 50 890 1234",
     "email": "admissions@smartclass.ae",
     "image": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop",
-    "galleryImages": [
-      "https://images.unsplash.com/photo-1523050854058-8df90110c476?w=800&h=600&fit=crop"
-    ],
+    "galleryImages": ["https://images.unsplash.com/photo-1523050854058-8df90110c476?w=800&h=600&fit=crop"],
     "address": { "street": "Silicon Oasis HQ, Building 4", "area": "Silicon Oasis", "city": "Dubai", "lat": 25.1162, "lng": 55.3785 },
     "rating": 4.7, "reviews": 420, "verified": true, "status": "approved",
     "commissionTier": "enterprise", "commissionRate": 0, "subscriptionFee": 5000,
@@ -388,28 +174,570 @@
     "amenities": ["wifi", "ac", "projector", "lab", "parking"]
   },
   {
-    "id": "biz-readzone",
-    "name": "ReadZone Study Lounge",
-    "vertical": "library",
-    "description": "Premium co-study space with private cabins, group discussion rooms, and 24/7 access for night owls.",
-    "contactPerson": "Noor Al-Fahim",
-    "phone": "+971 50 901 2345",
-    "email": "hello@readzone.ae",
-    "image": "https://images.unsplash.com/photo-1568667256549-094345857637?w=800&h=600&fit=crop",
-    "galleryImages": [
-      "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&h=600&fit=crop"
+    "id": "biz-codepro", "name": "CodePro Academy", "vertical": "coaching",
+    "description": "Full-stack development bootcamp with placement assistance.",
+    "contactPerson": "Arjun Menon", "phone": "+971 50 111 3333", "email": "info@codepro.ae",
+    "image": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Business Bay Tower", "area": "Business Bay", "city": "Dubai", "lat": 25.1860, "lng": 55.2700 },
+    "rating": 4.5, "reviews": 150, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+      { "day": "tue", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+      { "day": "wed", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+      { "day": "thu", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+      { "day": "fri", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+      { "day": "sat", "isOpen": true, "openTime": "10:00", "closeTime": "17:00" },
+      { "day": "sun", "isOpen": false, "openTime": "10:00", "closeTime": "17:00" }
     ],
+    "timeSegments": [
+      { "id": "seg-cp-morning", "name": "Morning", "startTime": "09:00", "endTime": "13:00" },
+      { "id": "seg-cp-evening", "name": "Evening", "startTime": "17:00", "endTime": "21:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-06-01T00:00:00Z",
+    "subjects": [
+      {
+        "id": "subj-cp-web", "businessId": "biz-codepro", "name": "Web Development",
+        "description": "React, Node.js, and full-stack development.", "icon": "💻", "rating": 4.6,
+        "pricingTiers": [{ "durationHours": 1, "price": 600 }, { "durationHours": 2, "price": 1000 }],
+        "batches": [
+          { "id": "batch-cp-web-a", "subjectId": "subj-cp-web", "businessId": "biz-codepro", "name": "Batch A", "schedulePattern": "mwf", "startTime": "17:00", "endTime": "19:00", "capacity": 20, "enrolled": 15, "instructorName": "Arjun Menon", "instructorRating": 4.7, "isPaused": false }
+        ]
+      },
+      {
+        "id": "subj-cp-python", "businessId": "biz-codepro", "name": "Python & AI",
+        "description": "Python programming, ML, and AI fundamentals.", "icon": "🐍", "rating": 4.5,
+        "pricingTiers": [{ "durationHours": 1, "price": 700 }, { "durationHours": 2, "price": 1200 }],
+        "batches": [
+          { "id": "batch-cp-py-a", "subjectId": "subj-cp-python", "businessId": "biz-codepro", "name": "Batch A", "schedulePattern": "tts", "startTime": "17:00", "endTime": "19:00", "capacity": 15, "enrolled": 10, "instructorName": "Dr. Shivani Roy", "instructorRating": 4.8, "isPaused": false }
+        ]
+      }
+    ],
+    "amenities": ["wifi", "ac", "projector"]
+  },
+  {
+    "id": "biz-musicnotes", "name": "Music Notes Studio", "vertical": "coaching",
+    "description": "Piano, Guitar, Vocal training. Trinity and ABRSM exam preparation.",
+    "contactPerson": "David Mendes", "phone": "+971 50 222 4444", "email": "hello@musicnotes.ae",
+    "image": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Al Barsha Mall, Level 2", "area": "Al Barsha", "city": "Dubai", "lat": 25.1130, "lng": 55.2000 },
+    "rating": 4.9, "reviews": 200, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "day": "tue", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "day": "wed", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "day": "thu", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "day": "fri", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" },
+      { "day": "sat", "isOpen": true, "openTime": "10:00", "closeTime": "18:00" },
+      { "day": "sun", "isOpen": false, "openTime": "10:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-mn-morning", "name": "Morning", "startTime": "10:00", "endTime": "14:00" },
+      { "id": "seg-mn-evening", "name": "Evening", "startTime": "16:00", "endTime": "20:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-04-15T00:00:00Z",
+    "subjects": [
+      {
+        "id": "subj-mn-piano", "businessId": "biz-musicnotes", "name": "Piano",
+        "description": "Classical and contemporary piano for all levels.", "icon": "🎹", "rating": 4.9,
+        "pricingTiers": [{ "durationHours": 1, "price": 500 }, { "durationHours": 2, "price": 900 }],
+        "batches": [
+          { "id": "batch-mn-piano-a", "subjectId": "subj-mn-piano", "businessId": "biz-musicnotes", "name": "Beginner", "schedulePattern": "mwf", "startTime": "16:00", "endTime": "17:00", "capacity": 6, "enrolled": 4, "instructorName": "David Mendes", "instructorRating": 4.9, "isPaused": false }
+        ]
+      },
+      {
+        "id": "subj-mn-vocal", "businessId": "biz-musicnotes", "name": "Vocal Training",
+        "description": "Hindustani and Western vocal training.", "icon": "🎤", "rating": 4.8,
+        "pricingTiers": [{ "durationHours": 1, "price": 400 }, { "durationHours": 2, "price": 700 }],
+        "batches": [
+          { "id": "batch-mn-vocal-a", "subjectId": "subj-mn-vocal", "businessId": "biz-musicnotes", "name": "Batch A", "schedulePattern": "tts", "startTime": "10:00", "endTime": "11:00", "capacity": 8, "enrolled": 6, "instructorName": "Meera Nair", "instructorRating": 4.8, "isPaused": false }
+        ]
+      }
+    ],
+    "amenities": ["ac", "parking"]
+  },
+  {
+    "id": "biz-artiva", "name": "Artiva Creative Studio", "vertical": "coaching",
+    "description": "Fine arts, digital art, and design thinking classes for all ages.",
+    "contactPerson": "Lisa Park", "phone": "+971 50 333 5555", "email": "create@artiva.ae",
+    "image": "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Alserkal Avenue, Unit 7", "area": "Al Quoz", "city": "Dubai", "lat": 25.1440, "lng": 55.2280 },
+    "rating": 4.6, "reviews": 130, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "10:00", "closeTime": "19:00" },
+      { "day": "tue", "isOpen": true, "openTime": "10:00", "closeTime": "19:00" },
+      { "day": "wed", "isOpen": true, "openTime": "10:00", "closeTime": "19:00" },
+      { "day": "thu", "isOpen": true, "openTime": "10:00", "closeTime": "19:00" },
+      { "day": "fri", "isOpen": true, "openTime": "10:00", "closeTime": "19:00" },
+      { "day": "sat", "isOpen": true, "openTime": "10:00", "closeTime": "17:00" },
+      { "day": "sun", "isOpen": false, "openTime": "10:00", "closeTime": "17:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-art-morning", "name": "Morning", "startTime": "10:00", "endTime": "13:00" },
+      { "id": "seg-art-afternoon", "name": "Afternoon", "startTime": "14:00", "endTime": "19:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-07-01T00:00:00Z",
+    "subjects": [
+      {
+        "id": "subj-art-paint", "businessId": "biz-artiva", "name": "Painting",
+        "description": "Oil, watercolor, and acrylic painting.", "icon": "🎨", "rating": 4.7,
+        "pricingTiers": [{ "durationHours": 1, "price": 350 }, { "durationHours": 2, "price": 600 }],
+        "batches": [
+          { "id": "batch-art-paint-a", "subjectId": "subj-art-paint", "businessId": "biz-artiva", "name": "Beginner", "schedulePattern": "mwf", "startTime": "14:00", "endTime": "15:00", "capacity": 10, "enrolled": 7, "instructorName": "Lisa Park", "instructorRating": 4.8, "isPaused": false }
+        ]
+      },
+      {
+        "id": "subj-art-digital", "businessId": "biz-artiva", "name": "Digital Art",
+        "description": "Illustrator, Photoshop, and Procreate.", "icon": "🖌️", "rating": 4.5,
+        "pricingTiers": [{ "durationHours": 1, "price": 500 }, { "durationHours": 2, "price": 800 }],
+        "batches": [
+          { "id": "batch-art-digi-a", "subjectId": "subj-art-digital", "businessId": "biz-artiva", "name": "Batch A", "schedulePattern": "tts", "startTime": "14:00", "endTime": "15:30", "capacity": 8, "enrolled": 5, "instructorName": "Omar Hassan", "instructorRating": 4.6, "isPaused": false }
+        ]
+      }
+    ],
+    "amenities": ["wifi", "ac"]
+  },
+  {
+    "id": "biz-langbridge", "name": "LangBridge Institute", "vertical": "coaching",
+    "description": "IELTS, TOEFL, French, German, Arabic. Certified instructors with 95% pass rate.",
+    "contactPerson": "Maria Santos", "phone": "+971 50 444 6666", "email": "learn@langbridge.ae",
+    "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Sheikh Zayed Road, Tower 5", "area": "Trade Centre", "city": "Dubai", "lat": 25.2180, "lng": 55.2790 },
+    "rating": 4.7, "reviews": 280, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "08:00", "closeTime": "20:00" },
+      { "day": "tue", "isOpen": true, "openTime": "08:00", "closeTime": "20:00" },
+      { "day": "wed", "isOpen": true, "openTime": "08:00", "closeTime": "20:00" },
+      { "day": "thu", "isOpen": true, "openTime": "08:00", "closeTime": "20:00" },
+      { "day": "fri", "isOpen": true, "openTime": "08:00", "closeTime": "20:00" },
+      { "day": "sat", "isOpen": true, "openTime": "09:00", "closeTime": "16:00" },
+      { "day": "sun", "isOpen": false, "openTime": "09:00", "closeTime": "16:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-lb-morning", "name": "Morning", "startTime": "08:00", "endTime": "12:00" },
+      { "id": "seg-lb-evening", "name": "Evening", "startTime": "16:00", "endTime": "20:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-03-20T00:00:00Z",
+    "subjects": [
+      {
+        "id": "subj-lb-ielts", "businessId": "biz-langbridge", "name": "IELTS Preparation",
+        "description": "All 4 modules with mock tests and feedback.", "icon": "📝", "rating": 4.8,
+        "pricingTiers": [{ "durationHours": 1, "price": 400 }, { "durationHours": 2, "price": 700 }],
+        "batches": [
+          { "id": "batch-lb-ielts-a", "subjectId": "subj-lb-ielts", "businessId": "biz-langbridge", "name": "Batch A", "schedulePattern": "mwf", "startTime": "08:00", "endTime": "10:00", "capacity": 15, "enrolled": 12, "instructorName": "Maria Santos", "instructorRating": 4.9, "isPaused": false }
+        ]
+      },
+      {
+        "id": "subj-lb-french", "businessId": "biz-langbridge", "name": "French",
+        "description": "A1 to C1 level French with DELF prep.", "icon": "🇫🇷", "rating": 4.6,
+        "pricingTiers": [{ "durationHours": 1, "price": 350 }, { "durationHours": 2, "price": 600 }],
+        "batches": [
+          { "id": "batch-lb-fr-a", "subjectId": "subj-lb-french", "businessId": "biz-langbridge", "name": "Beginner", "schedulePattern": "tts", "startTime": "16:00", "endTime": "17:00", "capacity": 10, "enrolled": 7, "instructorName": "Jean Pierre", "instructorRating": 4.7, "isPaused": false }
+        ]
+      }
+    ],
+    "amenities": ["wifi", "ac", "projector"]
+  },
+  {
+    "id": "biz-mathwiz", "name": "MathWiz Academy", "vertical": "coaching",
+    "description": "Olympiad, board exam, and competitive math coaching. Small batches for focused learning.",
+    "contactPerson": "Prof. Anand Sharma", "phone": "+971 50 555 7777", "email": "contact@mathwiz.ae",
+    "image": "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Discovery Gardens, Block 3", "area": "Discovery Gardens", "city": "Dubai", "lat": 25.0380, "lng": 55.1400 },
+    "rating": 4.8, "reviews": 310, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "14:00", "closeTime": "21:00" },
+      { "day": "tue", "isOpen": true, "openTime": "14:00", "closeTime": "21:00" },
+      { "day": "wed", "isOpen": true, "openTime": "14:00", "closeTime": "21:00" },
+      { "day": "thu", "isOpen": true, "openTime": "14:00", "closeTime": "21:00" },
+      { "day": "fri", "isOpen": true, "openTime": "14:00", "closeTime": "21:00" },
+      { "day": "sat", "isOpen": true, "openTime": "09:00", "closeTime": "18:00" },
+      { "day": "sun", "isOpen": false, "openTime": "09:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-mw-afternoon", "name": "Afternoon", "startTime": "14:00", "endTime": "17:00" },
+      { "id": "seg-mw-evening", "name": "Evening", "startTime": "17:00", "endTime": "21:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-02-15T00:00:00Z",
+    "subjects": [
+      {
+        "id": "subj-mw-olympiad", "businessId": "biz-mathwiz", "name": "Math Olympiad",
+        "description": "IMO, RMO preparation with problem-solving.", "icon": "🏆", "rating": 4.9,
+        "pricingTiers": [{ "durationHours": 1, "price": 600 }, { "durationHours": 2, "price": 1000 }],
+        "batches": [
+          { "id": "batch-mw-oly-a", "subjectId": "subj-mw-olympiad", "businessId": "biz-mathwiz", "name": "Advanced", "schedulePattern": "mwf", "startTime": "17:00", "endTime": "19:00", "capacity": 10, "enrolled": 8, "instructorName": "Prof. Anand Sharma", "instructorRating": 5.0, "isPaused": false }
+        ]
+      }
+    ],
+    "amenities": ["wifi", "ac"]
+  },
+  {
+    "id": "biz-speakeasy", "name": "SpeakEasy Language Hub", "vertical": "coaching",
+    "description": "Conversational language classes. English, Arabic, Hindi, and Mandarin.",
+    "contactPerson": "Yuki Tanaka", "phone": "+971 50 666 8888", "email": "hello@speakeasy.ae",
+    "image": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "The Walk, JBR", "area": "JBR", "city": "Dubai", "lat": 25.0780, "lng": 55.1340 },
+    "rating": 4.4, "reviews": 160, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
+      { "day": "tue", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
+      { "day": "wed", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
+      { "day": "thu", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
+      { "day": "fri", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },
+      { "day": "sat", "isOpen": true, "openTime": "10:00", "closeTime": "16:00" },
+      { "day": "sun", "isOpen": false, "openTime": "10:00", "closeTime": "16:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-se-morning", "name": "Morning", "startTime": "09:00", "endTime": "13:00" },
+      { "id": "seg-se-evening", "name": "Evening", "startTime": "16:00", "endTime": "20:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-08-01T00:00:00Z",
+    "subjects": [
+      {
+        "id": "subj-se-arabic", "businessId": "biz-speakeasy", "name": "Arabic Conversation",
+        "description": "Gulf Arabic for daily communication.", "icon": "🌍", "rating": 4.5,
+        "pricingTiers": [{ "durationHours": 1, "price": 300 }, { "durationHours": 2, "price": 500 }],
+        "batches": [
+          { "id": "batch-se-ar-a", "subjectId": "subj-se-arabic", "businessId": "biz-speakeasy", "name": "Beginners", "schedulePattern": "mwf", "startTime": "09:00", "endTime": "10:00", "capacity": 12, "enrolled": 8, "instructorName": "Yuki Tanaka", "instructorRating": 4.5, "isPaused": false }
+        ]
+      }
+    ],
+    "amenities": ["wifi", "ac"]
+  },
+  {
+    "id": "biz-danceacademy", "name": "Rhythm Dance Academy", "vertical": "coaching",
+    "description": "Bollywood, Contemporary, Hip-Hop, and Salsa. Performance-focused training.",
+    "contactPerson": "Meera Kapoor", "phone": "+971 50 777 9999", "email": "dance@rhythm.ae",
+    "image": "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Dubai Festival City, Block 2", "area": "Festival City", "city": "Dubai", "lat": 25.2260, "lng": 55.3540 },
+    "rating": 4.7, "reviews": 190, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
+      { "day": "tue", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
+      { "day": "wed", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
+      { "day": "thu", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
+      { "day": "fri", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
+      { "day": "sat", "isOpen": true, "openTime": "10:00", "closeTime": "18:00" },
+      { "day": "sun", "isOpen": false, "openTime": "10:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-rd-morning", "name": "Morning", "startTime": "10:00", "endTime": "14:00" },
+      { "id": "seg-rd-evening", "name": "Evening", "startTime": "17:00", "endTime": "21:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-06-15T00:00:00Z",
+    "subjects": [
+      {
+        "id": "subj-rd-bollywood", "businessId": "biz-danceacademy", "name": "Bollywood Dance",
+        "description": "Filmi dance choreography.", "icon": "💃", "rating": 4.8,
+        "pricingTiers": [{ "durationHours": 1, "price": 300 }, { "durationHours": 2, "price": 500 }],
+        "batches": [
+          { "id": "batch-rd-bolly-a", "subjectId": "subj-rd-bollywood", "businessId": "biz-danceacademy", "name": "Batch A", "schedulePattern": "mwf", "startTime": "17:00", "endTime": "18:00", "capacity": 15, "enrolled": 12, "instructorName": "Meera Kapoor", "instructorRating": 4.9, "isPaused": false }
+        ]
+      },
+      {
+        "id": "subj-rd-hiphop", "businessId": "biz-danceacademy", "name": "Hip-Hop",
+        "description": "Street dance and hip-hop moves.", "icon": "🕺", "rating": 4.6,
+        "pricingTiers": [{ "durationHours": 1, "price": 350 }, { "durationHours": 2, "price": 600 }],
+        "batches": [
+          { "id": "batch-rd-hip-a", "subjectId": "subj-rd-hiphop", "businessId": "biz-danceacademy", "name": "Batch A", "schedulePattern": "tts", "startTime": "18:00", "endTime": "19:00", "capacity": 12, "enrolled": 9, "instructorName": "DJ Riz", "instructorRating": 4.7, "isPaused": false }
+        ]
+      }
+    ],
+    "amenities": ["ac", "parking", "shower"]
+  },
+
+  {
+    "id": "biz-fitzone", "name": "FitZone Gym", "vertical": "gym",
+    "description": "State-of-the-art fitness center with modern equipment, personal training, and group classes.",
+    "contactPerson": "Ahmed Hassan", "phone": "+971 50 345 6789", "email": "info@fitzone.ae",
+    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop",
+    "galleryImages": ["https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=600&fit=crop","https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop"],
+    "address": { "street": "Building 7, Sector 10", "area": "Business Bay", "city": "Dubai", "lat": 25.1850, "lng": 55.2640 },
+    "rating": 4.6, "reviews": 450, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
+      { "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
+      { "day": "wed", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
+      { "day": "thu", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
+      { "day": "fri", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
+      { "day": "sat", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },
+      { "day": "sun", "isOpen": false, "openTime": "06:00", "closeTime": "22:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-fz-morning", "name": "Morning", "startTime": "06:00", "endTime": "10:00" },
+      { "id": "seg-fz-midday", "name": "Midday", "startTime": "10:00", "endTime": "14:00" },
+      { "id": "seg-fz-evening", "name": "Evening", "startTime": "18:00", "endTime": "22:00" },
+      { "id": "seg-fz-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "22:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-02-01T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-fz-daily-morning", "businessId": "biz-fitzone", "name": "Daily Morning", "duration": "daily", "timeSegmentId": "seg-fz-morning", "timeSegmentName": "Morning", "price": 100, "validityDays": 1, "isActive": true },
+      { "id": "pt-fz-daily-evening", "businessId": "biz-fitzone", "name": "Daily Evening", "duration": "daily", "timeSegmentId": "seg-fz-evening", "timeSegmentName": "Evening", "price": 100, "validityDays": 1, "isActive": true },
+      { "id": "pt-fz-daily-full", "businessId": "biz-fitzone", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-fz-fullday", "timeSegmentName": "Full Day", "price": 150, "validityDays": 1, "isActive": true },
+      { "id": "pt-fz-weekly-morning", "businessId": "biz-fitzone", "name": "Weekly Morning", "duration": "weekly", "timeSegmentId": "seg-fz-morning", "timeSegmentName": "Morning", "price": 400, "validityDays": 6, "isActive": true },
+      { "id": "pt-fz-weekly-full", "businessId": "biz-fitzone", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-fz-fullday", "timeSegmentName": "Full Day", "price": 800, "validityDays": 6, "isActive": true },
+      { "id": "pt-fz-monthly-morning", "businessId": "biz-fitzone", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-fz-morning", "timeSegmentName": "Morning", "price": 1000, "validityDays": 30, "isActive": true },
+      { "id": "pt-fz-monthly-full", "businessId": "biz-fitzone", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-fz-fullday", "timeSegmentName": "Full Day", "price": 2000, "validityDays": 30, "isActive": true },
+      { "id": "pt-fz-quarterly-full", "businessId": "biz-fitzone", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-fz-fullday", "timeSegmentName": "Full Day", "price": 5000, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["wifi", "parking", "ac", "shower", "lockers", "trainer"]
+  },
+  {
+    "id": "biz-zenfit", "name": "Zen Yoga & Wellness", "vertical": "gym",
+    "description": "Find your balance with expert yoga instructors and holistic wellness programs.",
+    "contactPerson": "Maya Desai", "phone": "+971 50 456 7890", "email": "namaste@zenfit.ae",
+    "image": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Palm Strip Mall", "area": "Jumeirah", "city": "Dubai", "lat": 25.2330, "lng": 55.2680 },
+    "rating": 4.9, "reviews": 210, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },{ "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },{ "day": "wed", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },{ "day": "thu", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },{ "day": "fri", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },{ "day": "sat", "isOpen": true, "openTime": "07:00", "closeTime": "18:00" },{ "day": "sun", "isOpen": false, "openTime": "07:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-zen-morning", "name": "Morning", "startTime": "06:00", "endTime": "10:00" },
+      { "id": "seg-zen-evening", "name": "Evening", "startTime": "16:00", "endTime": "20:00" },
+      { "id": "seg-zen-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "20:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-04-01T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-zen-daily-morning", "businessId": "biz-zenfit", "name": "Daily Morning", "duration": "daily", "timeSegmentId": "seg-zen-morning", "timeSegmentName": "Morning", "price": 120, "validityDays": 1, "isActive": true },
+      { "id": "pt-zen-weekly-morning", "businessId": "biz-zenfit", "name": "Weekly Morning", "duration": "weekly", "timeSegmentId": "seg-zen-morning", "timeSegmentName": "Morning", "price": 500, "validityDays": 6, "isActive": true },
+      { "id": "pt-zen-weekly-evening", "businessId": "biz-zenfit", "name": "Weekly Evening", "duration": "weekly", "timeSegmentId": "seg-zen-evening", "timeSegmentName": "Evening", "price": 550, "validityDays": 6, "isActive": true },
+      { "id": "pt-zen-monthly-full", "businessId": "biz-zenfit", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-zen-fullday", "timeSegmentName": "Full Day", "price": 2500, "validityDays": 30, "isActive": true },
+      { "id": "pt-zen-quarterly-full", "businessId": "biz-zenfit", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-zen-fullday", "timeSegmentName": "Full Day", "price": 6000, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "shower", "lockers"]
+  },
+  {
+    "id": "biz-ironfit", "name": "Iron Fitness Studio", "vertical": "gym",
+    "description": "Hardcore strength training, CrossFit, and powerlifting. For serious athletes only.",
+    "contactPerson": "Raj Malhotra", "phone": "+971 50 789 0123", "email": "info@ironfit.ae",
+    "image": "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=600&fit=crop",
+    "galleryImages": ["https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop"],
+    "address": { "street": "Warehouse 12, Al Quoz", "area": "Al Quoz", "city": "Dubai", "lat": 25.1650, "lng": 55.2350 },
+    "rating": 4.5, "reviews": 310, "verified": true, "status": "approved",
+    "commissionTier": "enterprise", "commissionRate": 0, "subscriptionFee": 5000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },{ "day": "tue", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },{ "day": "wed", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },{ "day": "thu", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },{ "day": "fri", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },{ "day": "sat", "isOpen": true, "openTime": "06:00", "closeTime": "20:00" },{ "day": "sun", "isOpen": true, "openTime": "08:00", "closeTime": "14:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-iron-early", "name": "Early Bird", "startTime": "05:00", "endTime": "08:00" },
+      { "id": "seg-iron-morning", "name": "Morning", "startTime": "08:00", "endTime": "12:00" },
+      { "id": "seg-iron-evening", "name": "Evening", "startTime": "17:00", "endTime": "23:00" },
+      { "id": "seg-iron-fullday", "name": "Full Day", "startTime": "05:00", "endTime": "23:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-06-15T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-iron-daily-early", "businessId": "biz-ironfit", "name": "Daily Early Bird", "duration": "daily", "timeSegmentId": "seg-iron-early", "timeSegmentName": "Early Bird", "price": 80, "validityDays": 1, "isActive": true },
+      { "id": "pt-iron-daily-evening", "businessId": "biz-ironfit", "name": "Daily Evening", "duration": "daily", "timeSegmentId": "seg-iron-evening", "timeSegmentName": "Evening", "price": 120, "validityDays": 1, "isActive": true },
+      { "id": "pt-iron-weekly-full", "businessId": "biz-ironfit", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-iron-fullday", "timeSegmentName": "Full Day", "price": 600, "validityDays": 7, "isActive": true },
+      { "id": "pt-iron-monthly-morning", "businessId": "biz-ironfit", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-iron-morning", "timeSegmentName": "Morning", "price": 1200, "validityDays": 30, "isActive": true },
+      { "id": "pt-iron-monthly-full", "businessId": "biz-ironfit", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-iron-fullday", "timeSegmentName": "Full Day", "price": 2500, "validityDays": 30, "isActive": true },
+      { "id": "pt-iron-quarterly-full", "businessId": "biz-ironfit", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-iron-fullday", "timeSegmentName": "Full Day", "price": 6500, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["parking", "ac", "shower", "lockers", "trainer", "supplements"]
+  },
+  {
+    "id": "biz-dancewave", "name": "DanceWave Academy", "vertical": "gym",
+    "description": "Bollywood, Hip-Hop, Contemporary, and Salsa dance classes for all ages and levels.",
+    "contactPerson": "Neha Tandon", "phone": "+971 50 012 3456", "email": "dance@dancewave.ae",
+    "image": "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?w=800&h=600&fit=crop",
+    "galleryImages": ["https://images.unsplash.com/photo-1547153760-18fc86c6498e?w=800&h=600&fit=crop"],
+    "address": { "street": "City Walk, Building 8", "area": "Jumeirah", "city": "Dubai", "lat": 25.2050, "lng": 55.2620 },
+    "rating": 4.8, "reviews": 195, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },{ "day": "tue", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },{ "day": "wed", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },{ "day": "thu", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },{ "day": "fri", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },{ "day": "sat", "isOpen": true, "openTime": "10:00", "closeTime": "18:00" },{ "day": "sun", "isOpen": false, "openTime": "10:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-dw-morning", "name": "Morning", "startTime": "10:00", "endTime": "14:00" },
+      { "id": "seg-dw-evening", "name": "Evening", "startTime": "17:00", "endTime": "21:00" },
+      { "id": "seg-dw-fullday", "name": "Full Day", "startTime": "10:00", "endTime": "21:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-08-01T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-dw-daily-morning", "businessId": "biz-dancewave", "name": "Daily Morning", "duration": "daily", "timeSegmentId": "seg-dw-morning", "timeSegmentName": "Morning", "price": 150, "validityDays": 1, "isActive": true },
+      { "id": "pt-dw-daily-evening", "businessId": "biz-dancewave", "name": "Daily Evening", "duration": "daily", "timeSegmentId": "seg-dw-evening", "timeSegmentName": "Evening", "price": 150, "validityDays": 1, "isActive": true },
+      { "id": "pt-dw-weekly-full", "businessId": "biz-dancewave", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-dw-fullday", "timeSegmentName": "Full Day", "price": 700, "validityDays": 6, "isActive": true },
+      { "id": "pt-dw-monthly-evening", "businessId": "biz-dancewave", "name": "Monthly Evening", "duration": "monthly", "timeSegmentId": "seg-dw-evening", "timeSegmentName": "Evening", "price": 2200, "validityDays": 30, "isActive": true },
+      { "id": "pt-dw-monthly-full", "businessId": "biz-dancewave", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-dw-fullday", "timeSegmentName": "Full Day", "price": 3500, "validityDays": 30, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "parking", "shower", "lockers", "mirrors"]
+  },
+  {
+    "id": "biz-flexgym", "name": "Flex Fitness Hub", "vertical": "gym",
+    "description": "Premium 24/7 gym with cardio, weight training, and functional fitness zones.",
+    "contactPerson": "Omar Al-Rashid", "phone": "+971 50 111 5555", "email": "join@flexgym.ae",
+    "image": "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Marina Walk, Tower 3", "area": "Dubai Marina", "city": "Dubai", "lat": 25.0800, "lng": 55.1430 },
+    "rating": 4.4, "reviews": 280, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },{ "day": "tue", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },{ "day": "wed", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },{ "day": "thu", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },{ "day": "fri", "isOpen": true, "openTime": "05:00", "closeTime": "23:00" },{ "day": "sat", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "sun", "isOpen": true, "openTime": "07:00", "closeTime": "20:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-fx-morning", "name": "Morning", "startTime": "05:00", "endTime": "10:00" },
+      { "id": "seg-fx-evening", "name": "Evening", "startTime": "17:00", "endTime": "23:00" },
+      { "id": "seg-fx-fullday", "name": "Full Day", "startTime": "05:00", "endTime": "23:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-03-15T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-fx-daily-full", "businessId": "biz-flexgym", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-fx-fullday", "timeSegmentName": "Full Day", "price": 90, "validityDays": 1, "isActive": true },
+      { "id": "pt-fx-weekly-full", "businessId": "biz-flexgym", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-fx-fullday", "timeSegmentName": "Full Day", "price": 500, "validityDays": 7, "isActive": true },
+      { "id": "pt-fx-monthly-morning", "businessId": "biz-flexgym", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-fx-morning", "timeSegmentName": "Morning", "price": 900, "validityDays": 30, "isActive": true },
+      { "id": "pt-fx-monthly-full", "businessId": "biz-flexgym", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-fx-fullday", "timeSegmentName": "Full Day", "price": 1800, "validityDays": 30, "isActive": true },
+      { "id": "pt-fx-quarterly-full", "businessId": "biz-flexgym", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-fx-fullday", "timeSegmentName": "Full Day", "price": 4500, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["wifi", "parking", "ac", "shower", "lockers", "trainer"]
+  },
+  {
+    "id": "biz-peakfit", "name": "Peak Performance Center", "vertical": "gym",
+    "description": "Sports performance training, rehab, and elite athlete conditioning.",
+    "contactPerson": "Coach Ryan", "phone": "+971 50 222 6666", "email": "train@peakfit.ae",
+    "image": "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Sports City, Arena Complex", "area": "Sports City", "city": "Dubai", "lat": 25.0410, "lng": 55.2230 },
+    "rating": 4.7, "reviews": 190, "verified": true, "status": "approved",
+    "commissionTier": "enterprise", "commissionRate": 0, "subscriptionFee": 5000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "wed", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "thu", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "fri", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "sat", "isOpen": true, "openTime": "07:00", "closeTime": "18:00" },{ "day": "sun", "isOpen": false, "openTime": "07:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-pk-morning", "name": "Morning", "startTime": "06:00", "endTime": "11:00" },
+      { "id": "seg-pk-evening", "name": "Evening", "startTime": "16:00", "endTime": "22:00" },
+      { "id": "seg-pk-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "22:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-05-20T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-pk-daily-full", "businessId": "biz-peakfit", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-pk-fullday", "timeSegmentName": "Full Day", "price": 200, "validityDays": 1, "isActive": true },
+      { "id": "pt-pk-weekly-full", "businessId": "biz-peakfit", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-pk-fullday", "timeSegmentName": "Full Day", "price": 1000, "validityDays": 7, "isActive": true },
+      { "id": "pt-pk-monthly-full", "businessId": "biz-peakfit", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-pk-fullday", "timeSegmentName": "Full Day", "price": 3000, "validityDays": 30, "isActive": true },
+      { "id": "pt-pk-quarterly-full", "businessId": "biz-peakfit", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-pk-fullday", "timeSegmentName": "Full Day", "price": 7500, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["wifi", "parking", "ac", "shower", "lockers", "trainer", "physio"]
+  },
+  {
+    "id": "biz-bodyworks", "name": "BodyWorks Studio", "vertical": "gym",
+    "description": "Pilates, barre, and functional training. Boutique fitness experience.",
+    "contactPerson": "Emma Collins", "phone": "+971 50 333 7777", "email": "hello@bodyworks.ae",
+    "image": "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "DIFC Gate Village", "area": "DIFC", "city": "Dubai", "lat": 25.2120, "lng": 55.2810 },
+    "rating": 4.8, "reviews": 170, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "21:00" },{ "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "21:00" },{ "day": "wed", "isOpen": true, "openTime": "06:00", "closeTime": "21:00" },{ "day": "thu", "isOpen": true, "openTime": "06:00", "closeTime": "21:00" },{ "day": "fri", "isOpen": true, "openTime": "06:00", "closeTime": "21:00" },{ "day": "sat", "isOpen": true, "openTime": "07:00", "closeTime": "18:00" },{ "day": "sun", "isOpen": false, "openTime": "07:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-bw-morning", "name": "Morning", "startTime": "06:00", "endTime": "11:00" },
+      { "id": "seg-bw-evening", "name": "Evening", "startTime": "16:00", "endTime": "21:00" },
+      { "id": "seg-bw-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "21:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-07-01T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-bw-daily-full", "businessId": "biz-bodyworks", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-bw-fullday", "timeSegmentName": "Full Day", "price": 180, "validityDays": 1, "isActive": true },
+      { "id": "pt-bw-weekly-full", "businessId": "biz-bodyworks", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-bw-fullday", "timeSegmentName": "Full Day", "price": 900, "validityDays": 7, "isActive": true },
+      { "id": "pt-bw-monthly-morning", "businessId": "biz-bodyworks", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-bw-morning", "timeSegmentName": "Morning", "price": 1500, "validityDays": 30, "isActive": true },
+      { "id": "pt-bw-monthly-full", "businessId": "biz-bodyworks", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-bw-fullday", "timeSegmentName": "Full Day", "price": 2800, "validityDays": 30, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "shower", "lockers"]
+  },
+  {
+    "id": "biz-crossbox", "name": "CrossBox Fitness", "vertical": "gym",
+    "description": "Functional fitness, HIIT, and Olympic lifting community gym.",
+    "contactPerson": "Jake Reynolds", "phone": "+971 50 444 8888", "email": "wod@crossbox.ae",
+    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Jumeirah Lake Towers, Cluster B", "area": "JLT", "city": "Dubai", "lat": 25.0730, "lng": 55.1510 },
+    "rating": 4.5, "reviews": 220, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "wed", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "thu", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "fri", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "sat", "isOpen": true, "openTime": "07:00", "closeTime": "18:00" },{ "day": "sun", "isOpen": false, "openTime": "07:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-cb-morning", "name": "Morning", "startTime": "06:00", "endTime": "10:00" },
+      { "id": "seg-cb-evening", "name": "Evening", "startTime": "17:00", "endTime": "22:00" },
+      { "id": "seg-cb-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "22:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-04-10T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-cb-daily-full", "businessId": "biz-crossbox", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-cb-fullday", "timeSegmentName": "Full Day", "price": 120, "validityDays": 1, "isActive": true },
+      { "id": "pt-cb-weekly-full", "businessId": "biz-crossbox", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-cb-fullday", "timeSegmentName": "Full Day", "price": 650, "validityDays": 7, "isActive": true },
+      { "id": "pt-cb-monthly-full", "businessId": "biz-crossbox", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-cb-fullday", "timeSegmentName": "Full Day", "price": 2000, "validityDays": 30, "isActive": true },
+      { "id": "pt-cb-quarterly-full", "businessId": "biz-crossbox", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-cb-fullday", "timeSegmentName": "Full Day", "price": 5000, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["parking", "ac", "shower", "lockers"]
+  },
+  {
+    "id": "biz-aquafit", "name": "AquaFit Center", "vertical": "gym",
+    "description": "Swimming, aqua aerobics, and water-based fitness programs.",
+    "contactPerson": "Nina Al-Farsi", "phone": "+971 50 555 9999", "email": "swim@aquafit.ae",
+    "image": "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Mirdif City Centre, Level 1", "area": "Mirdif", "city": "Dubai", "lat": 25.2160, "lng": 55.4100 },
+    "rating": 4.6, "reviews": 150, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "21:00" },{ "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "21:00" },{ "day": "wed", "isOpen": true, "openTime": "06:00", "closeTime": "21:00" },{ "day": "thu", "isOpen": true, "openTime": "06:00", "closeTime": "21:00" },{ "day": "fri", "isOpen": true, "openTime": "06:00", "closeTime": "21:00" },{ "day": "sat", "isOpen": true, "openTime": "07:00", "closeTime": "19:00" },{ "day": "sun", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-aq-morning", "name": "Morning", "startTime": "06:00", "endTime": "11:00" },
+      { "id": "seg-aq-evening", "name": "Evening", "startTime": "16:00", "endTime": "21:00" },
+      { "id": "seg-aq-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "21:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-09-01T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-aq-daily-full", "businessId": "biz-aquafit", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-aq-fullday", "timeSegmentName": "Full Day", "price": 130, "validityDays": 1, "isActive": true },
+      { "id": "pt-aq-weekly-full", "businessId": "biz-aquafit", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-aq-fullday", "timeSegmentName": "Full Day", "price": 700, "validityDays": 7, "isActive": true },
+      { "id": "pt-aq-monthly-morning", "businessId": "biz-aquafit", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-aq-morning", "timeSegmentName": "Morning", "price": 1200, "validityDays": 30, "isActive": true },
+      { "id": "pt-aq-monthly-full", "businessId": "biz-aquafit", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-aq-fullday", "timeSegmentName": "Full Day", "price": 2200, "validityDays": 30, "isActive": true }
+    ],
+    "amenities": ["wifi", "parking", "ac", "shower", "lockers", "pool"]
+  },
+
+  {
+    "id": "biz-citylib", "name": "City Library Hub", "vertical": "library",
+    "description": "Quiet study spaces, high-speed WiFi, extensive book collection, and digital resources.",
+    "contactPerson": "Fatima Al-Rashid", "phone": "+971 50 567 8901", "email": "hello@citylibrary.ae",
+    "image": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&h=600&fit=crop",
+    "galleryImages": ["https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800&h=600&fit=crop","https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=600&fit=crop"],
+    "address": { "street": "Knowledge Village, Block A", "area": "Al Sufouh", "city": "Dubai", "lat": 25.0990, "lng": 55.1630 },
+    "rating": 4.7, "reviews": 280, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },{ "day": "tue", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },{ "day": "wed", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },{ "day": "thu", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },{ "day": "fri", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },{ "day": "sat", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },{ "day": "sun", "isOpen": false, "openTime": "08:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-lib-first", "name": "First Half", "startTime": "08:00", "endTime": "13:00" },
+      { "id": "seg-lib-second", "name": "Second Half", "startTime": "13:00", "endTime": "18:00" },
+      { "id": "seg-lib-fullday", "name": "Full Day", "startTime": "08:00", "endTime": "18:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-01-20T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-lib-daily-first", "businessId": "biz-citylib", "name": "Daily First Half", "duration": "daily", "timeSegmentId": "seg-lib-first", "timeSegmentName": "First Half", "price": 50, "validityDays": 1, "isActive": true },
+      { "id": "pt-lib-daily-second", "businessId": "biz-citylib", "name": "Daily Second Half", "duration": "daily", "timeSegmentId": "seg-lib-second", "timeSegmentName": "Second Half", "price": 50, "validityDays": 1, "isActive": true },
+      { "id": "pt-lib-daily-full", "businessId": "biz-citylib", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-lib-fullday", "timeSegmentName": "Full Day", "price": 100, "validityDays": 1, "isActive": true },
+      { "id": "pt-lib-weekly-first", "businessId": "biz-citylib", "name": "Weekly First Half", "duration": "weekly", "timeSegmentId": "seg-lib-first", "timeSegmentName": "First Half", "price": 300, "validityDays": 6, "isActive": true },
+      { "id": "pt-lib-weekly-full", "businessId": "biz-citylib", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-lib-fullday", "timeSegmentName": "Full Day", "price": 600, "validityDays": 6, "isActive": true },
+      { "id": "pt-lib-monthly-first", "businessId": "biz-citylib", "name": "Monthly First Half", "duration": "monthly", "timeSegmentId": "seg-lib-first", "timeSegmentName": "First Half", "price": 1000, "validityDays": 30, "isActive": true },
+      { "id": "pt-lib-monthly-full", "businessId": "biz-citylib", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-lib-fullday", "timeSegmentName": "Full Day", "price": 2000, "validityDays": 30, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "parking", "lockers"]
+  },
+  {
+    "id": "biz-readzone", "name": "ReadZone Study Lounge", "vertical": "library",
+    "description": "Premium co-study space with private cabins, group discussion rooms, and 24/7 access.",
+    "contactPerson": "Noor Al-Fahim", "phone": "+971 50 901 2345", "email": "hello@readzone.ae",
+    "image": "https://images.unsplash.com/photo-1568667256549-094345857637?w=800&h=600&fit=crop",
+    "galleryImages": ["https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&h=600&fit=crop"],
     "address": { "street": "Mall of Emirates, Level 3", "area": "Al Barsha", "city": "Dubai", "lat": 25.1181, "lng": 55.2003 },
     "rating": 4.4, "reviews": 175, "verified": true, "status": "approved",
     "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
     "operatingDays": [
-      { "day": "mon", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
-      { "day": "tue", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
-      { "day": "wed", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
-      { "day": "thu", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
-      { "day": "fri", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
-      { "day": "sat", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },
-      { "day": "sun", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" }
+      { "day": "mon", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },{ "day": "tue", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },{ "day": "wed", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },{ "day": "thu", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },{ "day": "fri", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },{ "day": "sat", "isOpen": true, "openTime": "07:00", "closeTime": "23:00" },{ "day": "sun", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" }
     ],
     "timeSegments": [
       { "id": "seg-rz-morning", "name": "Morning", "startTime": "07:00", "endTime": "12:00" },
@@ -429,42 +757,179 @@
     "amenities": ["wifi", "ac", "parking", "lockers", "printer", "cafe"]
   },
   {
-    "id": "biz-dancewave",
-    "name": "DanceWave Academy",
-    "vertical": "gym",
-    "description": "Bollywood, Hip-Hop, Contemporary, and Salsa dance classes for all ages and levels.",
-    "contactPerson": "Neha Tandon",
-    "phone": "+971 50 012 3456",
-    "email": "dance@dancewave.ae",
-    "image": "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?w=800&h=600&fit=crop",
-    "galleryImages": [
-      "https://images.unsplash.com/photo-1547153760-18fc86c6498e?w=800&h=600&fit=crop"
-    ],
-    "address": { "street": "City Walk, Building 8", "area": "Jumeirah", "city": "Dubai", "lat": 25.2050, "lng": 55.2620 },
-    "rating": 4.8, "reviews": 195, "verified": true, "status": "approved",
+    "id": "biz-bookworm", "name": "BookWorm Library", "vertical": "library",
+    "description": "Cozy library with rare books, reading lounges, and a quiet cafe.",
+    "contactPerson": "Sarah Ahmed", "phone": "+971 50 111 4444", "email": "read@bookworm.ae",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Downtown Boulevard", "area": "Downtown", "city": "Dubai", "lat": 25.1950, "lng": 55.2740 },
+    "rating": 4.8, "reviews": 220, "verified": true, "status": "approved",
     "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
     "operatingDays": [
-      { "day": "mon", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
-      { "day": "tue", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
-      { "day": "wed", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
-      { "day": "thu", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
-      { "day": "fri", "isOpen": true, "openTime": "10:00", "closeTime": "21:00" },
-      { "day": "sat", "isOpen": true, "openTime": "10:00", "closeTime": "18:00" },
-      { "day": "sun", "isOpen": false, "openTime": "10:00", "closeTime": "18:00" }
+      { "day": "mon", "isOpen": true, "openTime": "08:00", "closeTime": "20:00" },{ "day": "tue", "isOpen": true, "openTime": "08:00", "closeTime": "20:00" },{ "day": "wed", "isOpen": true, "openTime": "08:00", "closeTime": "20:00" },{ "day": "thu", "isOpen": true, "openTime": "08:00", "closeTime": "20:00" },{ "day": "fri", "isOpen": true, "openTime": "08:00", "closeTime": "20:00" },{ "day": "sat", "isOpen": true, "openTime": "09:00", "closeTime": "18:00" },{ "day": "sun", "isOpen": false, "openTime": "09:00", "closeTime": "18:00" }
     ],
     "timeSegments": [
-      { "id": "seg-dw-morning", "name": "Morning", "startTime": "10:00", "endTime": "14:00" },
-      { "id": "seg-dw-evening", "name": "Evening", "startTime": "17:00", "endTime": "21:00" },
-      { "id": "seg-dw-fullday", "name": "Full Day", "startTime": "10:00", "endTime": "21:00" }
+      { "id": "seg-bw-first", "name": "First Half", "startTime": "08:00", "endTime": "14:00" },
+      { "id": "seg-bw-second", "name": "Second Half", "startTime": "14:00", "endTime": "20:00" },
+      { "id": "seg-bwl-fullday", "name": "Full Day", "startTime": "08:00", "endTime": "20:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-03-01T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-bwl-daily-full", "businessId": "biz-bookworm", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-bwl-fullday", "timeSegmentName": "Full Day", "price": 80, "validityDays": 1, "isActive": true },
+      { "id": "pt-bwl-weekly-full", "businessId": "biz-bookworm", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-bwl-fullday", "timeSegmentName": "Full Day", "price": 450, "validityDays": 7, "isActive": true },
+      { "id": "pt-bwl-monthly-full", "businessId": "biz-bookworm", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-bwl-fullday", "timeSegmentName": "Full Day", "price": 1500, "validityDays": 30, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "cafe"]
+  },
+  {
+    "id": "biz-studyden", "name": "Study Den", "vertical": "library",
+    "description": "Exam prep focused library with mock test center and mentoring support.",
+    "contactPerson": "Anil Kapoor", "phone": "+971 50 222 5555", "email": "prep@studyden.ae",
+    "image": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "International City, Block C", "area": "International City", "city": "Dubai", "lat": 25.1670, "lng": 55.4020 },
+    "rating": 4.5, "reviews": 190, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "wed", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "thu", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "fri", "isOpen": true, "openTime": "06:00", "closeTime": "22:00" },{ "day": "sat", "isOpen": true, "openTime": "07:00", "closeTime": "20:00" },{ "day": "sun", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-sd-morning", "name": "Morning", "startTime": "06:00", "endTime": "12:00" },
+      { "id": "seg-sd-evening", "name": "Evening", "startTime": "16:00", "endTime": "22:00" },
+      { "id": "seg-sd-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "22:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-05-15T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-sd-daily-full", "businessId": "biz-studyden", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-sd-fullday", "timeSegmentName": "Full Day", "price": 50, "validityDays": 1, "isActive": true },
+      { "id": "pt-sd-weekly-full", "businessId": "biz-studyden", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-sd-fullday", "timeSegmentName": "Full Day", "price": 300, "validityDays": 7, "isActive": true },
+      { "id": "pt-sd-monthly-morning", "businessId": "biz-studyden", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-sd-morning", "timeSegmentName": "Morning", "price": 600, "validityDays": 30, "isActive": true },
+      { "id": "pt-sd-monthly-full", "businessId": "biz-studyden", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-sd-fullday", "timeSegmentName": "Full Day", "price": 1000, "validityDays": 30, "isActive": true },
+      { "id": "pt-sd-quarterly-full", "businessId": "biz-studyden", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-sd-fullday", "timeSegmentName": "Full Day", "price": 2500, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "parking", "printer"]
+  },
+  {
+    "id": "biz-pagecraft", "name": "PageCraft Reading Room", "vertical": "library",
+    "description": "A curated collection of fiction & non-fiction with cozy reading nooks.",
+    "contactPerson": "Layla Hussain", "phone": "+971 50 333 6666", "email": "hello@pagecraft.ae",
+    "image": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "City Walk, Building 5", "area": "Jumeirah", "city": "Dubai", "lat": 25.2030, "lng": 55.2630 },
+    "rating": 4.6, "reviews": 140, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },{ "day": "tue", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },{ "day": "wed", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },{ "day": "thu", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },{ "day": "fri", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },{ "day": "sat", "isOpen": true, "openTime": "10:00", "closeTime": "18:00" },{ "day": "sun", "isOpen": false, "openTime": "10:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-pc-morning", "name": "Morning", "startTime": "09:00", "endTime": "13:00" },
+      { "id": "seg-pc-evening", "name": "Evening", "startTime": "17:00", "endTime": "21:00" },
+      { "id": "seg-pc-fullday", "name": "Full Day", "startTime": "09:00", "endTime": "21:00" }
     ],
     "closedToday": false, "createdAt": "2024-08-01T00:00:00Z",
     "passTemplates": [
-      { "id": "pt-dw-daily-morning", "businessId": "biz-dancewave", "name": "Daily Morning", "duration": "daily", "timeSegmentId": "seg-dw-morning", "timeSegmentName": "Morning", "price": 150, "validityDays": 1, "isActive": true },
-      { "id": "pt-dw-daily-evening", "businessId": "biz-dancewave", "name": "Daily Evening", "duration": "daily", "timeSegmentId": "seg-dw-evening", "timeSegmentName": "Evening", "price": 150, "validityDays": 1, "isActive": true },
-      { "id": "pt-dw-weekly-full", "businessId": "biz-dancewave", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-dw-fullday", "timeSegmentName": "Full Day", "price": 700, "validityDays": 6, "isActive": true },
-      { "id": "pt-dw-monthly-evening", "businessId": "biz-dancewave", "name": "Monthly Evening", "duration": "monthly", "timeSegmentId": "seg-dw-evening", "timeSegmentName": "Evening", "price": 2200, "validityDays": 30, "isActive": true },
-      { "id": "pt-dw-monthly-full", "businessId": "biz-dancewave", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-dw-fullday", "timeSegmentName": "Full Day", "price": 3500, "validityDays": 30, "isActive": true }
+      { "id": "pt-pc-daily-full", "businessId": "biz-pagecraft", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-pc-fullday", "timeSegmentName": "Full Day", "price": 70, "validityDays": 1, "isActive": true },
+      { "id": "pt-pc-weekly-full", "businessId": "biz-pagecraft", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-pc-fullday", "timeSegmentName": "Full Day", "price": 400, "validityDays": 7, "isActive": true },
+      { "id": "pt-pc-monthly-full", "businessId": "biz-pagecraft", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-pc-fullday", "timeSegmentName": "Full Day", "price": 1200, "validityDays": 30, "isActive": true }
     ],
-    "amenities": ["wifi", "ac", "parking", "shower", "lockers", "mirrors"]
+    "amenities": ["wifi", "ac", "cafe"]
+  },
+  {
+    "id": "biz-silentspace", "name": "Silent Space Library", "vertical": "library",
+    "description": "Noise-free study environment with individual cubicles and focus rooms.",
+    "contactPerson": "Dr. Hamza", "phone": "+971 50 444 7777", "email": "quiet@silentspace.ae",
+    "image": "https://images.unsplash.com/photo-1568667256549-094345857637?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Academic City, Block 2", "area": "Academic City", "city": "Dubai", "lat": 25.1290, "lng": 55.4180 },
+    "rating": 4.9, "reviews": 250, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "06:00", "closeTime": "24:00" },{ "day": "tue", "isOpen": true, "openTime": "06:00", "closeTime": "24:00" },{ "day": "wed", "isOpen": true, "openTime": "06:00", "closeTime": "24:00" },{ "day": "thu", "isOpen": true, "openTime": "06:00", "closeTime": "24:00" },{ "day": "fri", "isOpen": true, "openTime": "06:00", "closeTime": "24:00" },{ "day": "sat", "isOpen": true, "openTime": "06:00", "closeTime": "24:00" },{ "day": "sun", "isOpen": true, "openTime": "08:00", "closeTime": "22:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-ss-morning", "name": "Morning", "startTime": "06:00", "endTime": "12:00" },
+      { "id": "seg-ss-afternoon", "name": "Afternoon", "startTime": "12:00", "endTime": "18:00" },
+      { "id": "seg-ss-night", "name": "Night", "startTime": "18:00", "endTime": "24:00" },
+      { "id": "seg-ss-fullday", "name": "Full Day", "startTime": "06:00", "endTime": "24:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-02-10T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-ss-daily-full", "businessId": "biz-silentspace", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-ss-fullday", "timeSegmentName": "Full Day", "price": 90, "validityDays": 1, "isActive": true },
+      { "id": "pt-ss-weekly-full", "businessId": "biz-silentspace", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-ss-fullday", "timeSegmentName": "Full Day", "price": 500, "validityDays": 7, "isActive": true },
+      { "id": "pt-ss-monthly-morning", "businessId": "biz-silentspace", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-ss-morning", "timeSegmentName": "Morning", "price": 800, "validityDays": 30, "isActive": true },
+      { "id": "pt-ss-monthly-full", "businessId": "biz-silentspace", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-ss-fullday", "timeSegmentName": "Full Day", "price": 1800, "validityDays": 30, "isActive": true },
+      { "id": "pt-ss-quarterly-full", "businessId": "biz-silentspace", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-ss-fullday", "timeSegmentName": "Full Day", "price": 4500, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "parking", "lockers", "printer", "cubicles"]
+  },
+  {
+    "id": "biz-greenleaf", "name": "GreenLeaf Community Library", "vertical": "library",
+    "description": "Eco-friendly community library with garden seating and children's section.",
+    "contactPerson": "Meera Taneja", "phone": "+971 50 555 8888", "email": "eco@greenleaf.ae",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Sustainable City, Plot 5", "area": "Sustainable City", "city": "Dubai", "lat": 25.0340, "lng": 55.3190 },
+    "rating": 4.5, "reviews": 130, "verified": true, "status": "approved",
+    "commissionTier": "basic", "commissionRate": 15, "subscriptionFee": 0,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "08:00", "closeTime": "19:00" },{ "day": "tue", "isOpen": true, "openTime": "08:00", "closeTime": "19:00" },{ "day": "wed", "isOpen": true, "openTime": "08:00", "closeTime": "19:00" },{ "day": "thu", "isOpen": true, "openTime": "08:00", "closeTime": "19:00" },{ "day": "fri", "isOpen": true, "openTime": "08:00", "closeTime": "19:00" },{ "day": "sat", "isOpen": true, "openTime": "09:00", "closeTime": "17:00" },{ "day": "sun", "isOpen": false, "openTime": "09:00", "closeTime": "17:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-gl-morning", "name": "Morning", "startTime": "08:00", "endTime": "13:00" },
+      { "id": "seg-gl-fullday", "name": "Full Day", "startTime": "08:00", "endTime": "19:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-06-01T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-gl-daily-full", "businessId": "biz-greenleaf", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-gl-fullday", "timeSegmentName": "Full Day", "price": 40, "validityDays": 1, "isActive": true },
+      { "id": "pt-gl-weekly-full", "businessId": "biz-greenleaf", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-gl-fullday", "timeSegmentName": "Full Day", "price": 200, "validityDays": 7, "isActive": true },
+      { "id": "pt-gl-monthly-full", "businessId": "biz-greenleaf", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-gl-fullday", "timeSegmentName": "Full Day", "price": 600, "validityDays": 30, "isActive": true }
+    ],
+    "amenities": ["wifi", "garden", "cafe"]
+  },
+  {
+    "id": "biz-techlib", "name": "TechLib Digital Library", "vertical": "library",
+    "description": "Tech-focused library with coding stations, 3D printers, and VR headsets.",
+    "contactPerson": "Samir Joshi", "phone": "+971 50 666 9999", "email": "tech@techlib.ae",
+    "image": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "DTEC, Building 1", "area": "Silicon Oasis", "city": "Dubai", "lat": 25.1170, "lng": 55.3810 },
+    "rating": 4.7, "reviews": 160, "verified": true, "status": "approved",
+    "commissionTier": "enterprise", "commissionRate": 0, "subscriptionFee": 5000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "08:00", "closeTime": "22:00" },{ "day": "tue", "isOpen": true, "openTime": "08:00", "closeTime": "22:00" },{ "day": "wed", "isOpen": true, "openTime": "08:00", "closeTime": "22:00" },{ "day": "thu", "isOpen": true, "openTime": "08:00", "closeTime": "22:00" },{ "day": "fri", "isOpen": true, "openTime": "08:00", "closeTime": "22:00" },{ "day": "sat", "isOpen": true, "openTime": "09:00", "closeTime": "20:00" },{ "day": "sun", "isOpen": false, "openTime": "09:00", "closeTime": "20:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-tl-morning", "name": "Morning", "startTime": "08:00", "endTime": "13:00" },
+      { "id": "seg-tl-evening", "name": "Evening", "startTime": "17:00", "endTime": "22:00" },
+      { "id": "seg-tl-fullday", "name": "Full Day", "startTime": "08:00", "endTime": "22:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-04-20T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-tl-daily-full", "businessId": "biz-techlib", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-tl-fullday", "timeSegmentName": "Full Day", "price": 100, "validityDays": 1, "isActive": true },
+      { "id": "pt-tl-weekly-full", "businessId": "biz-techlib", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-tl-fullday", "timeSegmentName": "Full Day", "price": 550, "validityDays": 7, "isActive": true },
+      { "id": "pt-tl-monthly-morning", "businessId": "biz-techlib", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-tl-morning", "timeSegmentName": "Morning", "price": 900, "validityDays": 30, "isActive": true },
+      { "id": "pt-tl-monthly-full", "businessId": "biz-techlib", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-tl-fullday", "timeSegmentName": "Full Day", "price": 1800, "validityDays": 30, "isActive": true },
+      { "id": "pt-tl-quarterly-full", "businessId": "biz-techlib", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-tl-fullday", "timeSegmentName": "Full Day", "price": 4200, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "parking", "3dprinter", "vr", "coding-stations"]
+  },
+  {
+    "id": "biz-scholarhub", "name": "Scholar Hub Research Library", "vertical": "library",
+    "description": "Academic research library with journal access, thesis assistance, and seminar rooms.",
+    "contactPerson": "Dr. Priya Deshmukh", "phone": "+971 50 777 1111", "email": "research@scholarhub.ae",
+    "image": "https://images.unsplash.com/photo-1568667256549-094345857637?w=800&h=600&fit=crop", "galleryImages": [],
+    "address": { "street": "Knowledge Park, Building A", "area": "Knowledge Park", "city": "Dubai", "lat": 25.0910, "lng": 55.1750 },
+    "rating": 4.8, "reviews": 200, "verified": true, "status": "approved",
+    "commissionTier": "premium", "commissionRate": 8, "subscriptionFee": 2000,
+    "operatingDays": [
+      { "day": "mon", "isOpen": true, "openTime": "07:00", "closeTime": "21:00" },{ "day": "tue", "isOpen": true, "openTime": "07:00", "closeTime": "21:00" },{ "day": "wed", "isOpen": true, "openTime": "07:00", "closeTime": "21:00" },{ "day": "thu", "isOpen": true, "openTime": "07:00", "closeTime": "21:00" },{ "day": "fri", "isOpen": true, "openTime": "07:00", "closeTime": "21:00" },{ "day": "sat", "isOpen": true, "openTime": "08:00", "closeTime": "18:00" },{ "day": "sun", "isOpen": false, "openTime": "08:00", "closeTime": "18:00" }
+    ],
+    "timeSegments": [
+      { "id": "seg-sh-morning", "name": "Morning", "startTime": "07:00", "endTime": "12:00" },
+      { "id": "seg-sh-afternoon", "name": "Afternoon", "startTime": "12:00", "endTime": "17:00" },
+      { "id": "seg-sh-fullday", "name": "Full Day", "startTime": "07:00", "endTime": "21:00" }
+    ],
+    "closedToday": false, "createdAt": "2024-01-05T00:00:00Z",
+    "passTemplates": [
+      { "id": "pt-sh-daily-full", "businessId": "biz-scholarhub", "name": "Daily Full Day", "duration": "daily", "timeSegmentId": "seg-sh-fullday", "timeSegmentName": "Full Day", "price": 80, "validityDays": 1, "isActive": true },
+      { "id": "pt-sh-weekly-full", "businessId": "biz-scholarhub", "name": "Weekly Full Day", "duration": "weekly", "timeSegmentId": "seg-sh-fullday", "timeSegmentName": "Full Day", "price": 450, "validityDays": 7, "isActive": true },
+      { "id": "pt-sh-monthly-morning", "businessId": "biz-scholarhub", "name": "Monthly Morning", "duration": "monthly", "timeSegmentId": "seg-sh-morning", "timeSegmentName": "Morning", "price": 700, "validityDays": 30, "isActive": true },
+      { "id": "pt-sh-monthly-full", "businessId": "biz-scholarhub", "name": "Monthly Full Day", "duration": "monthly", "timeSegmentId": "seg-sh-fullday", "timeSegmentName": "Full Day", "price": 1500, "validityDays": 30, "isActive": true },
+      { "id": "pt-sh-quarterly-full", "businessId": "biz-scholarhub", "name": "Quarterly Full Day", "duration": "quarterly", "timeSegmentId": "seg-sh-fullday", "timeSegmentName": "Full Day", "price": 3800, "validityDays": 90, "isActive": true }
+    ],
+    "amenities": ["wifi", "ac", "parking", "lockers", "seminar-rooms", "journals"]
   }
 ]
