@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { usePlatformStore } from "@/store/platformStore";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, type BusinessUser } from "@/store/authStore";
 import { toast } from "sonner";
 import {
   LayoutDashboard, Users, Calendar, CreditCard, BarChart3, Settings,
@@ -31,28 +31,108 @@ const formatTime = (t: string) => {
   return `${h % 12 || 12}:${(m || 0).toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
 };
 
-const navigation = [
-  { name: "Dashboard", href: "/business-dashboard", icon: LayoutDashboard },
-  { name: "Class Management", href: "/business-dashboard/classes", icon: Calendar },
-  { name: "Subjects & Batches", href: "/business-dashboard/subjects", icon: Calendar },
-  { name: "Students", href: "/business-dashboard/students", icon: Users },
-  { name: "Revenue", href: "/business-dashboard/revenue", icon: CreditCard },
-  { name: "Analytics", href: "/business-dashboard/analytics", icon: BarChart3 },
-  { name: "Settings", href: "/business-dashboard/settings", icon: Settings },
-];
+// Navigation varies by business type
+const getNavigation = (businessType: string) => {
+  const base = [
+    { name: "Dashboard", href: "/business-dashboard", icon: LayoutDashboard },
+  ];
+  
+  if (businessType === 'coaching') {
+    return [
+      ...base,
+      { name: "Class Management", href: "/business-dashboard/classes", icon: Calendar },
+      { name: "Subjects & Batches", href: "/business-dashboard/subjects", icon: Calendar },
+      { name: "Students", href: "/business-dashboard/students", icon: Users },
+      { name: "Revenue", href: "/business-dashboard/revenue", icon: CreditCard },
+      { name: "Analytics", href: "/business-dashboard/analytics", icon: BarChart3 },
+      { name: "Settings", href: "/business-dashboard/settings", icon: Settings },
+    ];
+  }
+  
+  // Gym / Library
+  return [
+    ...base,
+    { name: "Pass Templates", href: "/business-dashboard/subjects", icon: Calendar },
+    { name: "Members", href: "/business-dashboard/students", icon: Users },
+    { name: "Revenue", href: "/business-dashboard/revenue", icon: CreditCard },
+    { name: "Analytics", href: "/business-dashboard/analytics", icon: BarChart3 },
+    { name: "Settings", href: "/business-dashboard/settings", icon: Settings },
+  ];
+};
 
 export default function BusinessDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuthStore();
+  const { logout, user, accountType } = useAuthStore();
   const { businesses, studentPasses, toggleClosedToday, transactions,
     addSubject, addBatch, pauseBatch, updateBatch,
     addPassTemplate, updatePassTemplate, removePassTemplate,
   } = usePlatformStore();
 
-  // Use first approved business for demo
-  const business = businesses.find(b => b.status === 'approved') || businesses[0];
+  // Find the platform business matching the logged-in user
+  const authBusiness = accountType === 'business' ? (user as BusinessUser) : null;
+  const business = useMemo(() => {
+    if (!authBusiness) return businesses[0];
+    
+    // Try to match by ID first, then by email, then by business name
+    const byId = businesses.find(b => b.id === authBusiness.id);
+    if (byId) return byId;
+    
+    const byEmail = businesses.find(b => b.email?.toLowerCase() === authBusiness.email?.toLowerCase());
+    if (byEmail) return byEmail;
+    
+    const byName = businesses.find(b => b.name?.toLowerCase() === authBusiness.businessName?.toLowerCase());
+    if (byName) return byName;
+    
+    // No platform business found — create a virtual one from auth data
+    return {
+      id: authBusiness.id,
+      name: authBusiness.businessName,
+      vertical: authBusiness.businessType as 'coaching' | 'gym' | 'library',
+      description: authBusiness.description || authBusiness.serviceAreas || '',
+      contactPerson: authBusiness.ownerName || '',
+      phone: authBusiness.phone || '',
+      email: authBusiness.email,
+      image: authBusiness.coverImage || authBusiness.logo || '/placeholder.svg',
+      galleryImages: authBusiness.galleryImages || [],
+      address: {
+        street: authBusiness.address?.street || '',
+        area: authBusiness.address?.city || '',
+        city: authBusiness.address?.city || '',
+        lat: authBusiness.address?.lat || 0,
+        lng: authBusiness.address?.lng || 0,
+      },
+      rating: 0,
+      reviews: 0,
+      verified: authBusiness.businessVerified || false,
+      status: (authBusiness.businessVerified ? 'approved' : 'pending') as any,
+      commissionTier: 'basic' as any,
+      commissionRate: 15,
+      subscriptionFee: 0,
+      operatingDays: [
+        { day: 'mon' as const, isOpen: true, openTime: '08:00', closeTime: '21:00' },
+        { day: 'tue' as const, isOpen: true, openTime: '08:00', closeTime: '21:00' },
+        { day: 'wed' as const, isOpen: true, openTime: '08:00', closeTime: '21:00' },
+        { day: 'thu' as const, isOpen: true, openTime: '08:00', closeTime: '21:00' },
+        { day: 'fri' as const, isOpen: true, openTime: '08:00', closeTime: '21:00' },
+        { day: 'sat' as const, isOpen: true, openTime: '08:00', closeTime: '21:00' },
+        { day: 'sun' as const, isOpen: false, openTime: '08:00', closeTime: '21:00' },
+      ],
+      timeSegments: [
+        { id: 'seg-morning', name: 'Morning', startTime: '06:00', endTime: '12:00' },
+        { id: 'seg-afternoon', name: 'Afternoon', startTime: '12:00', endTime: '17:00' },
+        { id: 'seg-evening', name: 'Evening', startTime: '17:00', endTime: '22:00' },
+      ],
+      closedToday: false,
+      createdAt: authBusiness.joinDate || new Date().toISOString(),
+      subjects: [],
+      passTemplates: [],
+      amenities: authBusiness.amenities || [],
+    };
+  }, [authBusiness, businesses]);
+
+  const navigation = useMemo(() => getNavigation(business?.vertical || 'library'), [business?.vertical]);
   const businessPasses = studentPasses.filter(p => p.businessId === business?.id);
   const activePasses = businessPasses.filter(p => p.status === 'active' || p.status === 'reserved');
   const businessTxns = transactions.filter(t => t.items.some(i => i.description.includes(business?.name || '')));
@@ -395,7 +475,7 @@ export default function BusinessDashboard() {
             </div>
           </div>
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {navigation.map(item => (
+            {navigation.map((item: { name: string; href: string; icon: any }) => (
               <Link key={item.name} to={item.href} onClick={() => setSidebarOpen(false)}
                 className={cn("flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   currentPath === item.href ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted")}>
