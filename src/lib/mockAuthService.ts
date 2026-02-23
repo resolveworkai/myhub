@@ -19,6 +19,9 @@ let users: User[] = (usersData as any[]).map(u => ({
 // Password overrides for specific test accounts
 const passwordOverrides: Record<string, string> = {
   'tester@test.com': 'Test@123',
+  'gym@portal.com': 'Password@123',
+  'library@portal.com': 'Password@123',
+  'coaching@portal.com': 'Password@123',
 };
 
 let businessUsers: BusinessUser[] = (businessUsersData as any[]).map(bu => ({
